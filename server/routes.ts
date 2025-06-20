@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { generateObituariesWithClaude, generateObituariesWithChatGPT, generateRevisedObituary, type ObituaryFormData } from "./services/ai";
 import { generateObituaryPDF } from "./services/pdf";
 import { processDocument, deleteDocument, formatDocumentForPrompt } from "./services/document";
-import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema } from "@shared/schema";
+import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -455,6 +455,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Prompt template deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete prompt template" });
+    }
+  });
+
+  // Final Spaces API
+  app.get("/api/final-spaces", async (req, res) => {
+    try {
+      const userId = parseInt(req.query.userId as string);
+      const userType = req.query.userType as string;
+      
+      let finalSpaces;
+      if (userType === 'admin') {
+        finalSpaces = await storage.getAllFinalSpaces();
+      } else {
+        finalSpaces = await storage.getFinalSpacesByUser(userId);
+      }
+      
+      res.json(finalSpaces);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch final spaces" });
+    }
+  });
+
+  app.get("/api/final-spaces/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const finalSpace = await storage.getFinalSpace(id);
+      
+      if (!finalSpace) {
+        return res.status(404).json({ message: "Final space not found" });
+      }
+      
+      res.json(finalSpace);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch final space" });
+    }
+  });
+
+  app.get("/api/final-spaces/slug/:slug", async (req, res) => {
+    try {
+      const slug = req.params.slug;
+      const finalSpace = await storage.getFinalSpaceBySlug(slug);
+      
+      if (!finalSpace) {
+        return res.status(404).json({ message: "Final space not found" });
+      }
+      
+      res.json(finalSpace);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch final space" });
+    }
+  });
+
+  app.post("/api/final-spaces", async (req, res) => {
+    try {
+      const validatedData = insertFinalSpaceSchema.parse(req.body);
+      
+      // Generate URL-friendly slug from person name
+      const slug = validatedData.personName
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim();
+      
+      // Ensure slug uniqueness
+      let finalSlug = slug;
+      let counter = 1;
+      while (await storage.getFinalSpaceBySlug(finalSlug)) {
+        finalSlug = `${slug}-${counter}`;
+        counter++;
+      }
+      
+      const finalSpace = await storage.createFinalSpace({
+        ...validatedData,
+        slug: finalSlug
+      });
+      
+      res.json(finalSpace);
+    } catch (error) {
+      console.error('Error creating final space:', error);
+      res.status(400).json({ message: "Failed to create final space" });
+    }
+  });
+
+  app.put("/api/final-spaces/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedSpace = await storage.updateFinalSpace(id, req.body);
+      res.json(updatedSpace);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update final space" });
+    }
+  });
+
+  app.delete("/api/final-spaces/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteFinalSpace(id);
+      res.json({ message: "Final space deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete final space" });
+    }
+  });
+
+  // Final Space Comments API
+  app.get("/api/final-spaces/:id/comments", async (req, res) => {
+    try {
+      const finalSpaceId = parseInt(req.params.id);
+      const comments = await storage.getFinalSpaceComments(finalSpaceId);
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/final-spaces/:id/comments", async (req, res) => {
+    try {
+      const finalSpaceId = parseInt(req.params.id);
+      const validatedData = insertFinalSpaceCommentSchema.parse({
+        ...req.body,
+        finalSpaceId
+      });
+      
+      const comment = await storage.createFinalSpaceComment(validatedData);
+      res.json(comment);
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      res.status(400).json({ message: "Failed to create comment" });
+    }
+  });
+
+  app.delete("/api/final-spaces/comments/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteFinalSpaceComment(id);
+      res.json({ message: "Comment deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
+  // Completed obituaries for dropdown
+  app.get("/api/obituaries/completed", async (req, res) => {
+    try {
+      const userId = parseInt(req.query.userId as string);
+      const completedObituaries = await storage.getCompletedObituariesByUser(userId);
+      res.json(completedObituaries);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch completed obituaries" });
     }
   });
 

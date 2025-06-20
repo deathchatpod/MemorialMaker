@@ -105,6 +105,14 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(obituaries.createdAt));
   }
 
+  async getCompletedObituariesByUser(userId: number): Promise<Obituary[]> {
+    return await db
+      .select()
+      .from(obituaries)
+      .where(and(eq(obituaries.userId, userId), eq(obituaries.status, 'completed')))
+      .orderBy(desc(obituaries.createdAt));
+  }
+
   async getObituary(id: number): Promise<Obituary | undefined> {
     const [obituary] = await db.select().from(obituaries).where(eq(obituaries.id, id));
     return obituary || undefined;
@@ -261,6 +269,98 @@ export class DatabaseStorage implements IStorage {
 
   async deletePromptTemplate(id: number): Promise<void> {
     await db.delete(promptTemplates).where(eq(promptTemplates.id, id));
+  }
+
+  // Final Spaces
+  async getFinalSpacesByUser(userId: number): Promise<FinalSpace[]> {
+    return await db
+      .select()
+      .from(finalSpaces)
+      .where(eq(finalSpaces.userId, userId))
+      .orderBy(desc(finalSpaces.createdAt));
+  }
+
+  async getAllFinalSpaces(): Promise<FinalSpace[]> {
+    return await db
+      .select()
+      .from(finalSpaces)
+      .orderBy(desc(finalSpaces.createdAt));
+  }
+
+  async getFinalSpace(id: number): Promise<FinalSpace | undefined> {
+    const [space] = await db.select().from(finalSpaces).where(eq(finalSpaces.id, id));
+    return space || undefined;
+  }
+
+  async getFinalSpaceBySlug(slug: string): Promise<FinalSpace | undefined> {
+    const [space] = await db.select().from(finalSpaces).where(eq(finalSpaces.slug, slug));
+    return space || undefined;
+  }
+
+  async createFinalSpace(finalSpace: InsertFinalSpace): Promise<FinalSpace> {
+    const [newSpace] = await db
+      .insert(finalSpaces)
+      .values({
+        ...finalSpace,
+        updatedAt: new Date(),
+      })
+      .returning();
+    return newSpace;
+  }
+
+  async updateFinalSpace(id: number, finalSpace: Partial<FinalSpace>): Promise<FinalSpace> {
+    const [updatedSpace] = await db
+      .update(finalSpaces)
+      .set({ ...finalSpace, updatedAt: new Date() })
+      .where(eq(finalSpaces.id, id))
+      .returning();
+    return updatedSpace;
+  }
+
+  async deleteFinalSpace(id: number): Promise<void> {
+    await db.delete(finalSpaces).where(eq(finalSpaces.id, id));
+  }
+
+  // Final Space Comments
+  async getFinalSpaceComments(finalSpaceId: number): Promise<FinalSpaceComment[]> {
+    return await db
+      .select()
+      .from(finalSpaceComments)
+      .where(eq(finalSpaceComments.finalSpaceId, finalSpaceId))
+      .orderBy(desc(finalSpaceComments.createdAt));
+  }
+
+  async createFinalSpaceComment(comment: InsertFinalSpaceComment): Promise<FinalSpaceComment> {
+    const [newComment] = await db
+      .insert(finalSpaceComments)
+      .values(comment)
+      .returning();
+    return newComment;
+  }
+
+  async deleteFinalSpaceComment(id: number): Promise<void> {
+    await db.delete(finalSpaceComments).where(eq(finalSpaceComments.id, id));
+  }
+
+  // Final Space Images
+  async getFinalSpaceImages(commentId: number): Promise<FinalSpaceImage[]> {
+    return await db
+      .select()
+      .from(finalSpaceImages)
+      .where(eq(finalSpaceImages.commentId, commentId))
+      .orderBy(desc(finalSpaceImages.createdAt));
+  }
+
+  async createFinalSpaceImage(image: InsertFinalSpaceImage): Promise<FinalSpaceImage> {
+    const [newImage] = await db
+      .insert(finalSpaceImages)
+      .values(image)
+      .returning();
+    return newImage;
+  }
+
+  async deleteFinalSpaceImage(id: number): Promise<void> {
+    await db.delete(finalSpaceImages).where(eq(finalSpaceImages.id, id));
   }
 }
 
