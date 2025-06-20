@@ -15,7 +15,7 @@ export const UserContext = React.createContext<{
   currentUser: { id: number; username: string; userType: string };
   setCurrentUser: (user: { id: number; username: string; userType: string }) => void;
 }>({
-  currentUser: { id: 1, username: 'user', userType: 'user' },
+  currentUser: { id: 2, username: 'John Admin', userType: 'admin' },
   setCurrentUser: () => {},
 });
 
