@@ -176,16 +176,46 @@ export default function GeneratedObituaries() {
       return;
     }
 
-    // Generate revisions for both AI providers
-    generateRevisionMutation.mutate({ aiProvider: 'claude', feedback: { liked, disliked } });
-    generateRevisionMutation.mutate({ aiProvider: 'chatgpt', feedback: { liked, disliked } });
+    // Check if revisions already exist
+    const claudeRevision = generatedObituaries.find(o => o.aiProvider === 'claude' && o.isRevision);
+    const chatgptRevision = generatedObituaries.find(o => o.aiProvider === 'chatgpt' && o.isRevision);
+
+    // Generate revisions for providers that don't already have them
+    if (!claudeRevision) {
+      generateRevisionMutation.mutate({ aiProvider: 'claude', feedback: { liked, disliked } });
+    }
+    if (!chatgptRevision) {
+      generateRevisionMutation.mutate({ aiProvider: 'chatgpt', feedback: { liked, disliked } });
+    }
+
+    if (claudeRevision && chatgptRevision) {
+      toast({
+        title: "Revisions Already Generated",
+        description: "Only one revision per AI provider is allowed. You can edit the existing revisions directly.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getTotalFeedbackCounts = () => {
     const allFeedback = Object.values(selectedTexts).flat();
-    const liked = allFeedback.filter(f => f.feedbackType === 'liked').length;
-    const disliked = allFeedback.filter(f => f.feedbackType === 'disliked').length;
-    return { liked, disliked };
+    const includedFeedback = getIncludedFeedback();
+    return {
+      liked: allFeedback.filter(f => f.feedbackType === 'liked').length,
+      disliked: allFeedback.filter(f => f.feedbackType === 'disliked').length,
+      includedLiked: includedFeedback.filter(f => f.feedbackType === 'liked').length,
+      includedDisliked: includedFeedback.filter(f => f.feedbackType === 'disliked').length
+    };
+  };
+
+  const getRevisionStatus = () => {
+    const claudeRevision = generatedObituaries.find(o => o.aiProvider === 'claude' && o.isRevision);
+    const chatgptRevision = generatedObituaries.find(o => o.aiProvider === 'chatgpt' && o.isRevision);
+    return {
+      claudeHasRevision: !!claudeRevision,
+      chatgptHasRevision: !!chatgptRevision,
+      bothHaveRevisions: !!claudeRevision && !!chatgptRevision
+    };
   };
 
   if (isLoading) {
@@ -217,6 +247,7 @@ export default function GeneratedObituaries() {
   }
 
   const feedbackCounts = getTotalFeedbackCounts();
+  const revisionStatus = getRevisionStatus();
 
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -480,13 +511,18 @@ export default function GeneratedObituaries() {
         <div className="space-x-4">
           <Button 
             onClick={generateRevisions}
-            disabled={generateRevisionMutation.isPending || (feedbackCounts.liked === 0 && feedbackCounts.disliked === 0)}
+            disabled={generateRevisionMutation.isPending || (feedbackCounts.includedLiked === 0 && feedbackCounts.includedDisliked === 0) || revisionStatus.bothHaveRevisions}
             className="bg-primary text-white hover:bg-blue-700"
           >
             {generateRevisionMutation.isPending ? (
               <>
                 <i className="fas fa-spinner fa-spin mr-2"></i>
                 Generating...
+              </>
+            ) : revisionStatus.bothHaveRevisions ? (
+              <>
+                <i className="fas fa-check mr-2"></i>
+                Revisions Complete
               </>
             ) : (
               <>
@@ -495,6 +531,12 @@ export default function GeneratedObituaries() {
               </>
             )}
           </Button>
+          {revisionStatus.bothHaveRevisions && (
+            <p className="text-sm text-gray-500 mt-2">All revisions have been generated. You can edit obituaries directly.</p>
+          )}
+          {!revisionStatus.bothHaveRevisions && (feedbackCounts.includedLiked === 0 && feedbackCounts.includedDisliked === 0) && (feedbackCounts.liked > 0 || feedbackCounts.disliked > 0) && (
+            <p className="text-sm text-gray-500 mt-2">Select feedback to include in revisions using the checkboxes above</p>
+          )}
         </div>
       </div>
     </main>

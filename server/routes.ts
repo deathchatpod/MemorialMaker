@@ -247,6 +247,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Obituary not found" });
       }
 
+      // Check if revision already exists for this AI provider
+      const existingObituaries = await storage.getGeneratedObituaries(id);
+      const existingRevision = existingObituaries.find(o => o.aiProvider === aiProvider && o.isRevision);
+      
+      if (existingRevision) {
+        return res.status(400).json({ 
+          message: `A revision for ${aiProvider} already exists. Only one revision per AI provider is allowed.` 
+        });
+      }
+
       const formData = obituary.formData as ObituaryFormData;
       const revisedResult = await generateRevisedObituary(formData, feedback, aiProvider);
       
