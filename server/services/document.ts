@@ -17,8 +17,10 @@ export async function processDocument(file: Express.Multer.File): Promise<Docume
       const result = await mammoth.extractRawText({ path: file.path });
       extractedText = result.value;
     } else if (fileExtension === '.pdf') {
-      // Use require for pdf-parse to avoid ES module issues
-      const pdfParse = eval('require')('pdf-parse');
+      // Use createRequire for pdf-parse in ES module context
+      const { createRequire } = await import('module');
+      const require = createRequire(import.meta.url);
+      const pdfParse = require('pdf-parse');
       const dataBuffer = fs.readFileSync(file.path);
       const data = await pdfParse(dataBuffer);
       extractedText = data.text;
