@@ -399,9 +399,9 @@ export default function QuestionManagement() {
 
       <Card>
         <Tabs value={activeCategory} onValueChange={setActiveCategory}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-5 gap-2 p-2">
             {categories.map((category) => (
-              <TabsTrigger key={category.value} value={category.value}>
+              <TabsTrigger key={category.value} value={category.value} className="px-4 py-2">
                 {category.label}
               </TabsTrigger>
             ))}
