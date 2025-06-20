@@ -43,7 +43,26 @@ export const textFeedback = pgTable("text_feedback", {
   generatedObituaryId: integer("generated_obituary_id").notNull().references(() => generatedObituaries.id),
   selectedText: text("selected_text").notNull(),
   feedbackType: varchar("feedback_type", { length: 10 }).notNull(), // 'liked' or 'disliked'
+  collaboratorName: text("collaborator_name"), // null for owner feedback
+  collaboratorEmail: text("collaborator_email"), // null for owner feedback
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const obituaryCollaborators = pgTable("obituary_collaborators", {
+  id: serial("id").primaryKey(),
+  obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  invitedAt: timestamp("invited_at").defaultNow().notNull(),
+});
+
+export const collaborationSessions = pgTable("collaboration_sessions", {
+  id: serial("id").primaryKey(),
+  uuid: text("uuid").notNull().unique(),
+  obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
+  collaboratorEmail: text("collaborator_email").notNull(),
+  collaboratorName: text("collaborator_name"), // filled when they first access
+  accessedAt: timestamp("accessed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const questions = pgTable("questions", {
@@ -120,6 +139,8 @@ export const obituariesRelations = relations(obituaries, ({ one, many }) => ({
   }),
   generatedObituaries: many(generatedObituaries),
   finalSpaces: many(finalSpaces),
+  collaborators: many(obituaryCollaborators),
+  collaborationSessions: many(collaborationSessions),
 }));
 
 export const generatedObituariesRelations = relations(generatedObituaries, ({ one, many }) => ({
@@ -161,6 +182,20 @@ export const finalSpaceImagesRelations = relations(finalSpaceImages, ({ one }) =
   comment: one(finalSpaceComments, {
     fields: [finalSpaceImages.commentId],
     references: [finalSpaceComments.id],
+  }),
+}));
+
+export const obituaryCollaboratorsRelations = relations(obituaryCollaborators, ({ one }) => ({
+  obituary: one(obituaries, {
+    fields: [obituaryCollaborators.obituaryId],
+    references: [obituaries.id],
+  }),
+}));
+
+export const collaborationSessionsRelations = relations(collaborationSessions, ({ one }) => ({
+  obituary: one(obituaries, {
+    fields: [collaborationSessions.obituaryId],
+    references: [obituaries.id],
   }),
 }));
 
@@ -214,6 +249,16 @@ export const insertFinalSpaceImageSchema = createInsertSchema(finalSpaceImages).
   createdAt: true,
 });
 
+export const insertObituaryCollaboratorSchema = createInsertSchema(obituaryCollaborators).omit({
+  id: true,
+  invitedAt: true,
+});
+
+export const insertCollaborationSessionSchema = createInsertSchema(collaborationSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -233,3 +278,7 @@ export type FinalSpaceComment = typeof finalSpaceComments.$inferSelect;
 export type InsertFinalSpaceComment = z.infer<typeof insertFinalSpaceCommentSchema>;
 export type FinalSpaceImage = typeof finalSpaceImages.$inferSelect;
 export type InsertFinalSpaceImage = z.infer<typeof insertFinalSpaceImageSchema>;
+export type ObituaryCollaborator = typeof obituaryCollaborators.$inferSelect;
+export type InsertObituaryCollaborator = z.infer<typeof insertObituaryCollaboratorSchema>;
+export type CollaborationSession = typeof collaborationSessions.$inferSelect;
+export type InsertCollaborationSession = z.infer<typeof insertCollaborationSessionSchema>;
