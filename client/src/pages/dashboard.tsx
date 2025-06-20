@@ -29,7 +29,7 @@ export default function Dashboard() {
   const { currentUser } = useContext(UserContext);
   const [location, setLocation] = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeSection, setActiveSection] = useState('obituaries');
+  const [activeSection, setActiveSection] = useState('prompts');
   const [activeCategory, setActiveCategory] = useState("basic");
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const { toast } = useToast();
@@ -707,33 +707,39 @@ export default function Dashboard() {
                             Upload obituary examples for AI context
                           </p>
                           <div className="flex justify-center">
-                            <label className="cursor-pointer">
+                            <div>
                               <input
                                 type="file"
                                 accept=".docx,.pdf"
                                 onChange={handleDocumentUpload}
                                 className="hidden"
                                 disabled={uploadingDocument}
+                                id={`file-upload-${template.id}`}
                               />
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={uploadingDocument}
-                                className="pointer-events-none"
-                              >
-                                {uploadingDocument ? (
-                                  <>
-                                    <i className="fas fa-spinner fa-spin mr-2"></i>
-                                    Uploading...
-                                  </>
-                                ) : (
-                                  <>
-                                    <i className="fas fa-upload mr-2"></i>
-                                    Choose File
-                                  </>
-                                )}
-                              </Button>
-                            </label>
+                              <label htmlFor={`file-upload-${template.id}`} className="cursor-pointer">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={uploadingDocument}
+                                  type="button"
+                                  asChild
+                                >
+                                  <span>
+                                    {uploadingDocument ? (
+                                      <>
+                                        <i className="fas fa-spinner fa-spin mr-2"></i>
+                                        Uploading...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <i className="fas fa-upload mr-2"></i>
+                                        Choose File
+                                      </>
+                                    )}
+                                  </span>
+                                </Button>
+                              </label>
+                            </div>
                           </div>
                           <p className="text-xs text-gray-500">
                             Supports .docx and .pdf files up to 10MB
