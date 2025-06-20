@@ -66,6 +66,8 @@ export const promptTemplates = pgTable("prompt_templates", {
   promptType: varchar("prompt_type", { length: 20 }).notNull(), // 'base' or 'revision'
   template: text("template").notNull(),
   description: text("description"),
+  contextDocument: text("context_document"), // Path to uploaded document
+  contextDocumentName: varchar("context_document_name", { length: 255 }), // Original filename
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

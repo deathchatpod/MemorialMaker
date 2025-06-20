@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateObituariesWithClaude, generateObituariesWithChatGPT, generateRevisedObituary, type ObituaryFormData } from "./services/ai";
 import { generateObituaryPDF } from "./services/pdf";
+import { processDocument, deleteDocument, formatDocumentForPrompt } from "./services/document";
 import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -19,6 +20,26 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error('Only image files are allowed'));
+    }
+  },
+});
+
+// Configure multer for document uploads (docx, pdf)
+const documentUpload = multer({
+  dest: 'uploads/documents/',
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+      'application/pdf' // .pdf
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only .docx and .pdf files are allowed'));
     }
   },
 });
@@ -354,6 +375,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedTemplate);
     } catch (error) {
       res.status(500).json({ message: "Failed to update prompt template" });
+    }
+  });
+
+  app.post("/api/prompt-templates/:id/upload-document", documentUpload.single('document'), async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No document file provided" });
+      }
+
+      // Get the existing template
+      const existingTemplate = await storage.getPromptTemplates();
+      const template = existingTemplate.find(t => t.id === id);
+      
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+
+      // Process the uploaded document
+      const processedDocument = await processDocument(req.file);
+      
+      // Delete old document if it exists
+      if (template.contextDocument) {
+        deleteDocument(template.contextDocument);
+      }
+
+      // Update the template with the new document
+      const updatedTemplate = await storage.updatePromptTemplate(id, {
+        contextDocument: processedDocument.filePath,
+        contextDocumentName: processedDocument.filename
+      });
+
+      res.json({
+        template: updatedTemplate,
+        documentText: processedDocument.text.substring(0, 500) + (processedDocument.text.length > 500 ? '...' : ''),
+        filename: processedDocument.filename
+      });
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to upload document" });
+    }
+  });
+
+  app.delete("/api/prompt-templates/:id/document", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Get the existing template
+      const existingTemplate = await storage.getPromptTemplates();
+      const template = existingTemplate.find(t => t.id === id);
+      
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+
+      // Delete the document file if it exists
+      if (template.contextDocument) {
+        deleteDocument(template.contextDocument);
+      }
+
+      // Update the template to remove document references
+      const updatedTemplate = await storage.updatePromptTemplate(id, {
+        contextDocument: null,
+        contextDocumentName: null
+      });
+
+      res.json(updatedTemplate);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to remove document" });
     }
   });
 
