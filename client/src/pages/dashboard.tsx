@@ -107,6 +107,13 @@ export default function Dashboard() {
       userTypes: ['user', 'admin']
     },
     {
+      id: 'finalspaces',
+      label: 'FinalSpaces',
+      icon: 'fas fa-heart',
+      userTypes: ['user', 'admin'],
+      href: '/final-spaces'
+    },
+    {
       id: 'questions',
       label: 'Obituary Questions',
       icon: 'fas fa-edit',
@@ -907,18 +914,32 @@ export default function Dashboard() {
           <ul className="space-y-2">
             {filteredMenuItems.map((item) => (
               <li key={item.id}>
-                <button
-                  onClick={() => handleSectionChange(item.id)}
-                  className={cn(
-                    "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                    activeSection === item.id
-                      ? "bg-primary text-white"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                  )}
-                >
-                  <i className={cn(item.icon, "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
-                  {!sidebarCollapsed && <span>{item.label}</span>}
-                </button>
+                {item.href ? (
+                  <Link href={item.href}>
+                    <button
+                      className={cn(
+                        "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                        "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                      )}
+                    >
+                      <i className={cn(item.icon, "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                      {!sidebarCollapsed && <span>{item.label}</span>}
+                    </button>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => handleSectionChange(item.id)}
+                    className={cn(
+                      "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                      activeSection === item.id
+                        ? "bg-primary text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <i className={cn(item.icon, "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                    {!sidebarCollapsed && <span>{item.label}</span>}
+                  </button>
+                )}
               </li>
             ))}
           </ul>
