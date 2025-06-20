@@ -600,9 +600,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/obituaries/completed", async (req, res) => {
     try {
       const userId = parseInt(req.query.userId as string);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
       const completedObituaries = await storage.getCompletedObituariesByUser(userId);
       res.json(completedObituaries);
     } catch (error) {
+      console.error('Error fetching completed obituaries:', error);
       res.status(500).json({ message: "Failed to fetch completed obituaries" });
     }
   });

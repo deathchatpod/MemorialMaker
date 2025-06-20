@@ -210,45 +210,43 @@ export default function FinalSpaces() {
                 />
               </div>
 
-              <Tabs defaultValue="settings" className="w-full">
-                <TabsList>
-                  <TabsTrigger value="settings">Privacy Settings</TabsTrigger>
-                  <TabsTrigger value="social">Social Media</TabsTrigger>
-                </TabsList>
-                <TabsContent value="settings" className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="isPublic"
-                      {...form.register("isPublic")}
-                      className="h-4 w-4"
-                    />
-                    <Label htmlFor="isPublic">Make this memorial space public</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="allowComments"
-                      {...form.register("allowComments")}
-                      className="h-4 w-4"
-                    />
-                    <Label htmlFor="allowComments">Allow public comments</Label>
-                  </div>
-                </TabsContent>
-                <TabsContent value="social" className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Add social media links to share memories (one per line)
-                  </p>
-                  <Textarea
-                    placeholder="https://facebook.com/memorial-page&#10;https://instagram.com/memories"
-                    onChange={(e) => {
-                      const links = e.target.value.split('\n').filter(link => link.trim());
-                      form.setValue("socialMediaLinks", links);
-                    }}
-                    rows={3}
+              <div>
+                <Label htmlFor="socialMediaLinks">Social Media Links</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Add social media links to share memories (one per line)
+                </p>
+                <Textarea
+                  id="socialMediaLinks"
+                  placeholder="https://facebook.com/memorial-page&#10;https://instagram.com/memories"
+                  onChange={(e) => {
+                    const links = e.target.value.split('\n').filter(link => link.trim());
+                    form.setValue("socialMediaLinks", links);
+                  }}
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Privacy Settings</Label>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isPublic"
+                    {...form.register("isPublic")}
+                    className="h-4 w-4"
                   />
-                </TabsContent>
-              </Tabs>
+                  <Label htmlFor="isPublic">Make this memorial space public</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="allowComments"
+                    {...form.register("allowComments")}
+                    className="h-4 w-4"
+                  />
+                  <Label htmlFor="allowComments">Allow public comments</Label>
+                </div>
+              </div>
 
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
