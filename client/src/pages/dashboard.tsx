@@ -528,11 +528,11 @@ export default function Dashboard() {
         if (!file) return;
 
         // Validate file type
-        const allowedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf'];
+        const allowedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         if (!allowedTypes.includes(file.type)) {
           toast({
             title: "Error",
-            description: "Only .docx and .pdf files are allowed.",
+            description: "Only .docx files are allowed.",
             variant: "destructive",
           });
           return;
@@ -710,7 +710,7 @@ export default function Dashboard() {
                             <div>
                               <input
                                 type="file"
-                                accept=".docx,.pdf"
+                                accept=".docx"
                                 onChange={handleDocumentUpload}
                                 className="hidden"
                                 disabled={uploadingDocument}
@@ -742,7 +742,7 @@ export default function Dashboard() {
                             </div>
                           </div>
                           <p className="text-xs text-gray-500">
-                            Supports .docx and .pdf files up to 10MB
+                            Supports .docx files up to 10MB
                           </p>
                         </div>
                       </div>

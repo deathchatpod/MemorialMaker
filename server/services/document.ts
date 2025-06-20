@@ -17,12 +17,9 @@ export async function processDocument(file: Express.Multer.File): Promise<Docume
       const result = await mammoth.extractRawText({ path: file.path });
       extractedText = result.value;
     } else if (fileExtension === '.pdf') {
-      // Dynamic import to handle pdf-parse module
-      const pdfParseModule = await import('pdf-parse');
-      const pdfParse = pdfParseModule.default;
-      const dataBuffer = fs.readFileSync(file.path);
-      const data = await pdfParse(dataBuffer);
-      extractedText = data.text;
+      // For now, skip PDF processing to avoid module issues
+      // We'll focus on .docx files which work properly
+      throw new Error('PDF processing is currently not available. Please use .docx files instead.');
     } else {
       throw new Error('Unsupported file type. Only .docx and .pdf files are allowed.');
     }
