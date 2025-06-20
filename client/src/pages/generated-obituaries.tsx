@@ -336,20 +336,58 @@ export default function GeneratedObituaries() {
       {/* Feedback Summary & Actions */}
       <Card className="mb-8">
         <CardContent className="p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Your Feedback</h3>
-          <div className="space-y-3">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Feedback</h3>
+          <div className="space-y-4">
             <div className="text-sm text-gray-600">
-              Select text in the obituaries above to mark what you like or want to change. Your feedback will be used to create refined versions.
+              Select text in the obituaries above to mark what you like or want to change. Feedback will be used to create refined versions.
             </div>
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center">
+            
+            {/* Liked Phrases */}
+            <div>
+              <div className="flex items-center mb-2">
                 <span className="text-sm font-medium text-green-600 mr-2">Liked phrases:</span>
                 <Badge variant="secondary">{feedbackCounts.liked} selected</Badge>
               </div>
-              <div className="flex items-center">
+              {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'liked').length > 0 ? (
+                <div className="space-y-2">
+                  {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'liked').map((feedback, index) => (
+                    <div key={index} className="bg-green-50 border border-green-200 rounded p-2">
+                      <div className="text-sm text-green-800">"{feedback.selectedText}"</div>
+                      {feedback.collaboratorName && (
+                        <div className="text-xs text-green-600 mt-1">
+                          — {feedback.collaboratorName}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500">No liked phrases selected yet</div>
+              )}
+            </div>
+
+            {/* Want to Change Phrases */}
+            <div>
+              <div className="flex items-center mb-2">
                 <span className="text-sm font-medium text-red-600 mr-2">Want to change:</span>
                 <Badge variant="secondary">{feedbackCounts.disliked} selected</Badge>
               </div>
+              {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'disliked').length > 0 ? (
+                <div className="space-y-2">
+                  {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'disliked').map((feedback, index) => (
+                    <div key={index} className="bg-red-50 border border-red-200 rounded p-2">
+                      <div className="text-sm text-red-800">"{feedback.selectedText}"</div>
+                      {feedback.collaboratorName && (
+                        <div className="text-xs text-red-600 mt-1">
+                          — {feedback.collaboratorName}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500">No phrases marked for change yet</div>
+              )}
             </div>
           </div>
         </CardContent>
