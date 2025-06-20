@@ -31,6 +31,7 @@ function Router() {
       <Route path="/admin/questions" component={QuestionManagement} />
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
+      <Route path="/collaborate/:uuid" component={Collaborate} />
       <Route component={NotFound} />
     </Switch>
   );

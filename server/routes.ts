@@ -202,6 +202,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/generated-obituaries/:id/feedback", async (req, res) => {
+    try {
+      const generatedObituaryId = parseInt(req.params.id);
+      const validatedData = insertTextFeedbackSchema.parse({
+        ...req.body,
+        generatedObituaryId
+      });
+      const feedback = await storage.createTextFeedback(validatedData);
+      res.json(feedback);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to save feedback" });
+    }
+  });
+
   app.get("/api/generated-obituaries/:id/feedback", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
