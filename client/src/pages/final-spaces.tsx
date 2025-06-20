@@ -64,14 +64,14 @@ export default function FinalSpaces() {
       await createFinalSpace.mutateAsync(data);
       toast({
         title: "Success",
-        description: "Memorial space created successfully"
+        description: "FinalSpace created successfully"
       });
       setIsCreateDialogOpen(false);
       form.reset();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create memorial space",
+        description: "Failed to create FinalSpace",
         variant: "destructive"
       });
     }
@@ -83,12 +83,12 @@ export default function FinalSpaces() {
         await deleteFinalSpace.mutateAsync(id);
         toast({
           title: "Success",
-          description: "Memorial space deleted successfully"
+          description: "FinalSpace deleted successfully"
         });
       } catch (error) {
         toast({
           title: "Error",
-          description: "Failed to delete memorial space",
+          description: "Failed to delete FinalSpace",
           variant: "destructive"
         });
       }
@@ -133,12 +133,12 @@ export default function FinalSpaces() {
           <DialogTrigger asChild>
             <Button>
               <Heart className="mr-2 h-4 w-4" />
-              Create Memorial Space
+              Create FinalSpace
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Create Memorial Space</DialogTitle>
+              <DialogTitle>Create FinalSpace</DialogTitle>
             </DialogHeader>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -253,7 +253,7 @@ export default function FinalSpaces() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={createFinalSpace.isPending}>
-                  {createFinalSpace.isPending ? "Creating..." : "Create Memorial Space"}
+                  {createFinalSpace.isPending ? "Creating..." : "Create FinalSpace"}
                 </Button>
               </div>
             </form>
@@ -350,12 +350,12 @@ export default function FinalSpaces() {
       ) : (
         <div className="text-center py-12">
           <Heart className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Memorial Spaces Yet</h3>
+          <h3 className="text-lg font-semibold mb-2">No FinalSpaces Yet</h3>
           <p className="text-muted-foreground mb-4">
-            Create your first memorial space to honor a loved one
+            Create your first FinalSpace to honor a loved one
           </p>
           <Button onClick={() => setIsCreateDialogOpen(true)}>
-            Create Memorial Space
+            Create FinalSpace
           </Button>
         </div>
       )}
