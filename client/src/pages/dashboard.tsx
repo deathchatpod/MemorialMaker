@@ -54,6 +54,9 @@ export default function Dashboard() {
     enabled: activeSection === 'questions',
   });
 
+  const { data: promptTemplates = [], isLoading: promptsLoading } = usePromptTemplates();
+  const updatePromptTemplateMutation = useUpdatePromptTemplate();
+
   const updateQuestionMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<Question> }) => {
       return await apiRequest('PUT', `/api/questions/${id}`, data);
@@ -107,6 +110,12 @@ export default function Dashboard() {
       id: 'questions',
       label: 'Obituary Questions',
       icon: 'fas fa-edit',
+      userTypes: ['admin']
+    },
+    {
+      id: 'prompts',
+      label: 'Prompt Templates',
+      icon: 'fas fa-code',
       userTypes: ['admin']
     }
   ];
@@ -486,6 +495,190 @@ export default function Dashboard() {
     );
   };
 
+  const renderPromptTemplatesSection = () => {
+    const platforms = ['claude', 'chatgpt'];
+    const promptTypes = ['base', 'revision'];
+
+    const PromptTemplateEditor = ({ template }: { template: PromptTemplate }) => {
+      const [isEditing, setIsEditing] = useState(false);
+      const [templateContent, setTemplateContent] = useState(template.template);
+
+      const handleSave = () => {
+        updatePromptTemplateMutation.mutate({
+          id: template.id,
+          data: { template: templateContent }
+        });
+        setIsEditing(false);
+        toast({
+          title: "Success",
+          description: "Prompt template updated successfully.",
+        });
+      };
+
+      const variableExamples = [
+        { name: '{{fullName}}', description: 'Full name of the deceased' },
+        { name: '{{age}}', description: 'Age at death' },
+        { name: '{{tone}}', description: 'Tone style (traditional, celebratory, etc.)' },
+        { name: '{{ageCategory}}', description: 'Age category (child, teenager, adult, senior)' },
+        { name: '{{dateOfBirth}}', description: 'Date of birth' },
+        { name: '{{dateOfDeath}}', description: 'Date of death' },
+        { name: '{{location}}', description: 'Location information' },
+        { name: '{{education}}', description: 'Educational background' },
+        { name: '{{career}}', description: 'Career information' },
+        { name: '{{achievements}}', description: 'Notable achievements' },
+        { name: '{{family}}', description: 'Family information' },
+        { name: '{{traits}}', description: 'Personality traits' },
+        { name: '{{hobbies}}', description: 'Hobbies and interests' },
+        { name: '{{religion}}', description: 'Religious information' },
+        { name: '{{specialNotes}}', description: 'Special notes or requests' }
+      ];
+
+      if (isEditing) {
+        return (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Edit {template.name}</span>
+                <div className="flex space-x-2">
+                  <Button variant="outline" onClick={() => setIsEditing(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSave} disabled={updatePromptTemplateMutation.isPending}>
+                    {updatePromptTemplateMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <Label htmlFor="template-content">Prompt Template</Label>
+                  <Textarea
+                    id="template-content"
+                    value={templateContent}
+                    onChange={(e) => setTemplateContent(e.target.value)}
+                    className="min-h-96 font-mono text-sm"
+                    placeholder="Enter your prompt template with variables..."
+                  />
+                </div>
+                
+                <div className="lg:col-span-1">
+                  <Label className="text-sm font-medium">Available Variables</Label>
+                  <div className="mt-2 space-y-2 max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-lg">
+                    {variableExamples.map((variable, idx) => (
+                      <div key={idx} className="text-xs">
+                        <code className="bg-blue-100 text-blue-800 px-1 py-0.5 rounded font-mono">
+                          {variable.name}
+                        </code>
+                        <p className="text-gray-600 mt-1">{variable.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      }
+
+      return (
+        <Card className="mb-4">
+          <CardContent className="pt-4">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <h4 className="font-medium text-gray-900">{template.name}</h4>
+                  <Badge variant="secondary" className="capitalize">
+                    {template.platform}
+                  </Badge>
+                  <Badge variant="outline" className="capitalize">
+                    {template.promptType}
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">{template.description}</p>
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">
+                    {template.template.length > 200 
+                      ? template.template.substring(0, 200) + '...' 
+                      : template.template
+                    }
+                  </pre>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="ml-4"
+              >
+                <i className="fas fa-edit mr-2"></i>
+                Edit
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="mb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">AI Prompt Templates</h3>
+          <p className="text-gray-600 text-sm">
+            Edit the base prompts and revision prompts sent to Claude and ChatGPT for obituary generation.
+            Use variables like {`{{fullName}}`}, {`{{age}}`}, {`{{tone}}`} to personalize the prompts.
+          </p>
+        </div>
+
+        {promptsLoading ? (
+          <div className="p-8 text-center text-gray-500">
+            <i className="fas fa-spinner fa-spin mr-2"></i>
+            Loading prompt templates...
+          </div>
+        ) : promptTemplates.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            <i className="fas fa-code text-4xl mb-4 text-gray-300"></i>
+            <p className="text-lg font-medium mb-2">No prompt templates found</p>
+            <p className="text-sm">Default templates should be automatically created.</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {platforms.map(platform => (
+              <div key={platform} className="space-y-4">
+                <h4 className="text-md font-medium text-gray-900 capitalize flex items-center">
+                  <i className={`fas ${platform === 'claude' ? 'fa-robot' : 'fa-brain'} mr-2`}></i>
+                  {platform} AI Prompts
+                </h4>
+                
+                {promptTypes.map(promptType => {
+                  const template = promptTemplates.find(
+                    t => t.platform === platform && t.promptType === promptType
+                  );
+                  
+                  if (!template) {
+                    return (
+                      <Card key={promptType} className="mb-4">
+                        <CardContent className="pt-4">
+                          <div className="text-center text-gray-500 py-4">
+                            <p>No {promptType} template found for {platform}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  }
+                  
+                  return (
+                    <PromptTemplateEditor key={template.id} template={template} />
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -566,20 +759,22 @@ export default function Dashboard() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
               <h1 className="text-2xl font-semibold text-gray-900">
-                {activeSection === 'obituaries' ? 'Obituary Generator' : 'Obituary Questions'}
+                {activeSection === 'obituaries' && 'Obituary Generator'}
+                {activeSection === 'questions' && 'Obituary Questions'}
+                {activeSection === 'prompts' && 'Prompt Templates'}
               </h1>
               <p className="text-gray-600 mt-1">
-                {activeSection === 'obituaries' 
-                  ? (currentUser.userType === 'admin' 
-                      ? 'All obituary creations across users'
-                      : 'Your obituary creations and history')
-                  : 'Manage form questions and answer options'
-                }
+                {activeSection === 'obituaries' && (currentUser.userType === 'admin' 
+                  ? 'All obituary creations across users'
+                  : 'Your obituary creations and history')}
+                {activeSection === 'questions' && 'Manage form questions and answer options'}
+                {activeSection === 'prompts' && 'Edit AI prompts sent to Claude and ChatGPT'}
               </p>
             </div>
 
             {activeSection === 'obituaries' && renderObituariesSection()}
             {activeSection === 'questions' && renderQuestionsSection()}
+            {activeSection === 'prompts' && renderPromptTemplatesSection()}
           </div>
         </main>
       </div>
