@@ -1,9 +1,9 @@
 import { 
-  users, obituaries, generatedObituaries, textFeedback, questions,
+  users, obituaries, generatedObituaries, textFeedback, questions, promptTemplates,
   type User, type InsertUser, type Obituary, type InsertObituary,
   type GeneratedObituary, type InsertGeneratedObituary,
   type TextFeedback, type InsertTextFeedback,
-  type Question, type InsertQuestion
+  type Question, type InsertQuestion, type PromptTemplate, type InsertPromptTemplate
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -38,6 +38,13 @@ export interface IStorage {
   createQuestion(question: InsertQuestion): Promise<Question>;
   updateQuestion(id: number, question: Partial<Question>): Promise<Question>;
   deleteQuestion(id: number): Promise<void>;
+  
+  // Prompt Templates
+  getPromptTemplates(): Promise<PromptTemplate[]>;
+  getPromptTemplate(platform: string, promptType: string): Promise<PromptTemplate | undefined>;
+  createPromptTemplate(template: InsertPromptTemplate): Promise<PromptTemplate>;
+  updatePromptTemplate(id: number, template: Partial<PromptTemplate>): Promise<PromptTemplate>;
+  deletePromptTemplate(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
