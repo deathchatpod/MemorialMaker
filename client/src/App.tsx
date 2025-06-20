@@ -10,6 +10,7 @@ import GeneratedObituaries from "@/pages/generated-obituaries";
 import QuestionManagement from "@/pages/question-management";
 import FinalSpaces from "@/pages/final-spaces";
 import CreateFinalSpace from "@/pages/create-final-space";
+import Collaborate from "@/pages/collaborate";
 import NotFound from "@/pages/not-found";
 
 // User context for switching between user types

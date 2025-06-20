@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 
 export function useObituaryCollaborators(obituaryId: number) {
   return useQuery({
     queryKey: ['/api/obituaries', obituaryId, 'collaborators'],
-    queryFn: () => apiRequest(`/api/obituaries/${obituaryId}/collaborators`),
+    queryFn: async () => {
+      const response = await fetch(`/api/obituaries/${obituaryId}/collaborators`);
+      if (!response.ok) throw new Error('Failed to fetch collaborators');
+      return response.json();
+    },
     enabled: obituaryId > 0,
   });
 }
@@ -14,10 +17,15 @@ export function useAddCollaborator() {
   
   return useMutation({
     mutationFn: async ({ obituaryId, email }: { obituaryId: number; email: string }) => {
-      return apiRequest(`/api/obituaries/${obituaryId}/collaborators`, {
+      const response = await fetch(`/api/obituaries/${obituaryId}/collaborators`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ email })
       });
+      if (!response.ok) throw new Error('Failed to add collaborator');
+      return response.json();
     },
     onSuccess: (_, { obituaryId }) => {
       queryClient.invalidateQueries({ 
@@ -32,9 +40,11 @@ export function useRemoveCollaborator() {
   
   return useMutation({
     mutationFn: async ({ collaboratorId, obituaryId }: { collaboratorId: number; obituaryId: number }) => {
-      return apiRequest(`/api/obituaries/collaborators/${collaboratorId}`, {
+      const response = await fetch(`/api/obituaries/collaborators/${collaboratorId}`, {
         method: 'DELETE'
       });
+      if (!response.ok) throw new Error('Failed to remove collaborator');
+      return response.json();
     },
     onSuccess: (_, { obituaryId }) => {
       queryClient.invalidateQueries({ 
@@ -47,7 +57,11 @@ export function useRemoveCollaborator() {
 export function useCollaborationSession(uuid: string) {
   return useQuery({
     queryKey: ['/api/collaborate', uuid],
-    queryFn: () => apiRequest(`/api/collaborate/${uuid}`),
+    queryFn: async () => {
+      const response = await fetch(`/api/collaborate/${uuid}`);
+      if (!response.ok) throw new Error('Failed to fetch collaboration session');
+      return response.json();
+    },
     enabled: !!uuid,
   });
 }
@@ -57,10 +71,15 @@ export function useIdentifyCollaborator() {
   
   return useMutation({
     mutationFn: async ({ uuid, name }: { uuid: string; name: string }) => {
-      return apiRequest(`/api/collaborate/${uuid}/identify`, {
+      const response = await fetch(`/api/collaborate/${uuid}/identify`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ name })
       });
+      if (!response.ok) throw new Error('Failed to identify collaborator');
+      return response.json();
     },
     onSuccess: (_, { uuid }) => {
       queryClient.invalidateQueries({ 

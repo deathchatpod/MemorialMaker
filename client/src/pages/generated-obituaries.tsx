@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import TextHighlighter from "@/components/text-highlighter";
 import ObituaryEditor from "@/components/obituary-editor";
+import CollaborationManager from "@/components/collaboration-manager";
 
 interface GeneratedObituary {
   id: number;
@@ -23,6 +24,8 @@ interface GeneratedObituary {
 interface TextFeedback {
   selectedText: string;
   feedbackType: 'liked' | 'disliked';
+  collaboratorName?: string;
+  collaboratorEmail?: string;
 }
 
 export default function GeneratedObituaries() {
@@ -197,6 +200,11 @@ export default function GeneratedObituaries() {
         <p className="text-gray-600 mt-1">
           Review the AI-generated obituaries and select text you like or dislike for refinement
         </p>
+      </div>
+
+      {/* Collaboration Manager */}
+      <div className="mb-8">
+        <CollaborationManager obituaryId={obituaryId} />
       </div>
 
       {/* AI Service Tabs */}
