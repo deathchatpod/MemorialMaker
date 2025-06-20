@@ -153,6 +153,7 @@ export default function FinalSpaces() {
                   // Auto-fill fields if obituary is selected
                   if (value === "1") {
                     form.setValue("personName", "mike bologna");
+                    form.setValue("dateOfBirth", "1950-01-15");
                     form.setValue("dateOfDeath", "2025-06-20");
                   } else if (completedObituaries?.find) {
                     const selected = completedObituaries.find((obit: any) => obit.id.toString() === value);
