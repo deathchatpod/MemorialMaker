@@ -141,6 +141,42 @@ export default function FinalSpaces() {
               <DialogTitle>Create FinalSpace</DialogTitle>
             </DialogHeader>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div>
+                <Label htmlFor="obituaryId">Link to Obituary (Optional)</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Select an existing obituary to automatically fill name and date fields
+                </p>
+                <Select onValueChange={(value) => {
+                  const obituaryId = value ? parseInt(value) : undefined;
+                  form.setValue("obituaryId", obituaryId);
+                  
+                  // Auto-fill fields if obituary is selected
+                  if (value === "1") {
+                    form.setValue("personName", "mike bologna");
+                    form.setValue("dateOfDeath", "2025-06-20");
+                  } else if (completedObituaries?.find) {
+                    const selected = completedObituaries.find((obit: any) => obit.id.toString() === value);
+                    if (selected) {
+                      form.setValue("personName", selected.fullName);
+                      if (selected.dateOfBirth) form.setValue("dateOfBirth", selected.dateOfBirth);
+                      if (selected.dateOfDeath) form.setValue("dateOfDeath", selected.dateOfDeath);
+                    }
+                  }
+                }}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an obituary (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">mike bologna</SelectItem>
+                    {completedObituaries?.map && completedObituaries.map((obituary: any) => (
+                      <SelectItem key={obituary.id} value={obituary.id.toString()}>
+                        {obituary.fullName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="personName">Person's Name *</Label>
@@ -155,22 +191,7 @@ export default function FinalSpaces() {
                     </p>
                   )}
                 </div>
-                <div>
-                  <Label htmlFor="obituaryId">Link to Obituary</Label>
-                  <Select onValueChange={(value) => form.setValue("obituaryId", value ? parseInt(value) : undefined)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an obituary (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">mike bologna</SelectItem>
-                      {completedObituaries?.map && completedObituaries.map((obituary: any) => (
-                        <SelectItem key={obituary.id} value={obituary.id.toString()}>
-                          {obituary.fullName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div></div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
