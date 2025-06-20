@@ -125,7 +125,7 @@ export default function FinalSpaces() {
           <div>
             <h1 className="text-3xl font-bold">FinalSpaces</h1>
             <p className="text-muted-foreground mt-1">
-              Create and manage memorial spaces to honor loved ones
+              Create and manage FinalSpaces to honor loved ones
             </p>
           </div>
         </div>
