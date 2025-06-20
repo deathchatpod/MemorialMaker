@@ -351,13 +351,18 @@ export default function GeneratedObituaries() {
               {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'liked').length > 0 ? (
                 <div className="space-y-2">
                   {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'liked').map((feedback, index) => (
-                    <div key={index} className="bg-green-50 border border-green-200 rounded p-2">
-                      <div className="text-sm text-green-800">"{feedback.selectedText}"</div>
-                      {feedback.collaboratorName && (
-                        <div className="text-xs text-green-600 mt-1">
-                          — {feedback.collaboratorName}
+                    <div key={index} className="bg-green-50 border border-green-200 rounded p-3">
+                      <div className="flex justify-between items-start mb-1">
+                        <div className="text-sm font-medium text-green-700">
+                          {feedback.collaboratorName ? feedback.collaboratorName : 'You'}
                         </div>
-                      )}
+                        <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                          Liked
+                        </div>
+                      </div>
+                      <div className="text-sm text-green-800 italic">
+                        "{feedback.selectedText}"
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -375,13 +380,18 @@ export default function GeneratedObituaries() {
               {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'disliked').length > 0 ? (
                 <div className="space-y-2">
                   {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'disliked').map((feedback, index) => (
-                    <div key={index} className="bg-red-50 border border-red-200 rounded p-2">
-                      <div className="text-sm text-red-800">"{feedback.selectedText}"</div>
-                      {feedback.collaboratorName && (
-                        <div className="text-xs text-red-600 mt-1">
-                          — {feedback.collaboratorName}
+                    <div key={index} className="bg-red-50 border border-red-200 rounded p-3">
+                      <div className="flex justify-between items-start mb-1">
+                        <div className="text-sm font-medium text-red-700">
+                          {feedback.collaboratorName ? feedback.collaboratorName : 'You'}
                         </div>
-                      )}
+                        <div className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">
+                          Want to change
+                        </div>
+                      </div>
+                      <div className="text-sm text-red-800 italic">
+                        "{feedback.selectedText}"
+                      </div>
                     </div>
                   ))}
                 </div>
