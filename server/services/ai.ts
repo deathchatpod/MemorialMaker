@@ -1,5 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from "openai";
+import { storage } from '../storage';
+import { formatDocumentForPrompt } from './document';
+import type { PromptTemplate } from '@shared/schema';
+import fs from 'fs';
 
 // the newest Anthropic model is "claude-sonnet-4-20250514" which was released May 14, 2025. Use this by default unless user has already selected claude-3-7-sonnet-20250219
 const anthropic = new Anthropic({
@@ -155,8 +159,52 @@ function createObituaryPrompt(formData: ObituaryFormData, isRevision: boolean = 
   return prompt;
 }
 
+async function getTemplateWithContext(platform: string, promptType: string): Promise<string> {
+  const template = await storage.getPromptTemplate(platform, promptType);
+  let prompt = template?.template || createObituaryPrompt({} as ObituaryFormData);
+  
+  // Add document context if available
+  if (template?.contextDocument && template?.contextDocumentName) {
+    try {
+      if (fs.existsSync(template.contextDocument)) {
+        const documentText = fs.readFileSync(template.contextDocument, 'utf-8');
+        prompt += formatDocumentForPrompt(documentText, template.contextDocumentName);
+      }
+    } catch (error) {
+      console.error('Error reading context document:', error);
+    }
+  }
+  
+  return prompt;
+}
+
+function substituteTemplateVariables(template: string, formData: ObituaryFormData): string {
+  let result = template;
+  
+  // Replace template variables with actual data
+  result = result.replace(/\{\{fullName\}\}/g, formData.fullName || '');
+  result = result.replace(/\{\{age\}\}/g, formData.age?.toString() || '');
+  result = result.replace(/\{\{dateOfBirth\}\}/g, formData.dateOfBirth || '');
+  result = result.replace(/\{\{dateOfDeath\}\}/g, formData.dateOfDeath || '');
+  result = result.replace(/\{\{location\}\}/g, formData.location || '');
+  result = result.replace(/\{\{tone\}\}/g, formData.tone || '');
+  result = result.replace(/\{\{ageCategory\}\}/g, formData.ageCategory || '');
+  result = result.replace(/\{\{jobTitle\}\}/g, formData.jobTitle || '');
+  result = result.replace(/\{\{company\}\}/g, formData.company || '');
+  result = result.replace(/\{\{spouseName\}\}/g, formData.spouseName || '');
+  result = result.replace(/\{\{education\}\}/g, formData.higherEducation || formData.highSchool || '');
+  result = result.replace(/\{\{hobbies\}\}/g, formData.hobbies?.join(', ') || '');
+  result = result.replace(/\{\{traits\}\}/g, formData.traits?.join(', ') || '');
+  result = result.replace(/\{\{achievements\}\}/g, formData.achievements || '');
+  result = result.replace(/\{\{religion\}\}/g, formData.religion || '');
+  result = result.replace(/\{\{specialNotes\}\}/g, formData.specialNotes || '');
+  
+  return result;
+}
+
 export async function generateObituariesWithClaude(formData: ObituaryFormData): Promise<GeneratedObituaryResult[]> {
-  const basePrompt = createObituaryPrompt(formData);
+  const templatePrompt = await getTemplateWithContext('claude', 'base');
+  const basePrompt = substituteTemplateVariables(templatePrompt, formData);
   const results: GeneratedObituaryResult[] = [];
   
   const variations = [
@@ -194,7 +242,8 @@ export async function generateObituariesWithClaude(formData: ObituaryFormData): 
 }
 
 export async function generateObituariesWithChatGPT(formData: ObituaryFormData): Promise<GeneratedObituaryResult[]> {
-  const basePrompt = createObituaryPrompt(formData);
+  const templatePrompt = await getTemplateWithContext('chatgpt', 'base');
+  const basePrompt = substituteTemplateVariables(templatePrompt, formData);
   const results: GeneratedObituaryResult[] = [];
   
   const variations = [
