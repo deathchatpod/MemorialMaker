@@ -502,6 +502,14 @@ export default function Dashboard() {
     const PromptTemplateEditor = ({ template }: { template: PromptTemplate }) => {
       const [isEditing, setIsEditing] = useState(false);
       const [templateContent, setTemplateContent] = useState(template.template);
+      const [uploadingDocument, setUploadingDocument] = useState(false);
+      const [documentInfo, setDocumentInfo] = useState<{
+        filename?: string;
+        preview?: string;
+      }>({
+        filename: template.contextDocumentName || undefined,
+        preview: undefined
+      });
 
       const handleSave = () => {
         updatePromptTemplateMutation.mutate({
@@ -513,6 +521,101 @@ export default function Dashboard() {
           title: "Success",
           description: "Prompt template updated successfully.",
         });
+      };
+
+      const handleDocumentUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // Validate file type
+        const allowedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf'];
+        if (!allowedTypes.includes(file.type)) {
+          toast({
+            title: "Error",
+            description: "Only .docx and .pdf files are allowed.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Validate file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+          toast({
+            title: "Error",
+            description: "File size must be less than 10MB.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setUploadingDocument(true);
+        
+        try {
+          const formData = new FormData();
+          formData.append('document', file);
+
+          const response = await fetch(`/api/prompt-templates/${template.id}/upload-document`, {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error('Upload failed');
+          }
+
+          const result = await response.json();
+          
+          setDocumentInfo({
+            filename: result.filename,
+            preview: result.documentText
+          });
+
+          toast({
+            title: "Success",
+            description: `Document "${result.filename}" uploaded successfully and will be used as context.`,
+          });
+
+          // Refresh the templates to show updated data
+          queryClient.invalidateQueries({ queryKey: ["/api/prompt-templates"] });
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to upload document. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setUploadingDocument(false);
+          // Reset the input
+          event.target.value = '';
+        }
+      };
+
+      const handleRemoveDocument = async () => {
+        try {
+          const response = await fetch(`/api/prompt-templates/${template.id}/document`, {
+            method: 'DELETE',
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to remove document');
+          }
+
+          setDocumentInfo({ filename: undefined, preview: undefined });
+
+          toast({
+            title: "Success",
+            description: "Document removed successfully.",
+          });
+
+          // Refresh the templates
+          queryClient.invalidateQueries({ queryKey: ["/api/prompt-templates"] });
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to remove document. Please try again.",
+            variant: "destructive",
+          });
+        }
       };
 
       const variableExamples = [
@@ -551,15 +654,94 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <Label htmlFor="template-content">Prompt Template</Label>
-                  <Textarea
-                    id="template-content"
-                    value={templateContent}
-                    onChange={(e) => setTemplateContent(e.target.value)}
-                    className="min-h-96 font-mono text-sm"
-                    placeholder="Enter your prompt template with variables..."
-                  />
+                <div className="lg:col-span-2 space-y-6">
+                  <div>
+                    <Label htmlFor="template-content">Prompt Template</Label>
+                    <Textarea
+                      id="template-content"
+                      value={templateContent}
+                      onChange={(e) => setTemplateContent(e.target.value)}
+                      className="min-h-96 font-mono text-sm"
+                      placeholder="Enter your prompt template with variables..."
+                    />
+                  </div>
+
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-medium">Context Document (Optional)</Label>
+                    <p className="text-xs text-gray-600 mt-1 mb-3">
+                      Upload a .docx or .pdf file with obituary examples to provide context for the AI. 
+                      This will only be used for base prompts to help the AI understand the desired style and format.
+                    </p>
+                    
+                    {documentInfo.filename || template.contextDocumentName ? (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <i className="fas fa-file-alt text-green-600"></i>
+                            <span className="text-sm font-medium text-green-800">
+                              {documentInfo.filename || template.contextDocumentName}
+                            </span>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleRemoveDocument}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <i className="fas fa-times mr-1"></i>
+                            Remove
+                          </Button>
+                        </div>
+                        {documentInfo.preview && (
+                          <div className="mt-3 p-3 bg-white rounded border">
+                            <p className="text-xs text-gray-600 mb-2">Document preview:</p>
+                            <p className="text-xs text-gray-700 font-mono">{documentInfo.preview}</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                        <i className="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
+                        <div className="space-y-2">
+                          <p className="text-sm text-gray-600">
+                            Upload obituary examples for AI context
+                          </p>
+                          <div className="flex justify-center">
+                            <label className="cursor-pointer">
+                              <input
+                                type="file"
+                                accept=".docx,.pdf"
+                                onChange={handleDocumentUpload}
+                                className="hidden"
+                                disabled={uploadingDocument}
+                              />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={uploadingDocument}
+                                className="pointer-events-none"
+                              >
+                                {uploadingDocument ? (
+                                  <>
+                                    <i className="fas fa-spinner fa-spin mr-2"></i>
+                                    Uploading...
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="fas fa-upload mr-2"></i>
+                                    Choose File
+                                  </>
+                                )}
+                              </Button>
+                            </label>
+                          </div>
+                          <p className="text-xs text-gray-500">
+                            Supports .docx and .pdf files up to 10MB
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="lg:col-span-1">
@@ -596,7 +778,7 @@ export default function Dashboard() {
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-600 mb-3">{template.description}</p>
-                <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="bg-gray-50 p-3 rounded-lg mb-3">
                   <pre className="text-xs text-gray-700 whitespace-pre-wrap">
                     {template.template.length > 200 
                       ? template.template.substring(0, 200) + '...' 
@@ -604,6 +786,12 @@ export default function Dashboard() {
                     }
                   </pre>
                 </div>
+                {template.contextDocumentName && (
+                  <div className="flex items-center space-x-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
+                    <i className="fas fa-file-alt"></i>
+                    <span>Context document: {template.contextDocumentName}</span>
+                  </div>
+                )}
               </div>
               <Button
                 variant="outline"

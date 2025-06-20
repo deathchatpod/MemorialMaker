@@ -223,7 +223,9 @@ export async function generateObituariesWithClaude(formData: ObituaryFormData): 
         model: 'claude-sonnet-4-20250514',
       });
       
-      const content = Array.isArray(message.content) ? message.content[0].text : message.content;
+      const content = Array.isArray(message.content) ? 
+        (message.content[0].type === 'text' ? (message.content[0] as any).text : '') : 
+        message.content;
       
       results.push({
         content: content || '',
@@ -283,7 +285,28 @@ export async function generateRevisedObituary(
   feedback: { liked: string[]; disliked: string[] },
   aiProvider: 'claude' | 'chatgpt'
 ): Promise<GeneratedObituaryResult> {
-  const prompt = createObituaryPrompt(originalFormData, true, feedback);
+  // Use revision template if available, otherwise fall back to base template with revision instructions
+  let templatePrompt = await getTemplateWithContext(aiProvider, 'revision');
+  if (!templatePrompt || templatePrompt === createObituaryPrompt({} as ObituaryFormData)) {
+    templatePrompt = await getTemplateWithContext(aiProvider, 'base');
+  }
+  
+  const basePrompt = substituteTemplateVariables(templatePrompt, originalFormData);
+  
+  // Add revision-specific instructions
+  let prompt = basePrompt + "\n\n--- REVISION INSTRUCTIONS ---\n";
+  
+  if (feedback.liked.length > 0) {
+    prompt += "Please include similar language and themes to these phrases the family liked:\n";
+    feedback.liked.forEach(text => prompt += `- "${text}"\n`);
+  }
+  
+  if (feedback.disliked.length > 0) {
+    prompt += "Please avoid or rewrite content similar to these phrases the family disliked:\n";
+    feedback.disliked.forEach(text => prompt += `- "${text}"\n`);
+  }
+  
+  prompt += "\nPlease revise the obituary incorporating this feedback while maintaining the overall quality and tone.";
   
   try {
     if (aiProvider === 'claude') {
@@ -293,7 +316,9 @@ export async function generateRevisedObituary(
         model: 'claude-sonnet-4-20250514',
       });
       
-      const content = Array.isArray(message.content) ? message.content[0].text : message.content;
+      const content = Array.isArray(message.content) ? 
+        (message.content[0].type === 'text' ? (message.content[0] as any).text : '') : 
+        message.content;
       
       return {
         content: content || '',
