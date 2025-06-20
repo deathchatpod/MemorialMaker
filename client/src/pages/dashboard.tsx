@@ -1,10 +1,20 @@
-import { useContext } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { useContext, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link, useLocation } from "wouter";
 import { UserContext } from "@/App";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { Question } from "@shared/schema";
 
 interface Obituary {
   id: number;
@@ -16,6 +26,13 @@ interface Obituary {
 
 export default function Dashboard() {
   const { currentUser } = useContext(UserContext);
+  const [location, setLocation] = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [activeSection, setActiveSection] = useState('obituaries');
+  const [activeCategory, setActiveCategory] = useState("basic");
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: obituaries = [], isLoading } = useQuery<Obituary[]>({
     queryKey: ["/api/obituaries", currentUser.id, currentUser.userType],
@@ -23,6 +40,37 @@ export default function Dashboard() {
       const response = await fetch(`/api/obituaries?userId=${currentUser.id}&userType=${currentUser.userType}`);
       if (!response.ok) throw new Error('Failed to fetch obituaries');
       return response.json();
+    },
+  });
+
+  const { data: questions = [], isLoading: questionsLoading } = useQuery<Question[]>({
+    queryKey: ["/api/questions"],
+    queryFn: async () => {
+      const response = await fetch('/api/questions');
+      if (!response.ok) throw new Error('Failed to fetch questions');
+      return response.json();
+    },
+    enabled: activeSection === 'questions',
+  });
+
+  const updateQuestionMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<Question> }) => {
+      return await apiRequest('PUT', `/api/questions/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/questions"] });
+      setEditingQuestion(null);
+      toast({
+        title: "Success",
+        description: "Question updated successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update question.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -47,124 +95,496 @@ export default function Dashboard() {
     });
   };
 
-  return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900">Dashboard</h2>
-          <p className="text-gray-600 mt-1">
-            {currentUser.userType === 'admin' 
-              ? 'All obituary creations across users'
-              : 'Your obituary creations and history'
-            }
-          </p>
-        </div>
-        <Link href="/obituary/new">
-          <Button className="bg-primary text-white hover:bg-blue-700">
-            <i className="fas fa-plus mr-2"></i>
-            New Obituary
-          </Button>
-        </Link>
-      </div>
+  const menuItems = [
+    {
+      id: 'obituaries',
+      label: 'Obituary Generator',
+      icon: 'fas fa-file-alt',
+      userTypes: ['user', 'admin']
+    },
+    {
+      id: 'questions',
+      label: 'Obituary Questions',
+      icon: 'fas fa-edit',
+      userTypes: ['admin']
+    }
+  ];
 
-      {/* Admin Controls */}
-      {currentUser.userType === 'admin' && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <i className="fas fa-cog text-primary"></i>
-              <span className="font-medium text-gray-900">Admin Controls</span>
-            </div>
-            <Link href="/admin/questions">
-              <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-white">
-                <i className="fas fa-edit mr-2"></i>
-                Manage Questions
+  const filteredMenuItems = menuItems.filter(item => 
+    item.userTypes.includes(currentUser.userType)
+  );
+
+  const handleSectionChange = (sectionId: string) => {
+    setActiveSection(sectionId);
+  };
+
+  const renderObituariesSection = () => (
+    <Card>
+      <CardContent className="p-0">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium text-gray-900">Recent Obituaries</h3>
+            <Link href="/obituary/new">
+              <Button className="bg-primary text-white hover:bg-blue-700">
+                <i className="fas fa-plus mr-2"></i>
+                New Obituary
               </Button>
             </Link>
           </div>
         </div>
-      )}
-
-      {/* Obituaries Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Recent Obituaries</h3>
+        
+        {isLoading ? (
+          <div className="p-8 text-center text-gray-500">
+            <i className="fas fa-spinner fa-spin mr-2"></i>
+            Loading obituaries...
           </div>
-          
-          {isLoading ? (
-            <div className="p-8 text-center text-gray-500">
-              <i className="fas fa-spinner fa-spin mr-2"></i>
-              Loading obituaries...
-            </div>
-          ) : obituaries.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <i className="fas fa-file-alt text-4xl mb-4 text-gray-300"></i>
-              <p className="text-lg font-medium mb-2">No obituaries yet</p>
-              <p className="text-sm">Create your first obituary to get started.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date Created
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+        ) : obituaries.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            <i className="fas fa-file-alt text-4xl mb-4 text-gray-300"></i>
+            <p className="text-lg font-medium mb-2">No obituaries yet</p>
+            <p className="text-sm">Create your first obituary to get started.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Date Created
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {obituaries.map((obituary) => (
+                  <tr key={obituary.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {obituary.fullName}
+                      </div>
+                      {obituary.age && (
+                        <div className="text-sm text-gray-500">Age {obituary.age}</div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(obituary.createdAt)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(obituary.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
+                      {obituary.status === 'generated' || obituary.status === 'completed' ? (
+                        <Link href={`/obituary/${obituary.id}/generated`}>
+                          <button className="text-primary hover:text-blue-700">
+                            View
+                          </button>
+                        </Link>
+                      ) : (
+                        <Link href={`/obituary/new?id=${obituary.id}`}>
+                          <button className="text-primary hover:text-blue-700">
+                            Continue
+                          </button>
+                        </Link>
+                      )}
+                      <button className="text-gray-400 hover:text-gray-600">
+                        {obituary.status === 'completed' ? 'Download' : 'Delete'}
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {obituaries.map((obituary) => (
-                    <tr key={obituary.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {obituary.fullName}
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderQuestionsSection = () => {
+    const categories = Array.from(new Set(questions.map(q => q.category)));
+    const filteredQuestions = questions.filter(q => q.category === activeCategory);
+
+    const QuestionItem = ({ question }: { question: Question }) => {
+      const [isEditing, setIsEditing] = useState(false);
+      const [formData, setFormData] = useState({
+        questionText: question.questionText,
+        questionType: question.questionType,
+        isRequired: question.isRequired,
+        placeholder: question.placeholder || '',
+        options: (question.options as Array<{label: string, value: string, description?: string}>) || []
+      });
+
+      const handleSave = () => {
+        updateQuestionMutation.mutate({
+          id: question.id,
+          data: {
+            questionText: formData.questionText,
+            questionType: formData.questionType as any,
+            isRequired: formData.isRequired,
+            placeholder: formData.placeholder || null,
+            options: formData.options.length > 0 ? formData.options : null
+          }
+        });
+        setIsEditing(false);
+      };
+
+      const addOption = () => {
+        setFormData(prev => ({
+          ...prev,
+          options: [
+            ...prev.options,
+            { label: '', value: '', description: '' }
+          ]
+        }));
+      };
+
+      const updateOption = (index: number, field: string, value: string) => {
+        setFormData(prev => ({
+          ...prev,
+          options: prev.options.map((opt, i) => 
+            i === index ? { ...opt, [field]: value } : opt
+          )
+        }));
+      };
+
+      const removeOption = (index: number) => {
+        setFormData(prev => ({
+          ...prev,
+          options: prev.options.filter((_, i) => i !== index)
+        }));
+      };
+
+      if (isEditing) {
+        return (
+          <Card className="mb-4">
+            <CardHeader>
+              <CardTitle className="text-lg">Edit Question</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="questionText">Question Text</Label>
+                <Input
+                  id="questionText"
+                  value={formData.questionText}
+                  onChange={(e) => setFormData(prev => ({ ...prev, questionText: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="questionType">Question Type</Label>
+                <Select
+                  value={formData.questionType}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, questionType: value as any }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="text">Text Input</SelectItem>
+                    <SelectItem value="textarea">Text Area</SelectItem>
+                    <SelectItem value="number">Number Input</SelectItem>
+                    <SelectItem value="date">Date Input</SelectItem>
+                    <SelectItem value="radio">Radio Buttons</SelectItem>
+                    <SelectItem value="checkbox">Checkboxes</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="isRequired"
+                  checked={formData.isRequired}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isRequired: !!checked }))}
+                />
+                <Label htmlFor="isRequired">Required Field</Label>
+              </div>
+
+              <div>
+                <Label htmlFor="placeholder">Placeholder Text</Label>
+                <Input
+                  id="placeholder"
+                  value={formData.placeholder}
+                  onChange={(e) => setFormData(prev => ({ ...prev, placeholder: e.target.value }))}
+                  placeholder="Optional helper text"
+                />
+              </div>
+
+              {(formData.questionType === 'radio' || formData.questionType === 'checkbox') && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Answer Options</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={addOption}>
+                      <i className="fas fa-plus mr-2"></i>
+                      Add Option
+                    </Button>
+                  </div>
+                  
+                  {formData.options.map((option, index) => (
+                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-2 p-3 border rounded-lg">
+                      <div>
+                        <Label className="text-xs">Label</Label>
+                        <Input
+                          value={option.label}
+                          onChange={(e) => updateOption(index, 'label', e.target.value)}
+                          placeholder="Display text"
+                          size="sm"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Value</Label>
+                        <Input
+                          value={option.value}
+                          onChange={(e) => updateOption(index, 'value', e.target.value)}
+                          placeholder="Internal value"
+                          size="sm"
+                        />
+                      </div>
+                      <div className="flex items-end space-x-2">
+                        <div className="flex-1">
+                          <Label className="text-xs">Description</Label>
+                          <Input
+                            value={option.description || ''}
+                            onChange={(e) => updateOption(index, 'description', e.target.value)}
+                            placeholder="Optional"
+                            size="sm"
+                          />
                         </div>
-                        {obituary.age && (
-                          <div className="text-sm text-gray-500">Age {obituary.age}</div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatDate(obituary.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(obituary.status)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
-                        {obituary.status === 'generated' || obituary.status === 'completed' ? (
-                          <Link href={`/obituary/${obituary.id}/generated`}>
-                            <button className="text-primary hover:text-blue-700">
-                              View
-                            </button>
-                          </Link>
-                        ) : (
-                          <Link href={`/obituary/new?id=${obituary.id}`}>
-                            <button className="text-primary hover:text-blue-700">
-                              Continue
-                            </button>
-                          </Link>
-                        )}
-                        <button className="text-gray-400 hover:text-gray-600">
-                          {obituary.status === 'completed' ? 'Download' : 'Delete'}
-                        </button>
-                      </td>
-                    </tr>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeOption(index)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <i className="fas fa-trash"></i>
+                        </Button>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              )}
+
+              <div className="flex space-x-2 pt-4">
+                <Button onClick={handleSave} disabled={updateQuestionMutation.isPending}>
+                  {updateQuestionMutation.isPending ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin mr-2"></i>
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-save mr-2"></i>
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      }
+
+      return (
+        <Card className="mb-4">
+          <CardContent className="pt-4">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <h4 className="font-medium text-gray-900">{question.questionText}</h4>
+                  {question.isRequired && (
+                    <Badge variant="secondary" className="bg-red-100 text-red-800 text-xs">
+                      Required
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p><span className="font-medium">Type:</span> {question.questionType}</p>
+                  {question.placeholder && (
+                    <p><span className="font-medium">Placeholder:</span> {question.placeholder}</p>
+                  )}
+                  {question.options && question.options.length > 0 && (
+                    <div>
+                      <span className="font-medium">Options:</span>
+                      <ul className="list-disc list-inside ml-4 mt-1">
+                        {question.options.map((opt, idx) => (
+                          <li key={idx} className="text-sm">
+                            {opt.label} {opt.description && `(${opt.description})`}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="ml-4"
+              >
+                <i className="fas fa-edit mr-2"></i>
+                Edit
+              </Button>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </main>
+          </CardContent>
+        </Card>
+      );
+    };
+
+    return (
+      <div className="space-y-6">
+        <Tabs value={activeCategory} onValueChange={setActiveCategory}>
+          <TabsList className="grid w-full grid-cols-7">
+            {categories.map((category) => (
+              <TabsTrigger key={category} value={category} className="capitalize">
+                {category}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {categories.map((category) => (
+            <TabsContent key={category} value={category} className="mt-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium text-gray-900 capitalize mb-2">
+                  {category} Questions
+                </h3>
+                <p className="text-gray-600 text-sm">
+                  Edit questions and answer options that appear in the obituary form
+                </p>
+              </div>
+
+              {questionsLoading ? (
+                <div className="p-8 text-center text-gray-500">
+                  <i className="fas fa-spinner fa-spin mr-2"></i>
+                  Loading questions...
+                </div>
+              ) : filteredQuestions.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  <i className="fas fa-question-circle text-4xl mb-4 text-gray-300"></i>
+                  <p className="text-lg font-medium mb-2">No questions in this category</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {filteredQuestions.map((question) => (
+                    <QuestionItem key={question.id} question={question} />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className={cn(
+        "bg-white shadow-sm border-r border-gray-200 transition-all duration-300 flex flex-col",
+        sidebarCollapsed ? "w-16" : "w-64"
+      )}>
+        {/* Sidebar Header */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            {!sidebarCollapsed && (
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Dashboard</h2>
+                <p className="text-sm text-gray-600">
+                  {currentUser.userType === 'admin' ? 'Admin Panel' : 'User Panel'}
+                </p>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <i className={cn("fas", sidebarCollapsed ? "fa-chevron-right" : "fa-chevron-left")}></i>
+            </Button>
+          </div>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-2">
+            {filteredMenuItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => handleSectionChange(item.id)}
+                  className={cn(
+                    "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                    activeSection === item.id
+                      ? "bg-primary text-white"
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  )}
+                >
+                  <i className={cn(item.icon, "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                  {!sidebarCollapsed && <span>{item.label}</span>}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* User Info */}
+        <div className="p-4 border-t border-gray-200">
+          <div className={cn(
+            "flex items-center",
+            sidebarCollapsed ? "justify-center" : "space-x-3"
+          )}>
+            <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium">
+              {currentUser.username.charAt(0).toUpperCase()}
+            </div>
+            {!sidebarCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {currentUser.username}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">
+                  {currentUser.userType}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mb-8">
+              <h1 className="text-2xl font-semibold text-gray-900">
+                {activeSection === 'obituaries' ? 'Obituary Generator' : 'Obituary Questions'}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                {activeSection === 'obituaries' 
+                  ? (currentUser.userType === 'admin' 
+                      ? 'All obituary creations across users'
+                      : 'Your obituary creations and history')
+                  : 'Manage form questions and answer options'
+                }
+              </p>
+            </div>
+
+            {activeSection === 'obituaries' && renderObituariesSection()}
+            {activeSection === 'questions' && renderQuestionsSection()}
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
