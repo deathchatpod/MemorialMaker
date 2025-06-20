@@ -24,7 +24,7 @@ const upload = multer({
   },
 });
 
-// Configure multer for document uploads (docx only)
+// Configure multer for document uploads (docx, pdf)
 const documentUpload = multer({
   dest: 'uploads/documents/',
   limits: {
@@ -32,13 +32,14 @@ const documentUpload = multer({
   },
   fileFilter: (req, file, cb) => {
     const allowedTypes = [
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+      'application/pdf' // .pdf
     ];
     
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only .docx files are allowed'));
+      cb(new Error('Only .docx and .pdf files are allowed'));
     }
   },
 });
