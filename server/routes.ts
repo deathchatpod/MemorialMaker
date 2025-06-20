@@ -8,6 +8,7 @@ import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedback
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -593,6 +594,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Comment deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
+  // Collaboration API Routes
+  
+  // Get collaborators for an obituary
+  app.get("/api/obituaries/:id/collaborators", async (req, res) => {
+    try {
+      const obituaryId = parseInt(req.params.id);
+      const collaborators = await storage.getObituaryCollaborators(obituaryId);
+      res.json(collaborators);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch collaborators" });
+    }
+  });
+
+  // Add a collaborator to an obituary
+  app.post("/api/obituaries/:id/collaborators", async (req, res) => {
+    try {
+      const obituaryId = parseInt(req.params.id);
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const collaborator = await storage.createObituaryCollaborator({
+        obituaryId,
+        email
+      });
+
+      // Generate UUID for collaboration session
+      const uuid = crypto.randomUUID();
+      await storage.createCollaborationSession({
+        uuid,
+        obituaryId,
+        collaboratorEmail: email
+      });
+
+      res.json({ 
+        collaborator,
+        shareableLink: `${req.protocol}://${req.get('host')}/collaborate/${uuid}`
+      });
+    } catch (error) {
+      console.error('Error adding collaborator:', error);
+      res.status(500).json({ message: "Failed to add collaborator" });
+    }
+  });
+
+  // Remove a collaborator
+  app.delete("/api/obituaries/collaborators/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteObituaryCollaborator(id);
+      res.json({ message: "Collaborator removed successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to remove collaborator" });
+    }
+  });
+
+  // Access obituary via collaboration link
+  app.get("/api/collaborate/:uuid", async (req, res) => {
+    try {
+      const { uuid } = req.params;
+      const session = await storage.getCollaborationSession(uuid);
+      
+      if (!session) {
+        return res.status(404).json({ message: "Invalid collaboration link" });
+      }
+
+      const obituary = await storage.getObituary(session.obituaryId);
+      if (!obituary) {
+        return res.status(404).json({ message: "Obituary not found" });
+      }
+
+      const generatedObituaries = await storage.getGeneratedObituaries(session.obituaryId);
+      
+      res.json({
+        obituary,
+        generatedObituaries,
+        session,
+        isCollaborator: true
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to access collaboration" });
+    }
+  });
+
+  // Update collaborator name when they first access
+  app.post("/api/collaborate/:uuid/identify", async (req, res) => {
+    try {
+      const { uuid } = req.params;
+      const { name } = req.body;
+      
+      if (!name) {
+        return res.status(400).json({ message: "Name is required" });
+      }
+
+      const updatedSession = await storage.updateCollaborationSession(uuid, {
+        collaboratorName: name,
+        accessedAt: new Date()
+      });
+
+      res.json(updatedSession);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update collaborator info" });
     }
   });
 

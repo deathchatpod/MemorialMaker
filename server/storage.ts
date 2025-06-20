@@ -1,11 +1,13 @@
 import { 
   users, obituaries, generatedObituaries, textFeedback, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
+  obituaryCollaborators, collaborationSessions,
   type User, type InsertUser, type Obituary, type InsertObituary,
   type GeneratedObituary, type InsertGeneratedObituary,
   type TextFeedback, type InsertTextFeedback,
   type Question, type InsertQuestion, type PromptTemplate, type InsertPromptTemplate,
   type FinalSpace, type InsertFinalSpace, type FinalSpaceComment, type InsertFinalSpaceComment,
-  type FinalSpaceImage, type InsertFinalSpaceImage
+  type FinalSpaceImage, type InsertFinalSpaceImage, type ObituaryCollaborator, type InsertObituaryCollaborator,
+  type CollaborationSession, type InsertCollaborationSession
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -67,6 +69,16 @@ export interface IStorage {
   getFinalSpaceImages(commentId: number): Promise<FinalSpaceImage[]>;
   createFinalSpaceImage(image: InsertFinalSpaceImage): Promise<FinalSpaceImage>;
   deleteFinalSpaceImage(id: number): Promise<void>;
+  
+  // Obituary Collaborators
+  getObituaryCollaborators(obituaryId: number): Promise<ObituaryCollaborator[]>;
+  createObituaryCollaborator(collaborator: InsertObituaryCollaborator): Promise<ObituaryCollaborator>;
+  deleteObituaryCollaborator(id: number): Promise<void>;
+  
+  // Collaboration Sessions
+  getCollaborationSession(uuid: string): Promise<CollaborationSession | undefined>;
+  createCollaborationSession(session: InsertCollaborationSession): Promise<CollaborationSession>;
+  updateCollaborationSession(uuid: string, updates: Partial<CollaborationSession>): Promise<CollaborationSession>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -361,6 +373,50 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFinalSpaceImage(id: number): Promise<void> {
     await db.delete(finalSpaceImages).where(eq(finalSpaceImages.id, id));
+  }
+
+  // Obituary Collaborators
+  async getObituaryCollaborators(obituaryId: number): Promise<ObituaryCollaborator[]> {
+    return await db
+      .select()
+      .from(obituaryCollaborators)
+      .where(eq(obituaryCollaborators.obituaryId, obituaryId))
+      .orderBy(desc(obituaryCollaborators.invitedAt));
+  }
+
+  async createObituaryCollaborator(collaborator: InsertObituaryCollaborator): Promise<ObituaryCollaborator> {
+    const [newCollaborator] = await db
+      .insert(obituaryCollaborators)
+      .values(collaborator)
+      .returning();
+    return newCollaborator;
+  }
+
+  async deleteObituaryCollaborator(id: number): Promise<void> {
+    await db.delete(obituaryCollaborators).where(eq(obituaryCollaborators.id, id));
+  }
+
+  // Collaboration Sessions
+  async getCollaborationSession(uuid: string): Promise<CollaborationSession | undefined> {
+    const [session] = await db.select().from(collaborationSessions).where(eq(collaborationSessions.uuid, uuid));
+    return session || undefined;
+  }
+
+  async createCollaborationSession(session: InsertCollaborationSession): Promise<CollaborationSession> {
+    const [newSession] = await db
+      .insert(collaborationSessions)
+      .values(session)
+      .returning();
+    return newSession;
+  }
+
+  async updateCollaborationSession(uuid: string, updates: Partial<CollaborationSession>): Promise<CollaborationSession> {
+    const [updatedSession] = await db
+      .update(collaborationSessions)
+      .set(updates)
+      .where(eq(collaborationSessions.uuid, uuid))
+      .returning();
+    return updatedSession;
   }
 }
 
