@@ -1,9 +1,11 @@
 import { 
-  users, obituaries, generatedObituaries, textFeedback, questions, promptTemplates,
+  users, obituaries, generatedObituaries, textFeedback, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
   type User, type InsertUser, type Obituary, type InsertObituary,
   type GeneratedObituary, type InsertGeneratedObituary,
   type TextFeedback, type InsertTextFeedback,
-  type Question, type InsertQuestion, type PromptTemplate, type InsertPromptTemplate
+  type Question, type InsertQuestion, type PromptTemplate, type InsertPromptTemplate,
+  type FinalSpace, type InsertFinalSpace, type FinalSpaceComment, type InsertFinalSpaceComment,
+  type FinalSpaceImage, type InsertFinalSpaceImage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -17,6 +19,7 @@ export interface IStorage {
   // Obituaries
   getObituariesByUser(userId: number): Promise<Obituary[]>;
   getAllObituaries(): Promise<Obituary[]>;
+  getCompletedObituariesByUser(userId: number): Promise<Obituary[]>;
   getObituary(id: number): Promise<Obituary | undefined>;
   createObituary(obituary: InsertObituary): Promise<Obituary>;
   updateObituary(id: number, obituary: Partial<Obituary>): Promise<Obituary>;
@@ -45,6 +48,25 @@ export interface IStorage {
   createPromptTemplate(template: InsertPromptTemplate): Promise<PromptTemplate>;
   updatePromptTemplate(id: number, template: Partial<PromptTemplate>): Promise<PromptTemplate>;
   deletePromptTemplate(id: number): Promise<void>;
+  
+  // Final Spaces
+  getFinalSpacesByUser(userId: number): Promise<FinalSpace[]>;
+  getAllFinalSpaces(): Promise<FinalSpace[]>;
+  getFinalSpace(id: number): Promise<FinalSpace | undefined>;
+  getFinalSpaceBySlug(slug: string): Promise<FinalSpace | undefined>;
+  createFinalSpace(finalSpace: InsertFinalSpace): Promise<FinalSpace>;
+  updateFinalSpace(id: number, finalSpace: Partial<FinalSpace>): Promise<FinalSpace>;
+  deleteFinalSpace(id: number): Promise<void>;
+  
+  // Final Space Comments
+  getFinalSpaceComments(finalSpaceId: number): Promise<FinalSpaceComment[]>;
+  createFinalSpaceComment(comment: InsertFinalSpaceComment): Promise<FinalSpaceComment>;
+  deleteFinalSpaceComment(id: number): Promise<void>;
+  
+  // Final Space Images
+  getFinalSpaceImages(commentId: number): Promise<FinalSpaceImage[]>;
+  createFinalSpaceImage(image: InsertFinalSpaceImage): Promise<FinalSpaceImage>;
+  deleteFinalSpaceImage(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
