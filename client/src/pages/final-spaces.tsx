@@ -1,81 +1,20 @@
-import React, { useState, useContext } from "react";
+import React, { useContext } from "react";
 import { Link } from "wouter";
 import { UserContext } from "@/App";
-import { useFinalSpaces, useCreateFinalSpace, useDeleteFinalSpace, useCompletedObituaries } from "@/hooks/use-final-spaces";
+import { useFinalSpaces, useDeleteFinalSpace } from "@/hooks/use-final-spaces";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { insertFinalSpaceSchema } from "@shared/schema";
-import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Share2, Music, MessageCircle, Trash2, ExternalLink, Calendar, MapPin, Globe, ArrowLeft } from "lucide-react";
+import { Heart, Share2, Music, MessageCircle, Trash2, ExternalLink, Calendar, Globe, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
-
-const createFinalSpaceSchema = insertFinalSpaceSchema.extend({
-  personName: z.string().min(1, "Person name is required"),
-  dateOfBirth: z.string().optional(),
-  dateOfDeath: z.string().optional(),
-  description: z.string().optional(),
-  obituaryId: z.number().optional(),
-  socialMediaLinks: z.array(z.string()).optional(),
-  musicPlaylist: z.string().optional(),
-  isPublic: z.boolean().default(true),
-  allowComments: z.boolean().default(true)
-});
-
-type CreateFinalSpaceForm = z.infer<typeof createFinalSpaceSchema>;
 
 export default function FinalSpaces() {
   const { currentUser } = useContext(UserContext);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: finalSpaces, isLoading } = useFinalSpaces(currentUser?.id || 0, currentUser?.userType || 'regular');
-  const { data: completedObituaries } = useCompletedObituaries(currentUser?.id || 0);
-  const createFinalSpace = useCreateFinalSpace();
   const deleteFinalSpace = useDeleteFinalSpace();
-
-  const form = useForm<CreateFinalSpaceForm>({
-    resolver: zodResolver(createFinalSpaceSchema),
-    defaultValues: {
-      personName: "",
-      dateOfBirth: "",
-      dateOfDeath: "",
-      description: "",
-      obituaryId: undefined,
-      socialMediaLinks: [],
-      musicPlaylist: "",
-      isPublic: true,
-      allowComments: true,
-      userId: currentUser?.id
-    }
-  });
-
-  const onSubmit = async (data: CreateFinalSpaceForm) => {
-    try {
-      await createFinalSpace.mutateAsync(data);
-      toast({
-        title: "Success",
-        description: "FinalSpace created successfully"
-      });
-      setIsCreateDialogOpen(false);
-      form.reset();
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create FinalSpace",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this memorial space?")) {
@@ -129,159 +68,12 @@ export default function FinalSpaces() {
             </p>
           </div>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Heart className="mr-2 h-4 w-4" />
-              Create FinalSpace
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create FinalSpace</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="obituaryId">Link to Obituary (Optional)</Label>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Select an existing obituary to automatically fill name and date fields
-                </p>
-                <Select onValueChange={(value) => {
-                  const obituaryId = value ? parseInt(value) : undefined;
-                  form.setValue("obituaryId", obituaryId);
-                  
-                  // Auto-fill fields if obituary is selected
-                  if (value === "1") {
-                    form.setValue("personName", "mike bologna");
-                    form.setValue("dateOfBirth", "1950-01-15");
-                    form.setValue("dateOfDeath", "2025-06-20");
-                  } else if (completedObituaries?.find) {
-                    const selected = completedObituaries.find((obit: any) => obit.id.toString() === value);
-                    if (selected) {
-                      form.setValue("personName", selected.fullName);
-                      if (selected.dateOfBirth) form.setValue("dateOfBirth", selected.dateOfBirth);
-                      if (selected.dateOfDeath) form.setValue("dateOfDeath", selected.dateOfDeath);
-                    }
-                  }
-                }}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an obituary (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">mike bologna</SelectItem>
-                    {completedObituaries?.map && completedObituaries.map((obituary: any) => (
-                      <SelectItem key={obituary.id} value={obituary.id.toString()}>
-                        {obituary.fullName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="personName">Person's Name *</Label>
-                  <Input
-                    id="personName"
-                    {...form.register("personName")}
-                    placeholder="Enter full name"
-                  />
-                  {form.formState.errors.personName && (
-                    <p className="text-sm text-red-600 mt-1">
-                      {form.formState.errors.personName.message}
-                    </p>
-                  )}
-                </div>
-                <div></div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                  <Input
-                    id="dateOfBirth"
-                    type="date"
-                    {...form.register("dateOfBirth")}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dateOfDeath">Date of Death</Label>
-                  <Input
-                    id="dateOfDeath"
-                    type="date"
-                    {...form.register("dateOfDeath")}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="description">Memorial Description</Label>
-                <Textarea
-                  id="description"
-                  {...form.register("description")}
-                  placeholder="Share memories, stories, or a tribute..."
-                  rows={4}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="musicPlaylist">Music Playlist Link</Label>
-                <Input
-                  id="musicPlaylist"
-                  {...form.register("musicPlaylist")}
-                  placeholder="Spotify, Pandora, or other music service URL"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="socialMediaLinks">Social Media Links</Label>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Add social media links to share memories (one per line)
-                </p>
-                <Textarea
-                  id="socialMediaLinks"
-                  placeholder="https://facebook.com/memorial-page&#10;https://instagram.com/memories"
-                  onChange={(e) => {
-                    const links = e.target.value.split('\n').filter(link => link.trim());
-                    form.setValue("socialMediaLinks", links);
-                  }}
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-base font-medium">Privacy Settings</Label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="isPublic"
-                    {...form.register("isPublic")}
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor="isPublic">Make this memorial space public</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="allowComments"
-                    {...form.register("allowComments")}
-                    className="h-4 w-4"
-                  />
-                  <Label htmlFor="allowComments">Allow public comments</Label>
-                </div>
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={createFinalSpace.isPending}>
-                  {createFinalSpace.isPending ? "Creating..." : "Create FinalSpace"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Link href="/final-spaces/create">
+          <Button>
+            <Heart className="mr-2 h-4 w-4" />
+            Create FinalSpace
+          </Button>
+        </Link>
       </div>
 
       {finalSpaces && finalSpaces.length > 0 ? (
