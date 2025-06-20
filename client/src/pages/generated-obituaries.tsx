@@ -37,6 +37,7 @@ export default function GeneratedObituaries() {
   
   const [selectedTexts, setSelectedTexts] = useState<{ [key: number]: TextFeedback[] }>({});
   const [editingObituary, setEditingObituary] = useState<GeneratedObituary | null>(null);
+  const [feedbackInclusion, setFeedbackInclusion] = useState<{ [key: string]: boolean }>({});
 
   const { data: generatedObituaries = [], isLoading } = useQuery<GeneratedObituary[]>({
     queryKey: ["/api/obituaries", obituaryId, "generated"],
@@ -112,17 +113,49 @@ export default function GeneratedObituaries() {
   const chatgptObituaries = generatedObituaries.filter(o => o.aiProvider === 'chatgpt');
 
   const handleTextSelection = (obituaryId: number, selectedText: string, feedbackType: 'liked' | 'disliked') => {
-    setSelectedTexts(prev => ({
-      ...prev,
-      [obituaryId]: [
-        ...(prev[obituaryId] || []),
-        { selectedText, feedbackType }
-      ]
-    }));
+    const currentFeedback = selectedTexts[obituaryId] || [];
+    const existingIndex = currentFeedback.findIndex(f => f.selectedText === selectedText);
+    
+    let newFeedback;
+    if (existingIndex >= 0) {
+      if (currentFeedback[existingIndex].feedbackType === feedbackType) {
+        // Remove if same type selected again
+        newFeedback = currentFeedback.filter(f => f.selectedText !== selectedText);
+      } else {
+        // Update type if different type selected
+        newFeedback = currentFeedback.map(f => 
+          f.selectedText === selectedText ? { ...f, feedbackType } : f
+        );
+      }
+    } else {
+      // Add new feedback
+      newFeedback = [...currentFeedback, { selectedText, feedbackType }];
+      // Default new feedback to included
+      const feedbackKey = `${obituaryId}-${selectedText}`;
+      setFeedbackInclusion(prev => ({ ...prev, [feedbackKey]: true }));
+    }
+    
+    setSelectedTexts(prev => ({ ...prev, [obituaryId]: newFeedback }));
+  };
+
+  const handleFeedbackInclusionChange = (obituaryId: number, text: string, included: boolean) => {
+    const feedbackKey = `${obituaryId}-${text}`;
+    setFeedbackInclusion(prev => ({ ...prev, [feedbackKey]: included }));
+  };
+
+  const getIncludedFeedback = () => {
+    const allFeedback = Object.values(selectedTexts).flat();
+    return allFeedback.filter(feedback => {
+      const feedbackKey = `${Object.keys(selectedTexts).find(key => 
+        selectedTexts[parseInt(key)]?.includes(feedback)
+      )}-${feedback.selectedText}`;
+      return feedbackInclusion[feedbackKey] !== false; // Default to true if not set
+    });
   };
 
   const clearFeedback = () => {
     setSelectedTexts({});
+    setFeedbackInclusion({});
     toast({
       title: "Feedback Cleared",
       description: "All text selections have been cleared.",
@@ -130,14 +163,14 @@ export default function GeneratedObituaries() {
   };
 
   const generateRevisions = () => {
-    const allFeedback = Object.values(selectedTexts).flat();
-    const liked = allFeedback.filter(f => f.feedbackType === 'liked').map(f => f.selectedText);
-    const disliked = allFeedback.filter(f => f.feedbackType === 'disliked').map(f => f.selectedText);
+    const includedFeedback = getIncludedFeedback();
+    const liked = includedFeedback.filter(f => f.feedbackType === 'liked').map(f => f.selectedText);
+    const disliked = includedFeedback.filter(f => f.feedbackType === 'disliked').map(f => f.selectedText);
 
     if (liked.length === 0 && disliked.length === 0) {
       toast({
         title: "No Feedback",
-        description: "Please select some text first to generate revisions.",
+        description: "Please provide feedback or edits",
         variant: "destructive",
       });
       return;
@@ -349,22 +382,38 @@ export default function GeneratedObituaries() {
                 <Badge variant="secondary">{feedbackCounts.liked} selected</Badge>
               </div>
               {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'liked').length > 0 ? (
-                <div className="space-y-2">
-                  {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'liked').map((feedback, index) => (
-                    <div key={index} className="bg-green-50 border border-green-200 rounded p-3">
-                      <div className="flex justify-between items-start mb-1">
-                        <div className="text-sm font-medium text-green-700">
-                          {feedback.collaboratorName ? feedback.collaboratorName : 'You'}
+                <div className="space-y-3">
+                  <div className="text-xs font-medium text-gray-600 mb-2">Include in revision?</div>
+                  {Object.entries(selectedTexts).map(([obituaryId, feedbacks]) => 
+                    feedbacks.filter(f => f.feedbackType === 'liked').map((feedback, index) => {
+                      const feedbackKey = `${obituaryId}-${feedback.selectedText}`;
+                      const isIncluded = feedbackInclusion[feedbackKey] !== false;
+                      return (
+                        <div key={`${obituaryId}-${index}`} className="bg-green-50 border border-green-200 rounded p-3">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={feedbackKey}
+                                checked={isIncluded}
+                                onChange={(e) => handleFeedbackInclusionChange(parseInt(obituaryId), feedback.selectedText, e.target.checked)}
+                                className="h-4 w-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
+                              />
+                              <div className="text-sm font-medium text-green-700">
+                                {feedback.collaboratorName ? feedback.collaboratorName : 'You'}
+                              </div>
+                            </div>
+                            <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                              Liked
+                            </div>
+                          </div>
+                          <div className="text-sm text-green-800 italic ml-6">
+                            "{feedback.selectedText}"
+                          </div>
                         </div>
-                        <div className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                          Liked
-                        </div>
-                      </div>
-                      <div className="text-sm text-green-800 italic">
-                        "{feedback.selectedText}"
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })
+                  )}
                 </div>
               ) : (
                 <div className="text-xs text-gray-500">No liked phrases selected yet</div>
@@ -378,22 +427,38 @@ export default function GeneratedObituaries() {
                 <Badge variant="secondary">{feedbackCounts.disliked} selected</Badge>
               </div>
               {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'disliked').length > 0 ? (
-                <div className="space-y-2">
-                  {Object.values(selectedTexts).flat().filter(f => f.feedbackType === 'disliked').map((feedback, index) => (
-                    <div key={index} className="bg-red-50 border border-red-200 rounded p-3">
-                      <div className="flex justify-between items-start mb-1">
-                        <div className="text-sm font-medium text-red-700">
-                          {feedback.collaboratorName ? feedback.collaboratorName : 'You'}
+                <div className="space-y-3">
+                  <div className="text-xs font-medium text-gray-600 mb-2">Include in revision?</div>
+                  {Object.entries(selectedTexts).map(([obituaryId, feedbacks]) => 
+                    feedbacks.filter(f => f.feedbackType === 'disliked').map((feedback, index) => {
+                      const feedbackKey = `${obituaryId}-${feedback.selectedText}`;
+                      const isIncluded = feedbackInclusion[feedbackKey] !== false;
+                      return (
+                        <div key={`${obituaryId}-${index}`} className="bg-red-50 border border-red-200 rounded p-3">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={feedbackKey}
+                                checked={isIncluded}
+                                onChange={(e) => handleFeedbackInclusionChange(parseInt(obituaryId), feedback.selectedText, e.target.checked)}
+                                className="h-4 w-4 text-red-600 rounded border-gray-300 focus:ring-red-500"
+                              />
+                              <div className="text-sm font-medium text-red-700">
+                                {feedback.collaboratorName ? feedback.collaboratorName : 'You'}
+                              </div>
+                            </div>
+                            <div className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">
+                              Want to change
+                            </div>
+                          </div>
+                          <div className="text-sm text-red-800 italic ml-6">
+                            "{feedback.selectedText}"
+                          </div>
                         </div>
-                        <div className="text-xs text-red-600 bg-red-100 px-2 py-1 rounded">
-                          Want to change
-                        </div>
-                      </div>
-                      <div className="text-sm text-red-800 italic">
-                        "{feedback.selectedText}"
-                      </div>
-                    </div>
-                  ))}
+                      );
+                    })
+                  )}
                 </div>
               ) : (
                 <div className="text-xs text-gray-500">No phrases marked for change yet</div>

@@ -22,6 +22,8 @@ export const obituaries = pgTable("obituaries", {
   formData: jsonb("form_data").notNull(),
   imageUrl: text("image_url"),
   status: varchar("status", { length: 20 }).notNull().default("draft"), // 'draft', 'generated', 'completed'
+  hasClaudeRevision: boolean("has_claude_revision").notNull().default(false),
+  hasChatgptRevision: boolean("has_chatgpt_revision").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
