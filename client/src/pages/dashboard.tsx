@@ -14,7 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Question } from "@shared/schema";
+import { usePromptTemplates, useUpdatePromptTemplate } from "@/hooks/use-prompt-templates";
+import type { Question, PromptTemplate } from "@shared/schema";
 
 interface Obituary {
   id: number;

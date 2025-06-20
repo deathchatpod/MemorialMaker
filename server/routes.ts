@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateObituariesWithClaude, generateObituariesWithChatGPT, generateRevisedObituary, type ObituaryFormData } from "./services/ai";
 import { generateObituaryPDF } from "./services/pdf";
-import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema } from "@shared/schema";
+import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -314,6 +314,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Prompt template management endpoints
+  app.get("/api/prompt-templates", async (req, res) => {
+    try {
+      const templates = await storage.getPromptTemplates();
+      res.json(templates);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch prompt templates" });
+    }
+  });
+
+  app.get("/api/prompt-templates/:platform/:promptType", async (req, res) => {
+    try {
+      const { platform, promptType } = req.params;
+      const template = await storage.getPromptTemplate(platform, promptType);
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch prompt template" });
+    }
+  });
+
+  app.post("/api/prompt-templates", async (req, res) => {
+    try {
+      const validatedData = insertPromptTemplateSchema.parse(req.body);
+      const template = await storage.createPromptTemplate(validatedData);
+      res.json(template);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to create prompt template" });
+    }
+  });
+
+  app.put("/api/prompt-templates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedTemplate = await storage.updatePromptTemplate(id, req.body);
+      res.json(updatedTemplate);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update prompt template" });
+    }
+  });
+
+  app.delete("/api/prompt-templates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePromptTemplate(id);
+      res.json({ message: "Prompt template deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete prompt template" });
+    }
+  });
+
   // Serve uploaded files
   app.use('/uploads', (req, res, next) => {
     const filePath = path.join(process.cwd(), 'uploads', req.path);
@@ -346,9 +399,108 @@ async function initializeDefaultData() {
     if (existingQuestions.length === 0) {
       await initializeDefaultQuestions();
     }
+    
+    // Initialize default prompt templates
+    const existingTemplates = await storage.getPromptTemplates();
+    if (existingTemplates.length === 0) {
+      await initializeDefaultPromptTemplates();
+    }
   } catch (error) {
     console.error('Error initializing default data:', error);
   }
+}
+
+async function initializeDefaultPromptTemplates() {
+  const defaultTemplates = [
+    {
+      name: "Claude Base Prompt",
+      platform: "claude",
+      promptType: "base",
+      template: `Write a heartfelt obituary for {{fullName}}{{#if age}}, age {{age}}{{/if}}. Use a {{tone}} tone appropriate for a {{ageCategory}} person.
+
+Include the following information:
+{{#if dateOfBirth}}{{#if dateOfDeath}}- Born {{dateOfBirth}}, passed away {{dateOfDeath}}{{else}}- Born {{dateOfBirth}}{{/if}}{{else}}{{#if dateOfDeath}}- Passed away {{dateOfDeath}}{{/if}}{{/if}}
+{{#if location}}- Location: {{location}}{{/if}}
+{{#if education}}- Education: {{education}}{{/if}}
+{{#if career}}- Career: {{career}}{{/if}}
+{{#if achievements}}- Achievements: {{achievements}}{{/if}}
+{{#if family}}- Family: {{family}}{{/if}}
+{{#if traits}}- Personality traits: {{traits}}{{/if}}
+{{#if hobbies}}- Hobbies and interests: {{hobbies}}{{/if}}
+{{#if religion}}- Faith: {{religion}}{{/if}}
+{{#if specialNotes}}- Special notes: {{specialNotes}}{{/if}}
+
+Write a complete, flowing obituary that honors their memory appropriately. Make it personal and meaningful.`,
+      description: "Base template for Claude obituary generation"
+    },
+    {
+      name: "Claude Revision Prompt",
+      platform: "claude",
+      promptType: "revision",
+      template: `Please revise the following obituary based on family feedback:
+
+ORIGINAL OBITUARY:
+{{originalContent}}
+
+--- REVISION INSTRUCTIONS ---
+{{#if likedText}}Please include similar language and themes to these phrases the family liked:
+{{#each likedText}}- "{{this}}"
+{{/each}}{{/if}}
+{{#if dislikedText}}Please avoid or rephrase content similar to these phrases the family wants changed:
+{{#each dislikedText}}- "{{this}}"
+{{/each}}{{/if}}
+
+Please provide a revised version that incorporates this feedback while maintaining the overall tone and completeness of the obituary.`,
+      description: "Revision template for Claude based on user feedback"
+    },
+    {
+      name: "ChatGPT Base Prompt",
+      platform: "chatgpt",
+      promptType: "base",
+      template: `Write a heartfelt obituary for {{fullName}}{{#if age}}, age {{age}}{{/if}}. Use a {{tone}} tone appropriate for a {{ageCategory}} person.
+
+Include the following information:
+{{#if dateOfBirth}}{{#if dateOfDeath}}- Born {{dateOfBirth}}, passed away {{dateOfDeath}}{{else}}- Born {{dateOfBirth}}{{/if}}{{else}}{{#if dateOfDeath}}- Passed away {{dateOfDeath}}{{/if}}{{/if}}
+{{#if location}}- Location: {{location}}{{/if}}
+{{#if education}}- Education: {{education}}{{/if}}
+{{#if career}}- Career: {{career}}{{/if}}
+{{#if achievements}}- Achievements: {{achievements}}{{/if}}
+{{#if family}}- Family: {{family}}{{/if}}
+{{#if traits}}- Personality traits: {{traits}}{{/if}}
+{{#if hobbies}}- Hobbies and interests: {{hobbies}}{{/if}}
+{{#if religion}}- Faith: {{religion}}{{/if}}
+{{#if specialNotes}}- Special notes: {{specialNotes}}{{/if}}
+
+Write a complete, flowing obituary that honors their memory appropriately. Make it personal and meaningful.`,
+      description: "Base template for ChatGPT obituary generation"
+    },
+    {
+      name: "ChatGPT Revision Prompt",
+      platform: "chatgpt",
+      promptType: "revision",
+      template: `Please revise the following obituary based on family feedback:
+
+ORIGINAL OBITUARY:
+{{originalContent}}
+
+--- REVISION INSTRUCTIONS ---
+{{#if likedText}}Please include similar language and themes to these phrases the family liked:
+{{#each likedText}}- "{{this}}"
+{{/each}}{{/if}}
+{{#if dislikedText}}Please avoid or rephrase content similar to these phrases the family wants changed:
+{{#each dislikedText}}- "{{this}}"
+{{/each}}{{/if}}
+
+Please provide a revised version that incorporates this feedback while maintaining the overall tone and completeness of the obituary.`,
+      description: "Revision template for ChatGPT based on user feedback"
+    }
+  ];
+
+  for (const template of defaultTemplates) {
+    await storage.createPromptTemplate(template);
+  }
+  
+  console.log('Default prompt templates initialized successfully');
 }
 
 async function initializeDefaultQuestions() {

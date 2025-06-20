@@ -198,6 +198,48 @@ export class DatabaseStorage implements IStorage {
   async deleteQuestion(id: number): Promise<void> {
     await db.update(questions).set({ isActive: false }).where(eq(questions.id, id));
   }
+
+  // Prompt Templates
+  async getPromptTemplates(): Promise<PromptTemplate[]> {
+    return await db
+      .select()
+      .from(promptTemplates)
+      .where(eq(promptTemplates.isActive, true))
+      .orderBy(promptTemplates.platform, promptTemplates.promptType);
+  }
+
+  async getPromptTemplate(platform: string, promptType: string): Promise<PromptTemplate | undefined> {
+    const [template] = await db
+      .select()
+      .from(promptTemplates)
+      .where(and(
+        eq(promptTemplates.platform, platform),
+        eq(promptTemplates.promptType, promptType),
+        eq(promptTemplates.isActive, true)
+      ));
+    return template || undefined;
+  }
+
+  async createPromptTemplate(template: InsertPromptTemplate): Promise<PromptTemplate> {
+    const [newTemplate] = await db
+      .insert(promptTemplates)
+      .values(template)
+      .returning();
+    return newTemplate;
+  }
+
+  async updatePromptTemplate(id: number, template: Partial<PromptTemplate>): Promise<PromptTemplate> {
+    const [updatedTemplate] = await db
+      .update(promptTemplates)
+      .set({ ...template, updatedAt: new Date() })
+      .where(eq(promptTemplates.id, id))
+      .returning();
+    return updatedTemplate;
+  }
+
+  async deletePromptTemplate(id: number): Promise<void> {
+    await db.delete(promptTemplates).where(eq(promptTemplates.id, id));
+  }
 }
 
 export const storage = new DatabaseStorage();
