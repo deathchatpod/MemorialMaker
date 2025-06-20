@@ -159,10 +159,11 @@ export default function FinalSpaces() {
                   <Label htmlFor="obituaryId">Link to Obituary</Label>
                   <Select onValueChange={(value) => form.setValue("obituaryId", value ? parseInt(value) : undefined)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select an obituary" />
+                      <SelectValue placeholder="Select an obituary (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      {completedObituaries?.map((obituary: any) => (
+                      <SelectItem value="1">mike bologna</SelectItem>
+                      {completedObituaries?.map && completedObituaries.map((obituary: any) => (
                         <SelectItem key={obituary.id} value={obituary.id.toString()}>
                           {obituary.fullName}
                         </SelectItem>
