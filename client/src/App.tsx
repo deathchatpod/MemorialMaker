@@ -8,6 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import ObituaryForm from "@/pages/obituary-form";
 import GeneratedObituaries from "@/pages/generated-obituaries";
 import QuestionManagement from "@/pages/question-management";
+import FinalSpaces from "@/pages/final-spaces";
 import NotFound from "@/pages/not-found";
 
 // User context for switching between user types
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/obituary/new" component={ObituaryForm} />
       <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
       <Route path="/admin/questions" component={QuestionManagement} />
+      <Route path="/final-spaces" component={FinalSpaces} />
       <Route component={NotFound} />
     </Switch>
   );

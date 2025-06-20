@@ -33,12 +33,12 @@ const createFinalSpaceSchema = insertFinalSpaceSchema.extend({
 type CreateFinalSpaceForm = z.infer<typeof createFinalSpaceSchema>;
 
 export default function FinalSpaces() {
-  const { user } = useContext(UserContext);
+  const { currentUser } = useContext(UserContext);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const { data: finalSpaces, isLoading } = useFinalSpaces(user?.id || 0, user?.userType || 'regular');
-  const { data: completedObituaries } = useCompletedObituaries(user?.id || 0);
+  const { data: finalSpaces, isLoading } = useFinalSpaces(currentUser?.id || 0, currentUser?.userType || 'regular');
+  const { data: completedObituaries } = useCompletedObituaries(currentUser?.id || 0);
   const createFinalSpace = useCreateFinalSpace();
   const deleteFinalSpace = useDeleteFinalSpace();
 
@@ -54,7 +54,7 @@ export default function FinalSpaces() {
       musicPlaylist: "",
       isPublic: true,
       allowComments: true,
-      userId: user?.id
+      userId: currentUser?.id
     }
   });
 

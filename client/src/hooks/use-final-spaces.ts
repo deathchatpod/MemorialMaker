@@ -5,14 +5,20 @@ import { FinalSpace, InsertFinalSpace, FinalSpaceComment, InsertFinalSpaceCommen
 export function useFinalSpaces(userId: number, userType: string) {
   return useQuery({
     queryKey: ['/api/final-spaces', userId, userType],
-    queryFn: () => apiRequest(`/api/final-spaces?userId=${userId}&userType=${userType}`)
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/final-spaces?userId=${userId}&userType=${userType}`);
+      return res.json();
+    }
   });
 }
 
 export function useFinalSpace(id: number) {
   return useQuery({
     queryKey: ['/api/final-spaces', id],
-    queryFn: () => apiRequest(`/api/final-spaces/${id}`),
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/final-spaces/${id}`);
+      return res.json();
+    },
     enabled: !!id
   });
 }
@@ -20,7 +26,10 @@ export function useFinalSpace(id: number) {
 export function useFinalSpaceBySlug(slug: string) {
   return useQuery({
     queryKey: ['/api/final-spaces/slug', slug],
-    queryFn: () => apiRequest(`/api/final-spaces/slug/${slug}`),
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/final-spaces/slug/${slug}`);
+      return res.json();
+    },
     enabled: !!slug
   });
 }
@@ -28,11 +37,8 @@ export function useFinalSpaceBySlug(slug: string) {
 export function useCreateFinalSpace() {
   return useMutation({
     mutationFn: async (data: InsertFinalSpace): Promise<FinalSpace> => {
-      return apiRequest('/api/final-spaces', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const res = await apiRequest('POST', '/api/final-spaces', data);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/final-spaces'] });
@@ -43,11 +49,8 @@ export function useCreateFinalSpace() {
 export function useUpdateFinalSpace() {
   return useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<FinalSpace> }): Promise<FinalSpace> => {
-      return apiRequest(`/api/final-spaces/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const res = await apiRequest('PUT', `/api/final-spaces/${id}`, data);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/final-spaces'] });
@@ -58,9 +61,8 @@ export function useUpdateFinalSpace() {
 export function useDeleteFinalSpace() {
   return useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/final-spaces/${id}`, {
-        method: 'DELETE'
-      });
+      const res = await apiRequest('DELETE', `/api/final-spaces/${id}`);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/final-spaces'] });
@@ -71,9 +73,10 @@ export function useDeleteFinalSpace() {
 export function useFinalSpaceComments(finalSpaceId: number) {
   return useQuery({
     queryKey: ['/api/final-spaces', finalSpaceId, 'comments'],
-    queryFn: () => apiRequest(`/api/final-spaces/${finalSpaceId}/comments`, {
-      method: 'GET'
-    }),
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/final-spaces/${finalSpaceId}/comments`);
+      return res.json();
+    },
     enabled: !!finalSpaceId
   });
 }
@@ -81,11 +84,8 @@ export function useFinalSpaceComments(finalSpaceId: number) {
 export function useCreateFinalSpaceComment() {
   return useMutation({
     mutationFn: async ({ finalSpaceId, data }: { finalSpaceId: number; data: Omit<InsertFinalSpaceComment, 'finalSpaceId'> }): Promise<FinalSpaceComment> => {
-      return apiRequest(`/api/final-spaces/${finalSpaceId}/comments`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const res = await apiRequest('POST', `/api/final-spaces/${finalSpaceId}/comments`, data);
+      return res.json();
     },
     onSuccess: (_, { finalSpaceId }) => {
       queryClient.invalidateQueries({ queryKey: ['/api/final-spaces', finalSpaceId, 'comments'] });
@@ -96,9 +96,8 @@ export function useCreateFinalSpaceComment() {
 export function useDeleteFinalSpaceComment() {
   return useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/final-spaces/comments/${id}`, {
-        method: 'DELETE'
-      });
+      const res = await apiRequest('DELETE', `/api/final-spaces/comments/${id}`);
+      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/final-spaces'] });
@@ -109,9 +108,10 @@ export function useDeleteFinalSpaceComment() {
 export function useCompletedObituaries(userId: number) {
   return useQuery({
     queryKey: ['/api/obituaries/completed', userId],
-    queryFn: () => apiRequest(`/api/obituaries/completed?userId=${userId}`, {
-      method: 'GET'
-    }),
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/obituaries/completed?userId=${userId}`);
+      return res.json();
+    },
     enabled: !!userId
   });
 }
