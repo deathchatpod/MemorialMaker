@@ -26,9 +26,6 @@ interface Obituary {
 
 export default function Dashboard() {
   const { currentUser } = useContext(UserContext);
-  
-  // Temporary debug to check user state
-  console.log('Dashboard currentUser:', currentUser);
   const [location, setLocation] = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('obituaries');
