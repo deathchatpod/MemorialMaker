@@ -109,7 +109,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(obituaries)
-      .where(and(eq(obituaries.userId, userId), eq(obituaries.status, 'completed')))
+      .where(and(eq(obituaries.userId, userId), eq(obituaries.status, 'generated')))
       .orderBy(desc(obituaries.createdAt));
   }
 

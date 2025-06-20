@@ -1,4 +1,5 @@
 import React, { useState, useContext } from "react";
+import { Link } from "wouter";
 import { UserContext } from "@/App";
 import { useFinalSpaces, useCreateFinalSpace, useDeleteFinalSpace, useCompletedObituaries } from "@/hooks/use-final-spaces";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertFinalSpaceSchema } from "@shared/schema";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Share2, Music, MessageCircle, Trash2, ExternalLink, Calendar, MapPin, Globe } from "lucide-react";
+import { Heart, Share2, Music, MessageCircle, Trash2, ExternalLink, Calendar, MapPin, Globe, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 
 const createFinalSpaceSchema = insertFinalSpaceSchema.extend({
@@ -114,11 +115,19 @@ export default function FinalSpaces() {
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">FinalSpaces</h1>
-          <p className="text-muted-foreground mt-1">
-            Create and manage memorial spaces to honor loved ones
-          </p>
+        <div className="flex items-center space-x-4">
+          <Link href="/">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold">FinalSpaces</h1>
+            <p className="text-muted-foreground mt-1">
+              Create and manage memorial spaces to honor loved ones
+            </p>
+          </div>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
