@@ -183,7 +183,7 @@
 
   /* Text highlighting selections */
   ::selection {
-    @apply bg-primary/20;
+    background-color: rgba(59, 130, 246, 0.2);
   }
 
   /* Custom alert styles */
