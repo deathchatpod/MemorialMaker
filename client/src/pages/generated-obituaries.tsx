@@ -63,10 +63,11 @@ export default function GeneratedObituaries() {
         description: "Revised obituaries generated successfully!",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      const errorMessage = error?.message || "Failed to generate revisions. Please try again.";
       toast({
-        title: "Error",
-        description: "Failed to generate revisions. Please try again.",
+        title: "Cannot Generate Revision",
+        description: errorMessage,
         variant: "destructive",
       });
     },
