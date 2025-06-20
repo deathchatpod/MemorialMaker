@@ -352,12 +352,9 @@ export default function FinalSpaces() {
         <div className="text-center py-12">
           <Heart className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">No FinalSpaces Yet</h3>
-          <p className="text-muted-foreground mb-4">
-            Create your first FinalSpace to honor a loved one
+          <p className="text-muted-foreground">
+            Create your first FinalSpace to honor a loved one using the button above
           </p>
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            Create FinalSpace
-          </Button>
         </div>
       )}
     </div>
