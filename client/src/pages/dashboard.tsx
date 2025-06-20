@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import React, { useContext, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { UserContext } from "@/App";
@@ -335,7 +335,6 @@ export default function Dashboard() {
                           value={option.label}
                           onChange={(e) => updateOption(index, 'label', e.target.value)}
                           placeholder="Display text"
-                          size="sm"
                         />
                       </div>
                       <div>
@@ -344,7 +343,6 @@ export default function Dashboard() {
                           value={option.value}
                           onChange={(e) => updateOption(index, 'value', e.target.value)}
                           placeholder="Internal value"
-                          size="sm"
                         />
                       </div>
                       <div className="flex items-end space-x-2">
@@ -354,7 +352,6 @@ export default function Dashboard() {
                             value={option.description || ''}
                             onChange={(e) => updateOption(index, 'description', e.target.value)}
                             placeholder="Optional"
-                            size="sm"
                           />
                         </div>
                         <Button
@@ -413,13 +410,13 @@ export default function Dashboard() {
                   {question.placeholder && (
                     <p><span className="font-medium">Placeholder:</span> {question.placeholder}</p>
                   )}
-                  {question.options && question.options.length > 0 && (
+                  {question.options && Array.isArray(question.options) && question.options.length > 0 && (
                     <div>
                       <span className="font-medium">Options:</span>
                       <ul className="list-disc list-inside ml-4 mt-1">
-                        {question.options.map((opt, idx) => (
+                        {question.options.map((opt: any, idx: number) => (
                           <li key={idx} className="text-sm">
-                            {opt.label} {opt.description && `(${opt.description})`}
+                            {opt.label} {opt.description && ` (${opt.description})`}
                           </li>
                         ))}
                       </ul>
