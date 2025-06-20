@@ -114,10 +114,6 @@ export default function Dashboard() {
     item.userTypes.includes(currentUser.userType)
   );
 
-  // Debug logging
-  console.log('Current user:', currentUser);
-  console.log('Filtered menu items:', filteredMenuItems);
-
   const handleSectionChange = (sectionId: string) => {
     setActiveSection(sectionId);
   };

@@ -32,11 +32,27 @@ function Router() {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useState({ 
-    id: 1, 
-    username: 'Jane Smith', 
-    userType: 'user' 
+  const [currentUser, setCurrentUser] = useState(() => {
+    // Try to load from localStorage, default to admin for testing
+    const saved = localStorage.getItem('currentUser');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // Fall back to default if parsing fails
+      }
+    }
+    return { 
+      id: 2, 
+      username: 'John Admin', 
+      userType: 'admin' 
+    };
   });
+
+  // Save to localStorage whenever user changes
+  React.useEffect(() => {
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  }, [currentUser]);
 
   return (
     <QueryClientProvider client={queryClient}>
