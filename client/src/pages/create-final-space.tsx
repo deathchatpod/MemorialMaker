@@ -134,7 +134,7 @@ export default function CreateFinalSpace() {
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="none" disabled>
                         No completed obituaries available
                       </SelectItem>
                     )}
