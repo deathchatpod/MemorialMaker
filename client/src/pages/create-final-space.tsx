@@ -127,12 +127,17 @@ export default function CreateFinalSpace() {
                     <SelectValue placeholder="Select an obituary (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">mike bologna</SelectItem>
-                    {completedObituaries?.map && completedObituaries.map((obituary: any) => (
-                      <SelectItem key={obituary.id} value={obituary.id.toString()}>
-                        {obituary.fullName}
+                    {completedObituaries && completedObituaries.length > 0 ? (
+                      completedObituaries.map((obituary: any) => (
+                        <SelectItem key={obituary.id} value={obituary.id.toString()}>
+                          {obituary.fullName}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="" disabled>
+                        No completed obituaries available
                       </SelectItem>
-                    ))}
+                    )}
                   </SelectContent>
                 </Select>
               </div>
