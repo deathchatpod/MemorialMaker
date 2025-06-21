@@ -34,7 +34,7 @@ export default function CreateFinalSpace() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const { data: completedObituaries } = useCompletedObituaries(currentUser?.id || 0);
+  const { data: completedObituaries } = useCompletedObituaries(currentUser?.id || 0, currentUser?.userType || 'user');
   const createFinalSpace = useCreateFinalSpace();
 
   const form = useForm<CreateFinalSpaceForm>({

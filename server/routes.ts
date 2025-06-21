@@ -79,6 +79,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/obituaries/completed", async (req, res) => {
+    try {
+      const userId = parseInt(req.query.userId as string) || 1;
+      const userType = req.query.userType as string || 'user';
+      
+      console.log('Fetching completed obituaries for userId:', userId, 'userType:', userType);
+      
+      let obituaries;
+      if (userType === 'admin') {
+        obituaries = await storage.getAllObituaries();
+        console.log('Admin - found obituaries:', obituaries.length);
+      } else {
+        obituaries = await storage.getCompletedObituariesByUser(userId);
+        console.log('User - found completed obituaries:', obituaries.length);
+      }
+      
+      res.json(obituaries);
+    } catch (error) {
+      console.error('Error fetching completed obituaries:', error);
+      res.status(500).json({ message: "Failed to fetch obituaries", error: error.message });
+    }
+  });
+
   app.get("/api/obituaries/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

@@ -105,11 +105,11 @@ export function useDeleteFinalSpaceComment() {
   });
 }
 
-export function useCompletedObituaries(userId: number) {
+export function useCompletedObituaries(userId: number, userType: string = 'user') {
   return useQuery({
-    queryKey: ['/api/obituaries/completed', userId],
+    queryKey: ['/api/obituaries/completed', userId, userType],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/obituaries/completed?userId=${userId}`);
+      const res = await apiRequest('GET', `/api/obituaries/completed?userId=${userId}&userType=${userType}`);
       return res.json();
     },
     enabled: !!userId
