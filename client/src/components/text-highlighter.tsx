@@ -54,8 +54,8 @@ export default function TextHighlighter({ content, onTextSelect, selectedTexts }
     span.className = type === 'liked' 
       ? 'bg-green-100 text-green-800 rounded px-1' 
       : 'bg-red-100 text-red-800 rounded px-1';
-    span.dataset.feedback = type;
-    span.dataset.originalText = range.toString();
+    span.setAttribute('data-feedback', type);
+    span.setAttribute('data-original-text', range.toString());
 
     try {
       range.surroundContents(span);
@@ -75,21 +75,70 @@ export default function TextHighlighter({ content, onTextSelect, selectedTexts }
     setShowModal(false);
   };
 
-  const processContent = () => {
+  const highlightExistingText = () => {
     if (!contentRef.current) return;
 
-    // Apply highlighting to previously selected texts in the rendered markdown
     selectedTexts.forEach((item) => {
-      const spans = contentRef.current!.querySelectorAll('span[data-original-text]');
-      spans.forEach(span => {
-        if (span.getAttribute('data-original-text') === item.selectedText) {
-          const className = item.feedbackType === 'liked' 
-            ? 'bg-green-100 text-green-800 rounded px-1' 
-            : 'bg-red-100 text-red-800 rounded px-1';
-          span.className = className;
-          span.setAttribute('data-feedback', item.feedbackType);
+      highlightAllOccurrences(item.selectedText, item.feedbackType);
+    });
+  };
+
+  const highlightAllOccurrences = (searchText: string, feedbackType: 'liked' | 'disliked') => {
+    if (!contentRef.current || !searchText.trim()) return;
+
+    const className = feedbackType === 'liked' 
+      ? 'bg-green-100 text-green-800 rounded px-1' 
+      : 'bg-red-100 text-red-800 rounded px-1';
+
+    // Use a more robust text search and replace approach
+    const walker = document.createTreeWalker(
+      contentRef.current,
+      NodeFilter.SHOW_TEXT,
+      null
+    );
+
+    const textNodes: Text[] = [];
+    let node;
+    while (node = walker.nextNode()) {
+      // Skip nodes that are already highlighted
+      const parent = node.parentNode as Element;
+      if (parent && parent.getAttribute && parent.getAttribute('data-feedback')) {
+        continue;
+      }
+      textNodes.push(node as Text);
+    }
+
+    textNodes.forEach(textNode => {
+      const nodeText = textNode.textContent || '';
+      const searchIndex = nodeText.toLowerCase().indexOf(searchText.toLowerCase());
+      
+      if (searchIndex !== -1) {
+        const beforeText = nodeText.substring(0, searchIndex);
+        const matchedText = nodeText.substring(searchIndex, searchIndex + searchText.length);
+        const afterText = nodeText.substring(searchIndex + searchText.length);
+
+        const fragment = document.createDocumentFragment();
+        
+        if (beforeText) {
+          fragment.appendChild(document.createTextNode(beforeText));
         }
-      });
+
+        const span = document.createElement('span');
+        span.className = className;
+        span.setAttribute('data-feedback', feedbackType);
+        span.setAttribute('data-original-text', searchText);
+        span.textContent = matchedText;
+        fragment.appendChild(span);
+
+        if (afterText) {
+          fragment.appendChild(document.createTextNode(afterText));
+        }
+
+        const parent = textNode.parentNode;
+        if (parent) {
+          parent.replaceChild(fragment, textNode);
+        }
+      }
     });
   };
 
@@ -98,10 +147,21 @@ export default function TextHighlighter({ content, onTextSelect, selectedTexts }
   };
 
   useEffect(() => {
-    // Process highlights after markdown is rendered
+    // Apply highlights after markdown is rendered
     const timer = setTimeout(() => {
-      processContent();
-    }, 100);
+      // Clear existing highlights first
+      if (contentRef.current) {
+        const existingHighlights = contentRef.current.querySelectorAll('span[data-feedback]');
+        existingHighlights.forEach(span => {
+          const parent = span.parentNode;
+          if (parent) {
+            parent.replaceChild(document.createTextNode(span.textContent || ''), span);
+            parent.normalize();
+          }
+        });
+      }
+      highlightExistingText();
+    }, 150);
     return () => clearTimeout(timer);
   }, [content, selectedTexts]);
 
