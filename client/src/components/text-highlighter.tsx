@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface TextSelection {
   selectedText: string;
@@ -76,23 +78,19 @@ export default function TextHighlighter({ content, onTextSelect, selectedTexts }
   const processContent = () => {
     if (!contentRef.current) return;
 
-    // Start with the original content
-    let processedContent = content;
-
-    // Apply highlighting to previously selected texts
+    // Apply highlighting to previously selected texts in the rendered markdown
     selectedTexts.forEach((item) => {
-      const className = item.feedbackType === 'liked' 
-        ? 'bg-green-100 text-green-800 rounded px-1' 
-        : 'bg-red-100 text-red-800 rounded px-1';
-      
-      // Only highlight if not already highlighted
-      if (!processedContent.includes(`data-feedback="${item.feedbackType}"`)) {
-        const highlightedText = `<span class="${className}" data-feedback="${item.feedbackType}" data-original-text="${item.selectedText}">${item.selectedText}</span>`;
-        processedContent = processedContent.replace(new RegExp(escapeRegExp(item.selectedText), 'g'), highlightedText);
-      }
+      const spans = contentRef.current!.querySelectorAll('span[data-original-text]');
+      spans.forEach(span => {
+        if (span.getAttribute('data-original-text') === item.selectedText) {
+          const className = item.feedbackType === 'liked' 
+            ? 'bg-green-100 text-green-800 rounded px-1' 
+            : 'bg-red-100 text-red-800 rounded px-1';
+          span.className = className;
+          span.setAttribute('data-feedback', item.feedbackType);
+        }
+      });
     });
-
-    return processedContent;
   };
 
   const escapeRegExp = (string: string) => {
@@ -100,30 +98,47 @@ export default function TextHighlighter({ content, onTextSelect, selectedTexts }
   };
 
   useEffect(() => {
-    const processed = processContent();
-    if (contentRef.current && processed) {
-      contentRef.current.innerHTML = processed;
-    }
+    // Process highlights after markdown is rendered
+    const timer = setTimeout(() => {
+      processContent();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [content, selectedTexts]);
-
-  // Format content into paragraphs for better readability
-  const formatContent = () => {
-    return content.split('\n\n').filter(paragraph => paragraph.trim().length > 0);
-  };
 
   return (
     <>
       <div 
         ref={contentRef}
-        className="text-sm text-gray-700 leading-relaxed space-y-3 cursor-text select-text"
+        className="text-sm text-gray-700 leading-relaxed cursor-text select-text markdown-content"
         onMouseUp={handleMouseUp}
         style={{ userSelect: 'text' }}
       >
-        {formatContent().map((paragraph, index) => (
-          <p key={index} className="mb-3">
-            {paragraph}
-          </p>
-        ))}
+        <ReactMarkdown 
+          remarkPlugins={[remarkGfm]}
+          components={{
+            // Customize paragraph styling
+            p: ({ children }) => <p className="mb-3 text-gray-700 leading-relaxed">{children}</p>,
+            // Style headings
+            h1: ({ children }) => <h1 className="text-lg font-semibold text-gray-900 mb-2">{children}</h1>,
+            h2: ({ children }) => <h2 className="text-base font-semibold text-gray-900 mb-2">{children}</h2>,
+            h3: ({ children }) => <h3 className="text-sm font-semibold text-gray-900 mb-1">{children}</h3>,
+            // Style emphasis
+            em: ({ children }) => <em className="italic text-gray-700">{children}</em>,
+            strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+            // Style lists
+            ul: ({ children }) => <ul className="list-disc pl-4 mb-3 space-y-1">{children}</ul>,
+            ol: ({ children }) => <ol className="list-decimal pl-4 mb-3 space-y-1">{children}</ol>,
+            li: ({ children }) => <li className="text-gray-700">{children}</li>,
+            // Style blockquotes
+            blockquote: ({ children }) => (
+              <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-3">
+                {children}
+              </blockquote>
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       </div>
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
