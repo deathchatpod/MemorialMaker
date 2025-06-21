@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ReactMarkdown from 'react-markdown';
@@ -18,152 +18,58 @@ interface TextHighlighterProps {
 export default function TextHighlighter({ content, onTextSelect, selectedTexts }: TextHighlighterProps) {
   const [showModal, setShowModal] = useState(false);
   const [selectedText, setSelectedText] = useState('');
-  const [selectionRange, setSelectionRange] = useState<Range | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-
-  // Create a map of selected texts for quick lookup
-  const selectedTextMap = selectedTexts.reduce((acc, item) => {
-    acc[item.selectedText] = item.feedbackType;
-    return acc;
-  }, {} as Record<string, 'liked' | 'disliked'>);
 
   const handleMouseUp = () => {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) return;
 
-    const range = selection.getRangeAt(0);
     const text = selection.toString().trim();
-
-    if (text.length > 0 && contentRef.current?.contains(range.commonAncestorContainer)) {
+    if (text.length > 0 && contentRef.current?.contains(selection.getRangeAt(0).commonAncestorContainer)) {
       setSelectedText(text);
-      setSelectionRange(range.cloneRange());
       setShowModal(true);
     }
   };
 
   const handleFeedback = (type: 'liked' | 'disliked') => {
-    if (selectedText && selectionRange) {
+    if (selectedText) {
       onTextSelect(selectedText, type);
-      highlightText(selectionRange, type);
       clearSelection();
-    }
-  };
-
-  const highlightText = (range: Range, type: 'liked' | 'disliked') => {
-    const span = document.createElement('span');
-    span.className = type === 'liked' 
-      ? 'bg-green-100 text-green-800 rounded px-1' 
-      : 'bg-red-100 text-red-800 rounded px-1';
-    span.setAttribute('data-feedback', type);
-    span.setAttribute('data-original-text', range.toString());
-
-    try {
-      range.surroundContents(span);
-    } catch (error) {
-      // If surroundContents fails (due to range spanning multiple elements),
-      // extract and wrap the content
-      const contents = range.extractContents();
-      span.appendChild(contents);
-      range.insertNode(span);
     }
   };
 
   const clearSelection = () => {
     window.getSelection()?.removeAllRanges();
     setSelectedText('');
-    setSelectionRange(null);
     setShowModal(false);
   };
 
-  const highlightExistingText = () => {
-    if (!contentRef.current) return;
+  // Create a map for quick lookup of highlighted texts
+  const highlightMap = selectedTexts.reduce((acc, item) => {
+    acc[item.selectedText] = item.feedbackType;
+    return acc;
+  }, {} as Record<string, 'liked' | 'disliked'>);
 
+  // Process content to highlight selected text
+  const processContentForHighlighting = (text: string): string => {
+    let processedText = text;
+    
     selectedTexts.forEach((item) => {
-      highlightAllOccurrences(item.selectedText, item.feedbackType);
-    });
-  };
-
-  const highlightAllOccurrences = (searchText: string, feedbackType: 'liked' | 'disliked') => {
-    if (!contentRef.current || !searchText.trim()) return;
-
-    const className = feedbackType === 'liked' 
-      ? 'bg-green-100 text-green-800 rounded px-1' 
-      : 'bg-red-100 text-red-800 rounded px-1';
-
-    // Use a more robust text search and replace approach
-    const walker = document.createTreeWalker(
-      contentRef.current,
-      NodeFilter.SHOW_TEXT,
-      null
-    );
-
-    const textNodes: Text[] = [];
-    let node;
-    while (node = walker.nextNode()) {
-      // Skip nodes that are already highlighted
-      const parent = node.parentNode as Element;
-      if (parent && parent.getAttribute && parent.getAttribute('data-feedback')) {
-        continue;
-      }
-      textNodes.push(node as Text);
-    }
-
-    textNodes.forEach(textNode => {
-      const nodeText = textNode.textContent || '';
-      const searchIndex = nodeText.toLowerCase().indexOf(searchText.toLowerCase());
+      const className = item.feedbackType === 'liked' 
+        ? 'bg-green-100 text-green-800 rounded px-1' 
+        : 'bg-red-100 text-red-800 rounded px-1';
       
-      if (searchIndex !== -1) {
-        const beforeText = nodeText.substring(0, searchIndex);
-        const matchedText = nodeText.substring(searchIndex, searchIndex + searchText.length);
-        const afterText = nodeText.substring(searchIndex + searchText.length);
-
-        const fragment = document.createDocumentFragment();
-        
-        if (beforeText) {
-          fragment.appendChild(document.createTextNode(beforeText));
-        }
-
-        const span = document.createElement('span');
-        span.className = className;
-        span.setAttribute('data-feedback', feedbackType);
-        span.setAttribute('data-original-text', searchText);
-        span.textContent = matchedText;
-        fragment.appendChild(span);
-
-        if (afterText) {
-          fragment.appendChild(document.createTextNode(afterText));
-        }
-
-        const parent = textNode.parentNode;
-        if (parent) {
-          parent.replaceChild(fragment, textNode);
-        }
-      }
+      // Escape special regex characters
+      const escapedText = item.selectedText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedText})`, 'gi');
+      
+      processedText = processedText.replace(regex, 
+        `<span class="${className}" data-feedback="${item.feedbackType}">$1</span>`
+      );
     });
+    
+    return processedText;
   };
-
-  const escapeRegExp = (string: string) => {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  };
-
-  useEffect(() => {
-    // Apply highlights after markdown is rendered
-    const timer = setTimeout(() => {
-      // Clear existing highlights first
-      if (contentRef.current) {
-        const existingHighlights = contentRef.current.querySelectorAll('span[data-feedback]');
-        existingHighlights.forEach(span => {
-          const parent = span.parentNode;
-          if (parent) {
-            parent.replaceChild(document.createTextNode(span.textContent || ''), span);
-            parent.normalize();
-          }
-        });
-      }
-      highlightExistingText();
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [content, selectedTexts]);
 
   return (
     <>
@@ -176,8 +82,18 @@ export default function TextHighlighter({ content, onTextSelect, selectedTexts }
         <ReactMarkdown 
           remarkPlugins={[remarkGfm]}
           components={{
-            // Customize paragraph styling
-            p: ({ children }) => <p className="mb-3 text-gray-700 leading-relaxed">{children}</p>,
+            // Custom paragraph component that renders highlighted content
+            p: ({ children }) => {
+              const textContent = Array.isArray(children) ? children.join('') : String(children);
+              const highlightedContent = processContentForHighlighting(textContent);
+              
+              return (
+                <p 
+                  className="mb-3 text-gray-700 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: highlightedContent }}
+                />
+              );
+            },
             // Style headings
             h1: ({ children }) => <h1 className="text-lg font-semibold text-gray-900 mb-2">{children}</h1>,
             h2: ({ children }) => <h2 className="text-base font-semibold text-gray-900 mb-2">{children}</h2>,
@@ -188,13 +104,29 @@ export default function TextHighlighter({ content, onTextSelect, selectedTexts }
             // Style lists
             ul: ({ children }) => <ul className="list-disc pl-4 mb-3 space-y-1">{children}</ul>,
             ol: ({ children }) => <ol className="list-decimal pl-4 mb-3 space-y-1">{children}</ol>,
-            li: ({ children }) => <li className="text-gray-700">{children}</li>,
+            li: ({ children }) => {
+              const textContent = Array.isArray(children) ? children.join('') : String(children);
+              const highlightedContent = processContentForHighlighting(textContent);
+              
+              return (
+                <li 
+                  className="text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: highlightedContent }}
+                />
+              );
+            },
             // Style blockquotes
-            blockquote: ({ children }) => (
-              <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-3">
-                {children}
-              </blockquote>
-            ),
+            blockquote: ({ children }) => {
+              const textContent = Array.isArray(children) ? children.join('') : String(children);
+              const highlightedContent = processContentForHighlighting(textContent);
+              
+              return (
+                <blockquote 
+                  className="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-3"
+                  dangerouslySetInnerHTML={{ __html: highlightedContent }}
+                />
+              );
+            },
           }}
         >
           {content}
