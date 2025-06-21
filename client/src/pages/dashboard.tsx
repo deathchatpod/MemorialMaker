@@ -131,6 +131,17 @@ export default function Dashboard() {
     item.userTypes.includes(currentUser.userType)
   );
 
+  const getUserTypeLabel = (userType: string) => {
+    switch (userType) {
+      case 'user':
+        return 'Funeral Home';
+      case 'admin':
+        return 'Admin';
+      default:
+        return userType;
+    }
+  };
+
   const handleSectionChange = (sectionId: string) => {
     setActiveSection(sectionId);
   };
@@ -894,7 +905,7 @@ export default function Dashboard() {
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Dashboard</h2>
                 <p className="text-sm text-gray-600">
-                  {currentUser.userType === 'admin' ? 'Admin Panel' : 'User Panel'}
+                  {currentUser.userType === 'admin' ? 'Admin Panel' : 'Funeral Home Panel'}
                 </p>
               </div>
             )}
@@ -959,8 +970,8 @@ export default function Dashboard() {
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {currentUser.username}
                 </p>
-                <p className="text-xs text-gray-500 capitalize">
-                  {currentUser.userType}
+                <p className="text-xs text-gray-500">
+                  {getUserTypeLabel(currentUser.userType)}
                 </p>
               </div>
             )}
