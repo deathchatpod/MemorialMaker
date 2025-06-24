@@ -59,13 +59,15 @@ export default function SurveyManagement() {
     mutationFn: async (surveyData: z.infer<typeof createSurveySchema>) => {
       return await apiRequest('POST', '/api/surveys', surveyData);
     },
-    onSuccess: () => {
+    onSuccess: (survey) => {
       queryClient.invalidateQueries({ queryKey: ["/api/surveys"] });
       setIsCreateDialogOpen(false);
       toast({
         title: "Success",
         description: "Survey created successfully.",
       });
+      // Redirect to survey editor
+      setLocation(`/admin/surveys/${survey.id}/edit`);
     },
     onError: () => {
       toast({
