@@ -29,12 +29,12 @@ export default function Dashboard() {
   const userContext = useContext(UserContext);
   const currentUser = userContext?.currentUser || { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
   const [location, setLocation] = useLocation();
-  
+
   // Log when user changes
   React.useEffect(() => {
     console.log('Dashboard received user:', currentUser);
   }, [currentUser]);
-  
+
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('obituaries');
@@ -146,23 +146,23 @@ export default function Dashboard() {
       console.log('No user type, returning empty menu');
       return [];
     }
-    
+
     console.log('Filtering menu items for user type:', currentUser.userType);
-    
+
     const filtered = menuItems.filter(item => {
       // Direct match for user type
       if (item.userTypes.includes(currentUser.userType)) {
         return true;
       }
-      
+
       // Map funeral_home to 'user' for backward compatibility with some menu items
       if (currentUser.userType === 'funeral_home' && item.userTypes.includes('user')) {
         return true;
       }
-      
+
       return false;
     });
-    
+
     console.log('Filtered menu items:', filtered.map(item => item.label));
     return filtered;
   }, [currentUser?.userType]);
@@ -187,7 +187,7 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
-        
+
         {isLoading ? (
           <div className="p-8 text-center text-gray-500">
             <i className="fas fa-spinner fa-spin mr-2"></i>
@@ -381,7 +381,7 @@ export default function Dashboard() {
                       Add Option
                     </Button>
                   </div>
-                  
+
                   {formData.options.map((option, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-2 p-3 border rounded-lg">
                       <div>
@@ -594,7 +594,7 @@ export default function Dashboard() {
         }
 
         setUploadingDocument(true);
-        
+
         try {
           const formData = new FormData();
           formData.append('document', file);
@@ -609,7 +609,7 @@ export default function Dashboard() {
           }
 
           const result = await response.json();
-          
+
           setDocumentInfo({
             filename: result.filename,
             preview: result.documentText
@@ -717,7 +717,7 @@ export default function Dashboard() {
                       Upload a .docx or .pdf file with obituary examples to provide context for the AI. 
                       This will only be used for base prompts to help the AI understand the desired style and format.
                     </p>
-                    
+
                     {documentInfo.filename || template.contextDocumentName ? (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                         <div className="flex items-center justify-between">
@@ -794,7 +794,7 @@ export default function Dashboard() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="lg:col-span-1">
                   <Label className="text-sm font-medium">Available Variables</Label>
                   <div className="mt-2 space-y-2 max-h-96 overflow-y-auto bg-gray-50 p-3 rounded-lg">
@@ -888,12 +888,12 @@ export default function Dashboard() {
                   <i className={`fas ${platform === 'claude' ? 'fa-robot' : 'fa-brain'} mr-2`}></i>
                   {platform} AI Prompts
                 </h4>
-                
+
                 {promptTypes.map(promptType => {
                   const template = promptTemplates.find(
                     t => t.platform === platform && t.promptType === promptType
                   );
-                  
+
                   if (!template) {
                     return (
                       <Card key={promptType} className="mb-4">
@@ -905,7 +905,7 @@ export default function Dashboard() {
                       </Card>
                     );
                   }
-                  
+
                   return (
                     <PromptTemplateEditor key={template.id} template={template} />
                   );
@@ -928,7 +928,7 @@ export default function Dashboard() {
               Manage funeral home accounts across the platform. View all registered funeral homes, 
               their team sizes, and account status.
             </p>
-            
+
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div className="text-center">
@@ -944,7 +944,7 @@ export default function Dashboard() {
                   <div className="text-sm text-gray-600">Total Obituaries</div>
                 </div>
               </div>
-              
+
               <div className="text-center text-gray-500">
                 <p>Full funeral home management interface coming soon...</p>
                 <p className="text-sm mt-2">Contact system administrator for detailed management needs</p>
@@ -1035,7 +1035,7 @@ export default function Dashboard() {
                     </p>
                   )}
                 </li>
-                
+
                 {currentUser?.userType === 'funeral_home' && (
                   <li>
                     <button
@@ -1132,7 +1132,7 @@ export default function Dashboard() {
             {activeSection === 'user-management' && renderUserManagementSection()}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account-information' && (
-              currentUser?.userType === 'employee' ? <EmployeeAccount /> : <AccountInformation />
+              currentUser.userType === 'employee' ? <EmployeeAccount /> : <AccountInformation />
             )}
           </div>
         </main>
