@@ -28,6 +28,8 @@ interface Obituary {
 export default function Dashboard() {
   const { currentUser } = useContext(UserContext);
   const [location, setLocation] = useLocation();
+  
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('obituaries');
   const [activeCategory, setActiveCategory] = useState("basic");
@@ -139,19 +141,7 @@ export default function Dashboard() {
     return item.userTypes.includes(userTypeForFilter) || item.userTypes.includes(currentUser.userType);
   });
 
-  const getUserTypeLabel = (userType: string) => {
-    switch (userType) {
-      case 'user':
-      case 'funeral_home':
-        return 'Funeral Home Admin';
-      case 'employee':
-        return 'FH Employee';
-      case 'admin':
-        return 'System Admin';
-      default:
-        return userType;
-    }
-  };
+
 
   const handleSectionChange = (sectionId: string) => {
     setActiveSection(sectionId);
@@ -1070,9 +1060,10 @@ export default function Dashboard() {
                   {currentUser.username}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {currentUser.userType === 'admin' && 'System Admin'}
-                  {currentUser.userType === 'funeral_home' && 'Funeral Home Admin'}
-                  {currentUser.userType === 'employee' && 'FH Employee'}
+                  {currentUser?.userType === 'admin' && 'System Admin'}
+                  {currentUser?.userType === 'funeral_home' && 'Funeral Home Admin'}
+                  {currentUser?.userType === 'employee' && 'FH Employee'}
+                  {!currentUser?.userType && 'Loading...'}
                 </p>
               </div>
             )}
