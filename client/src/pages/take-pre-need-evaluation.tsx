@@ -134,6 +134,42 @@ export default function TakePreNeedEvaluation() {
     }
   });
 
+  const updateUserInfo = useMutation({
+    mutationFn: async (userData: any) => {
+      let endpoint = '';
+      if (currentUserType === 'admin') {
+        endpoint = `/api/admin-users/${currentUserId}`;
+      } else if (currentUserType === 'funeral_home') {
+        endpoint = `/api/funeral-homes/${currentUserId}`;
+      } else if (currentUserType === 'employee') {
+        endpoint = `/api/employees/${currentUserId}`;
+      }
+
+      if (endpoint) {
+        return apiRequest(endpoint, {
+          method: 'PATCH',
+          body: JSON.stringify(userData),
+        });
+      }
+    },
+    onSuccess: () => {
+      // Invalidate user data cache to refetch updated information
+      queryClient.invalidateQueries({ queryKey: ['/api/user', currentUserId, currentUserType] });
+      
+      toast({
+        title: "Account Updated",
+        description: "Your account information has been updated with the form data",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Warning", 
+        description: "Evaluation submitted but account information could not be updated",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (responses: any) => {
     submitEvaluation.mutate(responses);
   };
