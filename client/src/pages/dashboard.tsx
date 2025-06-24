@@ -104,7 +104,7 @@ export default function Dashboard() {
       id: 'obituaries',
       label: 'Obituary Generator',
       icon: 'fas fa-file-alt',
-      userTypes: ['user', 'admin']
+      userTypes: ['user', 'funeral_home', 'employee', 'admin']
     },
     {
       id: 'finalspaces',
@@ -956,6 +956,46 @@ export default function Dashboard() {
                 )}
               </li>
             ))}
+
+            {/* Funeral Home specific menu items */}
+            {currentUser.userType === 'funeral_home' && (
+              <>
+                <li className="my-2">
+                  <div className="h-px bg-gray-200"></div>
+                  {!sidebarCollapsed && (
+                    <p className="text-xs font-medium text-gray-500 mt-2 px-3">Management</p>
+                  )}
+                </li>
+                <li>
+                  <button
+                    onClick={() => handleSectionChange('team-management')}
+                    className={cn(
+                      "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                      activeSection === 'team-management'
+                        ? "bg-primary text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <i className={cn("fas fa-users", "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                    {!sidebarCollapsed && <span>Team Management</span>}
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => handleSectionChange('account-information')}
+                    className={cn(
+                      "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                      activeSection === 'account-information'
+                        ? "bg-primary text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <i className={cn("fas fa-cog", "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                    {!sidebarCollapsed && <span>Account Information</span>}
+                  </button>
+                </li>
+              </>
+            )}
           </ul>
         </nav>
 
