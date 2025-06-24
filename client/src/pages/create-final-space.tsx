@@ -1,6 +1,5 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "wouter";
-// UserContext removed
 import { useCreateFinalSpace, useCompletedObituaries } from "@/hooks/use-final-spaces";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,11 +29,15 @@ const createFinalSpaceSchema = insertFinalSpaceSchema.extend({
 type CreateFinalSpaceForm = z.infer<typeof createFinalSpaceSchema>;
 
 export default function CreateFinalSpace() {
-  const { currentUser } = useContext(UserContext);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const { data: completedObituaries } = useCompletedObituaries(currentUser?.id || 0, currentUser?.userType || 'user');
+  // Get current user from URL params like other components
+  const urlParams = new URLSearchParams(window.location.search);
+  const userTypeParam = urlParams.get('userType') || 'funeral_home';
+  const userIdParam = parseInt(urlParams.get('userId') || '2', 10);
+
+  const { data: completedObituaries } = useCompletedObituaries(userIdParam, userTypeParam);
   const createFinalSpace = useCreateFinalSpace();
 
   const form = useForm<CreateFinalSpaceForm>({
