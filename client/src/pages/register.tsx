@@ -80,12 +80,14 @@ export default function Register() {
         },
         body: JSON.stringify({
           name: formData.name,
-          businessName: formData.businessName,
           email: formData.email,
           password: formData.password,
           phone: formData.phone,
+          userType: formData.userType,
+          companyName: formData.companyName,
           address: formData.address,
-          website: formData.website
+          website: formData.website,
+          description: formData.description
         }),
       });
 
@@ -93,13 +95,15 @@ export default function Register() {
         setSuccess('Account created successfully! Please sign in.');
         setFormData({
           name: '',
-          businessName: '',
           email: '',
           password: '',
           confirmPassword: '',
           phone: '',
+          userType: '',
+          companyName: '',
           address: '',
-          website: ''
+          website: '',
+          description: ''
         });
       } else {
         const data = await response.json();
@@ -121,14 +125,14 @@ export default function Register() {
       <div className="max-w-2xl w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">DeathMatters</h1>
-          <p className="text-gray-600 mt-2">Create Your Funeral Home Account</p>
+          <p className="text-gray-600 mt-2">Create Your Account</p>
         </div>
 
         <Card>
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Create Account</CardTitle>
             <CardDescription className="text-center">
-              Set up your funeral home account to start using DeathMatters
+              Set up your account to start using DeathMatters
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
