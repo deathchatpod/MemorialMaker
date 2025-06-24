@@ -7,11 +7,13 @@ import { hashPassword } from "./auth";
 import { generateObituariesWithClaude, generateObituariesWithChatGPT, generateRevisedObituary } from "./services/ai";
 import { processDocument, deleteDocument } from "./services/document";
 import { generateObituaryPDF } from "./services/pdf";
-import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema } from "@shared/schema";
+import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import nodemailer from "nodemailer";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // Configure multer for file uploads
 const storage_multer = multer.diskStorage({
@@ -502,28 +504,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate unique collaboration session
-      const uuid = require('uuid').v4();
+      const { v4: uuidv4 } = await import('uuid');
+      const uuid = uuidv4();
       
       // Create collaboration session
       const session = await storage.createCollaborationSession({
         obituaryId,
         collaboratorEmail: email,
         uuid,
-        isActive: true
+        collaboratorName: null
       });
 
       // Create collaborator record
       const collaborator = await storage.createObituaryCollaborator({
         obituaryId,
-        email,
-        invitedAt: new Date()
+        collaboratorEmail: email,
+        collaboratorName: null
       });
 
       const shareableLink = `${req.protocol}://${req.get('host')}/collaborate/${uuid}`;
       
       res.json({
-        collaborator,
-        shareableLink
+        message: "Collaborator added successfully",
+        collaborationLink: `/collaborate/${uuid}`,
+        session,
+        collaborator
       });
     } catch (error) {
       console.error('Error adding collaborator:', error);
@@ -668,6 +673,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Placeholder - implement with actual ChatGPT API
     return content + "\n\n[Revised based on feedback]";
   };
+
+  // Collaborations endpoint for dashboard
+  app.get("/api/collaborations/:userId/:userType", async (req, res) => {
+    try {
+      const { userId, userType } = req.params;
+      
+      // Get collaborations based on user type
+      let collaborations = [];
+      
+      if (userType === 'individual') {
+        // For individuals, get collaborations where they are invited
+        const allCollaborators = await db.select()
+          .from(obituaryCollaborators)
+          .where(eq(obituaryCollaborators.collaboratorEmail, 
+            // Get user email from userId - this would need proper user lookup
+            'individual@example.com' // Placeholder
+          ));
+        
+        // Get collaboration sessions and obituary details
+        for (const collab of allCollaborators) {
+          const sessions = await db.select()
+            .from(collaborationSessions)
+            .where(eq(collaborationSessions.obituaryId, collab.obituaryId));
+          
+          const obituary = await storage.getObituary(collab.obituaryId);
+          
+          collaborations.push({
+            ...collab,
+            collaborationUuid: sessions[0]?.uuid,
+            obituary
+          });
+        }
+      } else {
+        // For other user types, get obituaries they can collaborate on
+        const userObituaries = await storage.getObituariesByCreator(parseInt(userId), userType);
+        
+        for (const obituary of userObituaries) {
+          const collabs = await storage.getObituaryCollaborators(obituary.id);
+          collaborations.push(...collabs.map(c => ({ ...c, obituary })));
+        }
+      }
+      
+      res.json(collaborations);
+    } catch (error) {
+      console.error("Error fetching collaborations:", error);
+      res.status(500).json({ error: "Failed to fetch collaborations" });
+    }
+  });
 
   // Survey routes
   app.get("/api/surveys", async (req, res) => {
