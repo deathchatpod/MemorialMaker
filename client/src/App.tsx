@@ -16,7 +16,6 @@ import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
 
-// Simple user switching without context for now
 interface User {
   id: number;
   username: string;
@@ -42,7 +41,6 @@ function Router() {
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User>(() => {
-    // Get user type from URL param
     const urlParams = new URLSearchParams(window.location.search);
     const userTypeParam = urlParams.get('userType');
     
@@ -56,7 +54,6 @@ function App() {
   });
 
   const handleUserChange = (userType: string) => {
-    // Update URL and reload page for clean state
     const url = new URL(window.location.href);
     url.searchParams.set('userType', userType);
     window.location.href = url.toString();
@@ -66,7 +63,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="min-h-screen bg-gray-50">
-          {/* Navigation Header */}
           <header className="bg-white shadow-sm border-b border-gray-200">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center h-16">
@@ -102,14 +98,15 @@ function App() {
                   </div>
                 </div>
               </div>
-            </header>
+            </div>
+          </header>
 
           <Router />
           <Toaster />
         </div>
       </TooltipProvider>
     </QueryClientProvider>
-    );
+  );
 }
 
 export default App;
