@@ -25,7 +25,10 @@ interface User {
 export const UserContext = React.createContext<{
   currentUser: User;
   setCurrentUser: (user: User) => void;
-} | null>(null);
+}>({
+  currentUser: { id: 1, username: 'Jane Smith', userType: 'funeral_home' },
+  setCurrentUser: () => {},
+});
 
 function Router() {
   return (
