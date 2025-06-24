@@ -7,10 +7,11 @@ import { cn } from "@/lib/utils";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
 import PromptTemplates from "./prompt-templates";
-import ObituaryForm from "./obituary-form";
-import FinalSpaces from "./final-spaces";
-import SurveyManagement from "./survey-management";
-import GeneratedObituaries from "./generated-obituaries";
+import TeamManagement from "./team-management";
+import AccountInformation from "./account-information";
+import ObituariesList from "./obituaries-list";
+import FinalSpacesList from "./finalspaces-list";
+import SurveysList from "./surveys-list";
 import MyCollaborations from "./my-collaborations";
 
 interface User {
@@ -63,10 +64,9 @@ export default function Dashboard() {
 
   // All menu items available to all user types
   const menuItems = [
-    { id: 'obituaries', label: 'Obituary Generator', icon: 'fas fa-file-alt' },
-    { id: 'generated-obituaries', label: 'Generated Obituaries', icon: 'fas fa-file-text' },
-    { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
+    { id: 'obituaries', label: 'Obituaries', icon: 'fas fa-file-alt' },
     { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
+    { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
     { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-poll-h' },
     { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' },
     { id: 'management', label: 'Funeral Home Management', icon: 'fas fa-building' }
@@ -167,8 +167,7 @@ export default function Dashboard() {
         <main className="p-6">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">
-              {activeSection === 'obituaries' && 'Obituary Generator'}
-              {activeSection === 'generated-obituaries' && 'Generated Obituaries'}
+              {activeSection === 'obituaries' && 'Obituaries'}
               {activeSection === 'collaborations' && 'My Collaborations'}
               {activeSection === 'finalspaces' && 'FinalSpaces'}
               {activeSection === 'surveys' && 'Platform Surveys'}
@@ -179,18 +178,17 @@ export default function Dashboard() {
             </h1>
 
             {/* Render specific components based on active section */}
-            {activeSection === 'obituaries' && <ObituaryForm />}
-            {activeSection === 'generated-obituaries' && <GeneratedObituaries />}
-            {activeSection === 'collaborations' && <MyCollaborations />}
-            {activeSection === 'finalspaces' && <FinalSpaces />}
-            {activeSection === 'surveys' && <SurveyManagement />}
+            {activeSection === 'obituaries' && <ObituariesList userType={currentUser.userType} userId={currentUser.id} />}
+            {activeSection === 'collaborations' && <MyCollaborations userType={currentUser.userType} userId={currentUser.id} />}
+            {activeSection === 'finalspaces' && <FinalSpacesList userType={currentUser.userType} userId={currentUser.id} />}
+            {activeSection === 'surveys' && <SurveysList />}
             {activeSection === 'management' && <TeamManagement />}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account' && <AccountInformation />}
             {activeSection === 'prompts' && <PromptTemplates />}
             
             {/* Default placeholder for other sections */}
-            {!['obituaries', 'generated-obituaries', 'collaborations', 'finalspaces', 'surveys', 'management', 'team-management', 'account', 'prompts'].includes(activeSection) && (
+            {!['obituaries', 'collaborations', 'finalspaces', 'surveys', 'management', 'team-management', 'account', 'prompts'].includes(activeSection) && (
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center py-12">

@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ExternalLink, Clock, Users } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Heart, ExternalLink, Clock, Users, MessageSquare } from "lucide-react";
 import { Link } from "wouter";
 
 interface CollaborationObituary {
@@ -14,34 +15,22 @@ interface CollaborationObituary {
   collaborationUrl: string;
   lastActivity: string;
   collaboratorCount: number;
+  obituaryId: number;
+  feedbackCount: number;
 }
 
-export default function MyCollaborations() {
-  // Mock data for now - replace with actual API call
+interface MyCollaborationsProps {
+  userType: string;
+  userId: number;
+}
+
+export default function MyCollaborations({ userType, userId }: MyCollaborationsProps) {
   const { data: collaborations = [], isLoading } = useQuery<CollaborationObituary[]>({
-    queryKey: ["/api/my-collaborations"],
+    queryKey: ["/api/my-collaborations", userId],
     queryFn: async () => {
-      // This would be replaced with actual API call
-      return [
-        {
-          id: 1,
-          fullName: "John Smith",
-          dateCreated: "2024-06-20",
-          status: "active",
-          collaborationUrl: "/collaborate/abc123",
-          lastActivity: "2024-06-22",
-          collaboratorCount: 3
-        },
-        {
-          id: 2,
-          fullName: "Mary Johnson",
-          dateCreated: "2024-06-18",
-          status: "completed",
-          collaborationUrl: "/collaborate/def456",
-          lastActivity: "2024-06-21",
-          collaboratorCount: 5
-        }
-      ];
+      const response = await fetch(`/api/my-collaborations?userId=${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch collaborations');
+      return response.json();
     },
   });
 
@@ -80,53 +69,76 @@ export default function MyCollaborations() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {collaborations.map((collaboration) => (
-            <Card key={collaboration.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">
-                      Obituary for {collaboration.fullName}
-                    </CardTitle>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Created on {new Date(collaboration.dateCreated).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <Badge 
-                    className={
-                      collaboration.status === 'active' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }
-                  >
-                    {collaboration.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-6 text-sm text-gray-600">
-                    <div className="flex items-center">
-                      <Users className="w-4 h-4 mr-1" />
-                      {collaboration.collaboratorCount} collaborators
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-1" />
-                      Last activity: {new Date(collaboration.lastActivity).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <Link href={collaboration.collaborationUrl}>
-                    <Button className="flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4" />
-                      Continue Collaboration
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>My Collaborations ({collaborations.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Obituary</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Collaborators</TableHead>
+                  <TableHead>My Feedback</TableHead>
+                  <TableHead>Last Activity</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {collaborations.map((collaboration) => (
+                  <TableRow key={collaboration.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{collaboration.fullName}</div>
+                        <div className="text-sm text-gray-500">
+                          Created {new Date(collaboration.dateCreated).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        className={
+                          collaboration.status === 'active' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-blue-100 text-blue-800'
+                        }
+                      >
+                        {collaboration.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <Users className="w-4 h-4 mr-1" />
+                        {collaboration.collaboratorCount}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center">
+                        <MessageSquare className="w-4 h-4 mr-1" />
+                        {collaboration.feedbackCount || 0} items
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Clock className="w-4 h-4 mr-1" />
+                        {new Date(collaboration.lastActivity).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Link href={collaboration.collaborationUrl}>
+                        <Button size="sm" className="flex items-center gap-2">
+                          <ExternalLink className="w-4 h-4" />
+                          Continue
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
