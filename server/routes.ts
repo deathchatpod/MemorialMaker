@@ -518,8 +518,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create collaborator record
       const collaborator = await storage.createObituaryCollaborator({
         obituaryId,
-        collaboratorEmail: email,
-        collaboratorName: null
+        email: email,
+        name: null
       });
 
       const shareableLink = `${req.protocol}://${req.get('host')}/collaborate/${uuid}`;
