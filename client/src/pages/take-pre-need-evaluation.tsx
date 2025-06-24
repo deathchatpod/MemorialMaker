@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, AlertCircle } from 'lucide-react';
 import ConditionalSurveyForm from '@/components/ConditionalSurveyForm';
+import { apiRequest } from '@/lib/queryClient';
 
 interface Survey {
   id: number;
@@ -32,12 +33,36 @@ interface Question {
 export default function TakePreNeedEvaluation() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Get current user context from URL params
   const urlParams = new URLSearchParams(window.location.search);
   const currentUserId = parseInt(urlParams.get('userId') || '1');
   const currentUserType = urlParams.get('userType') || 'admin';
   const currentFuneralHomeId = urlParams.get('funeralHomeId') ? parseInt(urlParams.get('funeralHomeId')!) : undefined;
+
+  // Fetch current user information for auto-fill
+  const { data: currentUser } = useQuery({
+    queryKey: ['/api/user', currentUserId, currentUserType],
+    queryFn: async () => {
+      let endpoint = '';
+      if (currentUserType === 'admin') {
+        endpoint = `/api/admin-users/${currentUserId}`;
+      } else if (currentUserType === 'funeral_home') {
+        endpoint = `/api/funeral-homes/${currentUserId}`;
+      } else if (currentUserType === 'employee') {
+        endpoint = `/api/employees/${currentUserId}`;
+      }
+      
+      if (endpoint) {
+        const response = await fetch(endpoint);
+        if (response.ok) {
+          return response.json();
+        }
+      }
+      return null;
+    },
+  });
 
   // Find the Individual Needs Assessment Survey
   const { data: surveys = [], isLoading: surveysLoading } = useQuery<Survey[]>({
@@ -191,6 +216,8 @@ export default function TakePreNeedEvaluation() {
             questions={questions}
             onSubmit={handleSubmit}
             isLoading={submitEvaluation.isPending}
+            currentUser={currentUser}
+            onUserUpdate={(userData) => updateUserInfo.mutate(userData)}
           />
           
           <div className="mt-6 flex gap-4">

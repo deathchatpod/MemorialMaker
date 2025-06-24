@@ -13,9 +13,27 @@ interface ConditionalSurveyFormProps {
   onSubmit: (formData: Record<string, any>) => void;
   isLoading?: boolean;
   userType?: string;
+  currentUser?: {
+    id: number;
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+  };
+  onUserUpdate?: (userData: any) => void;
 }
 
-export default function ConditionalSurveyForm({ questions, onSubmit, isLoading = false, userType }: ConditionalSurveyFormProps) {
+export default function ConditionalSurveyForm({ 
+  questions, 
+  onSubmit, 
+  isLoading = false, 
+  userType, 
+  currentUser,
+  onUserUpdate 
+}: ConditionalSurveyFormProps) {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [visibleQuestions, setVisibleQuestions] = useState<number[]>([]);
 
@@ -86,6 +104,36 @@ export default function ConditionalSurveyForm({ questions, onSubmit, isLoading =
       ...prev,
       [questionId]: value
     }));
+
+    // Auto-fill user information when "Yourself" is selected
+    const question = sortedQuestions.find(q => q.id === questionId);
+    if (question?.questionText === "Are you filling out this form for:" && value === "Yourself" && currentUser) {
+      const autoFillData: Record<number, any> = {};
+      
+      // Map user data to question IDs based on question text
+      sortedQuestions.forEach(q => {
+        if (q.questionText === "Email Address:" && currentUser.email) {
+          autoFillData[q.id] = currentUser.email;
+        } else if (q.questionText === "Phone Number:" && currentUser.phone) {
+          autoFillData[q.id] = currentUser.phone;
+        } else if (q.questionText === "Street Address:" && currentUser.address) {
+          autoFillData[q.id] = currentUser.address;
+        } else if (q.questionText === "City:" && currentUser.city) {
+          autoFillData[q.id] = currentUser.city;
+        } else if (q.questionText === "State:" && currentUser.state) {
+          autoFillData[q.id] = currentUser.state;
+        } else if (q.questionText === "Zip Code:" && currentUser.zipCode) {
+          autoFillData[q.id] = currentUser.zipCode;
+        }
+      });
+
+      if (Object.keys(autoFillData).length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          ...autoFillData
+        }));
+      }
+    }
   };
 
   const handleCheckboxChange = (questionId: number, option: string, checked: boolean) => {
@@ -107,6 +155,42 @@ export default function ConditionalSurveyForm({ questions, onSubmit, isLoading =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Extract user information to update account if "Yourself" was selected
+    const yourselfQuestion = sortedQuestions.find(q => q.questionText === "Are you filling out this form for:");
+    if (yourselfQuestion && formData[yourselfQuestion.id] === "Yourself" && onUserUpdate && currentUser) {
+      const updatedUserData: any = { id: currentUser.id };
+      
+      // Extract new information from form data
+      sortedQuestions.forEach(q => {
+        const value = formData[q.id];
+        if (value) {
+          if (q.questionText === "Email Address:") {
+            updatedUserData.email = value;
+          } else if (q.questionText === "Phone Number:") {
+            updatedUserData.phone = value;
+          } else if (q.questionText === "Street Address:") {
+            updatedUserData.address = value;
+          } else if (q.questionText === "City:") {
+            updatedUserData.city = value;
+          } else if (q.questionText === "State:") {
+            updatedUserData.state = value;
+          } else if (q.questionText === "Zip Code:") {
+            updatedUserData.zipCode = value;
+          }
+        }
+      });
+
+      // Only update if there are changes
+      const hasChanges = Object.keys(updatedUserData).some(key => 
+        key !== 'id' && updatedUserData[key] !== currentUser[key as keyof typeof currentUser]
+      );
+
+      if (hasChanges) {
+        onUserUpdate(updatedUserData);
+      }
+    }
+    
     onSubmit(formData);
   };
 
