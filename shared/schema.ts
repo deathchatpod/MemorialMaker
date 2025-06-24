@@ -1,19 +1,76 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
-export const users = pgTable("users", {
+// Main Admin Users (project-level admin)
+export const adminUsers = pgTable("admin_users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  userType: varchar("user_type", { length: 20 }).notNull().default("user"), // 'user' or 'admin'
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Funeral Homes (parent accounts)
+export const funeralHomes = pgTable("funeral_homes", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  password: text("password"),
+  googleId: text("google_id").unique(),
+  name: text("name").notNull(),
+  businessName: text("business_name").notNull(),
+  address: text("address"),
+  phone: text("phone"),
+  website: text("website"),
+  contactEmail: text("contact_email"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Funeral Home Employee Users
+export const employees = pgTable("employees", {
+  id: serial("id").primaryKey(),
+  funeralHomeId: integer("funeral_home_id").notNull().references(() => funeralHomes.id, { onDelete: "cascade" }),
+  email: text("email").notNull().unique(),
+  password: text("password"),
+  googleId: text("google_id").unique(),
+  name: text("name").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  invitedAt: timestamp("invited_at").notNull().defaultNow(),
+  acceptedAt: timestamp("accepted_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Employee Invitations
+export const employeeInvitations = pgTable("employee_invitations", {
+  id: serial("id").primaryKey(),
+  funeralHomeId: integer("funeral_home_id").notNull().references(() => funeralHomes.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  inviteToken: text("invite_token").notNull().unique(),
+  isUsed: boolean("is_used").notNull().default(false),
+  expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Sessions for authentication
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  userType: varchar("user_type", { length: 20 }).notNull(), // 'admin', 'funeral_home', 'employee'
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Obituaries (linked to either funeral home or employee)
 export const obituaries = pgTable("obituaries", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
+  funeralHomeId: integer("funeral_home_id").notNull().references(() => funeralHomes.id),
+  createdById: integer("created_by_id").notNull(), // Can be funeral home or employee ID
+  createdByType: varchar("created_by_type", { length: 20 }).notNull(), // 'funeral_home' or 'employee'
   fullName: text("full_name").notNull(),
   age: integer("age"),
   dateOfBirth: text("date_of_birth"),
@@ -30,7 +87,7 @@ export const obituaries = pgTable("obituaries", {
 
 export const generatedObituaries = pgTable("generated_obituaries", {
   id: serial("id").primaryKey(),
-  obituaryId: integer("obituary_id").notNull().references(() => obituaries.id),
+  obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
   aiProvider: varchar("ai_provider", { length: 20 }).notNull(), // 'claude' or 'chatgpt'
   version: integer("version").notNull(), // 1, 2, or 3
   content: text("content").notNull(),
@@ -42,7 +99,7 @@ export const generatedObituaries = pgTable("generated_obituaries", {
 
 export const textFeedback = pgTable("text_feedback", {
   id: serial("id").primaryKey(),
-  generatedObituaryId: integer("generated_obituary_id").notNull().references(() => generatedObituaries.id),
+  generatedObituaryId: integer("generated_obituary_id").notNull().references(() => generatedObituaries.id, { onDelete: "cascade" }),
   selectedText: text("selected_text").notNull(),
   feedbackType: varchar("feedback_type", { length: 10 }).notNull(), // 'liked' or 'disliked'
   collaboratorName: text("collaborator_name"), // null for owner feedback
@@ -54,58 +111,59 @@ export const obituaryCollaborators = pgTable("obituary_collaborators", {
   id: serial("id").primaryKey(),
   obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
-  invitedAt: timestamp("invited_at").defaultNow().notNull(),
+  name: text("name"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const collaborationSessions = pgTable("collaboration_sessions", {
   id: serial("id").primaryKey(),
-  uuid: text("uuid").notNull().unique(),
   obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
+  uuid: text("uuid").notNull().unique(),
   collaboratorEmail: text("collaborator_email").notNull(),
-  collaboratorName: text("collaborator_name"), // filled when they first access
-  accessedAt: timestamp("accessed_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  collaboratorName: text("collaborator_name"),
+  isActive: boolean("is_active").notNull().default(true),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
-  category: varchar("category", { length: 50 }).notNull(),
   questionText: text("question_text").notNull(),
-  questionType: varchar("question_type", { length: 20 }).notNull(), // 'text', 'number', 'radio', 'checkbox', 'textarea'
-  isRequired: boolean("is_required").notNull().default(false),
+  questionType: varchar("question_type", { length: 20 }).notNull(),
+  category: varchar("category", { length: 50 }).notNull(),
   placeholder: text("placeholder"),
+  isRequired: boolean("is_required").notNull().default(false),
   options: jsonb("options"), // For radio/checkbox options
-  sortOrder: integer("sort_order").notNull().default(0),
-  isActive: boolean("is_active").notNull().default(true),
+  orderIndex: integer("order_index").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const promptTemplates = pgTable("prompt_templates", {
   id: serial("id").primaryKey(),
-  name: varchar("name", { length: 100 }).notNull(),
+  name: text("name").notNull(),
   platform: varchar("platform", { length: 20 }).notNull(), // 'claude' or 'chatgpt'
-  promptType: varchar("prompt_type", { length: 20 }).notNull(), // 'base' or 'revision'
-  template: text("template").notNull(),
-  description: text("description"),
-  contextDocument: text("context_document"), // Path to uploaded document
-  contextDocumentName: varchar("context_document_name", { length: 255 }), // Original filename
-  isActive: boolean("is_active").notNull().default(true),
+  promptType: varchar("prompt_type", { length: 20 }).notNull(), // 'base', 'revision'
+  content: text("content").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Final Spaces (linked to funeral home)
 export const finalSpaces = pgTable("final_spaces", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  slug: varchar("slug", { length: 100 }).notNull().unique(), // URL-friendly identifier
-  personName: varchar("person_name", { length: 255 }).notNull(),
-  dateOfBirth: varchar("date_of_birth", { length: 10 }),
-  dateOfDeath: varchar("date_of_death", { length: 10 }),
-  obituaryId: integer("obituary_id").references(() => obituaries.id, { onDelete: "set null" }),
-  spotifyPlaylistUrl: text("spotify_playlist_url"),
-  pandoraPlaylistUrl: text("pandora_playlist_url"),
-  metaAccessToken: text("meta_access_token"), // For Facebook integration
+  funeralHomeId: integer("funeral_home_id").notNull().references(() => funeralHomes.id),
+  createdById: integer("created_by_id").notNull(), // Can be funeral home or employee ID
+  createdByType: varchar("created_by_type", { length: 20 }).notNull(), // 'funeral_home' or 'employee'
+  obituaryId: integer("obituary_id").references(() => obituaries.id),
+  slug: text("slug").notNull().unique(),
+  personName: text("person_name").notNull(),
+  dateOfBirth: text("date_of_birth"),
+  dateOfDeath: text("date_of_death"),
+  description: text("description"),
+  socialMediaLinks: jsonb("social_media_links"),
+  musicPlaylist: text("music_playlist"),
   isPublic: boolean("is_public").notNull().default(true),
+  allowComments: boolean("allow_comments").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -113,8 +171,8 @@ export const finalSpaces = pgTable("final_spaces", {
 export const finalSpaceComments = pgTable("final_space_comments", {
   id: serial("id").primaryKey(),
   finalSpaceId: integer("final_space_id").notNull().references(() => finalSpaces.id, { onDelete: "cascade" }),
-  authorName: varchar("author_name", { length: 255 }).notNull(),
-  authorEmail: varchar("author_email", { length: 255 }), // Optional for contact
+  authorName: text("author_name").notNull(),
+  authorEmail: text("author_email"),
   content: text("content").notNull(),
   isApproved: boolean("is_approved").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -129,15 +187,33 @@ export const finalSpaceImages = pgTable("final_space_images", {
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const funeralHomesRelations = relations(funeralHomes, ({ many }) => ({
+  employees: many(employees),
+  invitations: many(employeeInvitations),
   obituaries: many(obituaries),
   finalSpaces: many(finalSpaces),
 }));
 
+export const employeesRelations = relations(employees, ({ one, many }) => ({
+  funeralHome: one(funeralHomes, {
+    fields: [employees.funeralHomeId],
+    references: [funeralHomes.id],
+  }),
+  obituaries: many(obituaries),
+  finalSpaces: many(finalSpaces),
+}));
+
+export const employeeInvitationsRelations = relations(employeeInvitations, ({ one }) => ({
+  funeralHome: one(funeralHomes, {
+    fields: [employeeInvitations.funeralHomeId],
+    references: [funeralHomes.id],
+  }),
+}));
+
 export const obituariesRelations = relations(obituaries, ({ one, many }) => ({
-  user: one(users, {
-    fields: [obituaries.userId],
-    references: [users.id],
+  funeralHome: one(funeralHomes, {
+    fields: [obituaries.funeralHomeId],
+    references: [funeralHomes.id],
   }),
   generatedObituaries: many(generatedObituaries),
   finalSpaces: many(finalSpaces),
@@ -161,9 +237,9 @@ export const textFeedbackRelations = relations(textFeedback, ({ one }) => ({
 }));
 
 export const finalSpacesRelations = relations(finalSpaces, ({ one, many }) => ({
-  user: one(users, {
-    fields: [finalSpaces.userId],
-    references: [users.id],
+  funeralHome: one(funeralHomes, {
+    fields: [finalSpaces.funeralHomeId],
+    references: [funeralHomes.id],
   }),
   obituary: one(obituaries, {
     fields: [finalSpaces.obituaryId],
@@ -202,10 +278,27 @@ export const collaborationSessionsRelations = relations(collaborationSessions, (
 }));
 
 // Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  userType: true,
+export const insertAdminUserSchema = createInsertSchema(adminUsers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFuneralHomeSchema = createInsertSchema(funeralHomes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEmployeeSchema = createInsertSchema(employees).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEmployeeInvitationSchema = createInsertSchema(employeeInvitations).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertObituarySchema = createInsertSchema(obituaries).omit({
@@ -253,7 +346,7 @@ export const insertFinalSpaceImageSchema = createInsertSchema(finalSpaceImages).
 
 export const insertObituaryCollaboratorSchema = createInsertSchema(obituaryCollaborators).omit({
   id: true,
-  invitedAt: true,
+  createdAt: true,
 });
 
 export const insertCollaborationSessionSchema = createInsertSchema(collaborationSessions).omit({
@@ -262,25 +355,46 @@ export const insertCollaborationSessionSchema = createInsertSchema(collaboration
 });
 
 // Types
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
+
+export type FuneralHome = typeof funeralHomes.$inferSelect;
+export type InsertFuneralHome = z.infer<typeof insertFuneralHomeSchema>;
+
+export type Employee = typeof employees.$inferSelect;
+export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+
+export type EmployeeInvitation = typeof employeeInvitations.$inferSelect;
+export type InsertEmployeeInvitation = z.infer<typeof insertEmployeeInvitationSchema>;
+
+export type Session = typeof sessions.$inferSelect;
+
 export type Obituary = typeof obituaries.$inferSelect;
 export type InsertObituary = z.infer<typeof insertObituarySchema>;
+
 export type GeneratedObituary = typeof generatedObituaries.$inferSelect;
 export type InsertGeneratedObituary = z.infer<typeof insertGeneratedObituarySchema>;
+
 export type TextFeedback = typeof textFeedback.$inferSelect;
 export type InsertTextFeedback = z.infer<typeof insertTextFeedbackSchema>;
+
 export type Question = typeof questions.$inferSelect;
 export type InsertQuestion = z.infer<typeof insertQuestionSchema>;
+
 export type PromptTemplate = typeof promptTemplates.$inferSelect;
 export type InsertPromptTemplate = z.infer<typeof insertPromptTemplateSchema>;
+
 export type FinalSpace = typeof finalSpaces.$inferSelect;
 export type InsertFinalSpace = z.infer<typeof insertFinalSpaceSchema>;
+
 export type FinalSpaceComment = typeof finalSpaceComments.$inferSelect;
 export type InsertFinalSpaceComment = z.infer<typeof insertFinalSpaceCommentSchema>;
+
 export type FinalSpaceImage = typeof finalSpaceImages.$inferSelect;
 export type InsertFinalSpaceImage = z.infer<typeof insertFinalSpaceImageSchema>;
+
 export type ObituaryCollaborator = typeof obituaryCollaborators.$inferSelect;
 export type InsertObituaryCollaborator = z.infer<typeof insertObituaryCollaboratorSchema>;
+
 export type CollaborationSession = typeof collaborationSessions.$inferSelect;
 export type InsertCollaborationSession = z.infer<typeof insertCollaborationSessionSchema>;

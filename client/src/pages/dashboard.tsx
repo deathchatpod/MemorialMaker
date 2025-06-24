@@ -903,7 +903,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             {!sidebarCollapsed && (
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">Dashboard</h2>
+                <h2 className="text-lg font-semibold text-gray-900">DeathMatters</h2>
                 <p className="text-sm text-gray-600">
                   {currentUser.userType === 'admin' ? 'Admin Panel' : 'Funeral Home Panel'}
                 </p>

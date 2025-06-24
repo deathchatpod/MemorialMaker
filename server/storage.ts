@@ -1,27 +1,55 @@
 import { 
-  users, obituaries, generatedObituaries, textFeedback, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
+  adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
+  textFeedback, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
   obituaryCollaborators, collaborationSessions,
-  type User, type InsertUser, type Obituary, type InsertObituary,
-  type GeneratedObituary, type InsertGeneratedObituary,
-  type TextFeedback, type InsertTextFeedback,
-  type Question, type InsertQuestion, type PromptTemplate, type InsertPromptTemplate,
-  type FinalSpace, type InsertFinalSpace, type FinalSpaceComment, type InsertFinalSpaceComment,
-  type FinalSpaceImage, type InsertFinalSpaceImage, type ObituaryCollaborator, type InsertObituaryCollaborator,
-  type CollaborationSession, type InsertCollaborationSession
+  type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
+  type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
+  type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
+  type TextFeedback, type InsertTextFeedback, type Question, type InsertQuestion, 
+  type PromptTemplate, type InsertPromptTemplate, type FinalSpace, type InsertFinalSpace, 
+  type FinalSpaceComment, type InsertFinalSpaceComment, type FinalSpaceImage, type InsertFinalSpaceImage,
+  type ObituaryCollaborator, type InsertObituaryCollaborator, type CollaborationSession, type InsertCollaborationSession
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, count } from "drizzle-orm";
 
 export interface IStorage {
-  // Users
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  
+  // Admin Users
+  getAdminUser(id: number): Promise<AdminUser | undefined>;
+  getAdminUserByEmail(email: string): Promise<AdminUser | undefined>;
+  createAdminUser(user: InsertAdminUser): Promise<AdminUser>;
+
+  // Funeral Homes
+  getFuneralHome(id: number): Promise<FuneralHome | undefined>;
+  getFuneralHomeByEmail(email: string): Promise<FuneralHome | undefined>;
+  getAllFuneralHomes(): Promise<FuneralHome[]>;
+  createFuneralHome(funeralHome: InsertFuneralHome): Promise<FuneralHome>;
+  updateFuneralHome(id: number, updates: Partial<FuneralHome>): Promise<FuneralHome>;
+  deleteFuneralHome(id: number): Promise<void>;
+
+  // Employees
+  getEmployee(id: number): Promise<Employee | undefined>;
+  getEmployeeByEmail(email: string): Promise<Employee | undefined>;
+  getEmployeesByFuneralHome(funeralHomeId: number): Promise<Employee[]>;
+  getEmployeeCount(funeralHomeId: number): Promise<number>;
+  createEmployee(employee: InsertEmployee): Promise<Employee>;
+  updateEmployee(id: number, updates: Partial<Employee>): Promise<Employee>;
+  deleteEmployee(id: number): Promise<void>;
+  suspendEmployee(id: number): Promise<Employee>;
+  activateEmployee(id: number): Promise<Employee>;
+
+  // Employee Invitations
+  getEmployeeInvitation(token: string): Promise<EmployeeInvitation | undefined>;
+  getEmployeeInvitationsByFuneralHome(funeralHomeId: number): Promise<EmployeeInvitation[]>;
+  createEmployeeInvitation(invitation: InsertEmployeeInvitation): Promise<EmployeeInvitation>;
+  markInvitationUsed(token: string): Promise<void>;
+  deleteEmployeeInvitation(id: number): Promise<void>;
+
   // Obituaries
-  getObituariesByUser(userId: number): Promise<Obituary[]>;
+  getObituariesByFuneralHome(funeralHomeId: number): Promise<Obituary[]>;
+  getObituariesByCreator(createdById: number, createdByType: string): Promise<Obituary[]>;
+  getCompletedObituariesByFuneralHome(funeralHomeId: number): Promise<Obituary[]>;
   getAllObituaries(): Promise<Obituary[]>;
-  getCompletedObituariesByUser(userId: number): Promise<Obituary[]>;
   getObituary(id: number): Promise<Obituary | undefined>;
   createObituary(obituary: InsertObituary): Promise<Obituary>;
   updateObituary(id: number, obituary: Partial<Obituary>): Promise<Obituary>;
@@ -52,7 +80,8 @@ export interface IStorage {
   deletePromptTemplate(id: number): Promise<void>;
   
   // Final Spaces
-  getFinalSpacesByUser(userId: number): Promise<FinalSpace[]>;
+  getFinalSpacesByFuneralHome(funeralHomeId: number): Promise<FinalSpace[]>;
+  getFinalSpacesByCreator(createdById: number, createdByType: string): Promise<FinalSpace[]>;
   getAllFinalSpaces(): Promise<FinalSpace[]>;
   getFinalSpace(id: number): Promise<FinalSpace | undefined>;
   getFinalSpaceBySlug(slug: string): Promise<FinalSpace | undefined>;
@@ -82,47 +111,155 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // Users
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+  // Admin Users
+  async getAdminUser(id: number): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
     return user || undefined;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
+  async getAdminUserByEmail(email: string): Promise<AdminUser | undefined> {
+    const [user] = await db.select().from(adminUsers).where(eq(adminUsers.email, email));
     return user || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
+  async createAdminUser(insertUser: InsertAdminUser): Promise<AdminUser> {
+    const [user] = await db.insert(adminUsers).values(insertUser).returning();
     return user;
   }
 
+  // Funeral Homes
+  async getFuneralHome(id: number): Promise<FuneralHome | undefined> {
+    const [funeralHome] = await db.select().from(funeralHomes).where(eq(funeralHomes.id, id));
+    return funeralHome || undefined;
+  }
+
+  async getFuneralHomeByEmail(email: string): Promise<FuneralHome | undefined> {
+    const [funeralHome] = await db.select().from(funeralHomes).where(eq(funeralHomes.email, email));
+    return funeralHome || undefined;
+  }
+
+  async getAllFuneralHomes(): Promise<FuneralHome[]> {
+    return await db.select().from(funeralHomes).orderBy(desc(funeralHomes.createdAt));
+  }
+
+  async createFuneralHome(insertFuneralHome: InsertFuneralHome): Promise<FuneralHome> {
+    const [funeralHome] = await db.insert(funeralHomes).values(insertFuneralHome).returning();
+    return funeralHome;
+  }
+
+  async updateFuneralHome(id: number, updates: Partial<FuneralHome>): Promise<FuneralHome> {
+    const [funeralHome] = await db
+      .update(funeralHomes)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(funeralHomes.id, id))
+      .returning();
+    return funeralHome;
+  }
+
+  async deleteFuneralHome(id: number): Promise<void> {
+    await db.delete(funeralHomes).where(eq(funeralHomes.id, id));
+  }
+
+  // Employees
+  async getEmployee(id: number): Promise<Employee | undefined> {
+    const [employee] = await db.select().from(employees).where(eq(employees.id, id));
+    return employee || undefined;
+  }
+
+  async getEmployeeByEmail(email: string): Promise<Employee | undefined> {
+    const [employee] = await db.select().from(employees).where(eq(employees.email, email));
+    return employee || undefined;
+  }
+
+  async getEmployeesByFuneralHome(funeralHomeId: number): Promise<Employee[]> {
+    return await db.select().from(employees)
+      .where(eq(employees.funeralHomeId, funeralHomeId))
+      .orderBy(desc(employees.createdAt));
+  }
+
+  async getEmployeeCount(funeralHomeId: number): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(employees)
+      .where(and(eq(employees.funeralHomeId, funeralHomeId), eq(employees.isActive, true)));
+    return result[0]?.count || 0;
+  }
+
+  async createEmployee(insertEmployee: InsertEmployee): Promise<Employee> {
+    const [employee] = await db.insert(employees).values(insertEmployee).returning();
+    return employee;
+  }
+
+  async updateEmployee(id: number, updates: Partial<Employee>): Promise<Employee> {
+    const [employee] = await db
+      .update(employees)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(employees.id, id))
+      .returning();
+    return employee;
+  }
+
+  async deleteEmployee(id: number): Promise<void> {
+    await db.delete(employees).where(eq(employees.id, id));
+  }
+
+  async suspendEmployee(id: number): Promise<Employee> {
+    return this.updateEmployee(id, { isActive: false });
+  }
+
+  async activateEmployee(id: number): Promise<Employee> {
+    return this.updateEmployee(id, { isActive: true });
+  }
+
+  // Employee Invitations
+  async getEmployeeInvitation(token: string): Promise<EmployeeInvitation | undefined> {
+    const [invitation] = await db.select().from(employeeInvitations)
+      .where(eq(employeeInvitations.inviteToken, token));
+    return invitation || undefined;
+  }
+
+  async getEmployeeInvitationsByFuneralHome(funeralHomeId: number): Promise<EmployeeInvitation[]> {
+    return await db.select().from(employeeInvitations)
+      .where(eq(employeeInvitations.funeralHomeId, funeralHomeId))
+      .orderBy(desc(employeeInvitations.createdAt));
+  }
+
+  async createEmployeeInvitation(insertInvitation: InsertEmployeeInvitation): Promise<EmployeeInvitation> {
+    const [invitation] = await db.insert(employeeInvitations).values(insertInvitation).returning();
+    return invitation;
+  }
+
+  async markInvitationUsed(token: string): Promise<void> {
+    await db.update(employeeInvitations)
+      .set({ isUsed: true })
+      .where(eq(employeeInvitations.inviteToken, token));
+  }
+
+  async deleteEmployeeInvitation(id: number): Promise<void> {
+    await db.delete(employeeInvitations).where(eq(employeeInvitations.id, id));
+  }
+
   // Obituaries
-  async getObituariesByUser(userId: number): Promise<Obituary[]> {
-    return await db
-      .select()
-      .from(obituaries)
-      .where(eq(obituaries.userId, userId))
+  async getObituariesByFuneralHome(funeralHomeId: number): Promise<Obituary[]> {
+    return await db.select().from(obituaries)
+      .where(eq(obituaries.funeralHomeId, funeralHomeId))
+      .orderBy(desc(obituaries.createdAt));
+  }
+
+  async getObituariesByCreator(createdById: number, createdByType: string): Promise<Obituary[]> {
+    return await db.select().from(obituaries)
+      .where(and(eq(obituaries.createdById, createdById), eq(obituaries.createdByType, createdByType)))
+      .orderBy(desc(obituaries.createdAt));
+  }
+
+  async getCompletedObituariesByFuneralHome(funeralHomeId: number): Promise<Obituary[]> {
+    return await db.select().from(obituaries)
+      .where(and(eq(obituaries.funeralHomeId, funeralHomeId), eq(obituaries.status, 'generated')))
       .orderBy(desc(obituaries.createdAt));
   }
 
   async getAllObituaries(): Promise<Obituary[]> {
-    return await db
-      .select()
-      .from(obituaries)
-      .orderBy(desc(obituaries.createdAt));
-  }
-
-  async getCompletedObituariesByUser(userId: number): Promise<Obituary[]> {
-    return await db
-      .select()
-      .from(obituaries)
-      .where(and(eq(obituaries.userId, userId), eq(obituaries.status, 'generated')))
-      .orderBy(desc(obituaries.createdAt));
+    return await db.select().from(obituaries).orderBy(desc(obituaries.createdAt));
   }
 
   async getObituary(id: number): Promise<Obituary | undefined> {
@@ -130,27 +267,18 @@ export class DatabaseStorage implements IStorage {
     return obituary || undefined;
   }
 
-  async createObituary(obituary: InsertObituary): Promise<Obituary> {
-    const [newObituary] = await db
-      .insert(obituaries)
-      .values({
-        ...obituary,
-        updatedAt: new Date(),
-      })
-      .returning();
-    return newObituary;
+  async createObituary(insertObituary: InsertObituary): Promise<Obituary> {
+    const [obituary] = await db.insert(obituaries).values(insertObituary).returning();
+    return obituary;
   }
 
-  async updateObituary(id: number, obituary: Partial<Obituary>): Promise<Obituary> {
-    const [updatedObituary] = await db
+  async updateObituary(id: number, updates: Partial<Obituary>): Promise<Obituary> {
+    const [obituary] = await db
       .update(obituaries)
-      .set({
-        ...obituary,
-        updatedAt: new Date(),
-      })
+      .set({ ...updates, updatedAt: new Date() })
       .where(eq(obituaries.id, id))
       .returning();
-    return updatedObituary;
+    return obituary;
   }
 
   async deleteObituary(id: number): Promise<void> {
@@ -159,44 +287,35 @@ export class DatabaseStorage implements IStorage {
 
   // Generated Obituaries
   async getGeneratedObituaries(obituaryId: number): Promise<GeneratedObituary[]> {
-    return await db
-      .select()
-      .from(generatedObituaries)
+    return await db.select().from(generatedObituaries)
       .where(eq(generatedObituaries.obituaryId, obituaryId))
       .orderBy(generatedObituaries.aiProvider, generatedObituaries.version);
   }
 
-  async createGeneratedObituary(generatedObituary: InsertGeneratedObituary): Promise<GeneratedObituary> {
-    const [newGeneratedObituary] = await db
-      .insert(generatedObituaries)
-      .values(generatedObituary)
-      .returning();
-    return newGeneratedObituary;
+  async createGeneratedObituary(insertGeneratedObituary: InsertGeneratedObituary): Promise<GeneratedObituary> {
+    const [generatedObituary] = await db.insert(generatedObituaries).values(insertGeneratedObituary).returning();
+    return generatedObituary;
   }
 
   async updateGeneratedObituary(id: number, content: string): Promise<GeneratedObituary> {
-    const [updatedObituary] = await db
+    const [obituary] = await db
       .update(generatedObituaries)
       .set({ content })
       .where(eq(generatedObituaries.id, id))
       .returning();
-    return updatedObituary;
+    return obituary;
   }
 
   // Text Feedback
   async getTextFeedback(generatedObituaryId: number): Promise<TextFeedback[]> {
-    return await db
-      .select()
-      .from(textFeedback)
-      .where(eq(textFeedback.generatedObituaryId, generatedObituaryId));
+    return await db.select().from(textFeedback)
+      .where(eq(textFeedback.generatedObituaryId, generatedObituaryId))
+      .orderBy(desc(textFeedback.createdAt));
   }
 
-  async createTextFeedback(feedback: InsertTextFeedback): Promise<TextFeedback> {
-    const [newFeedback] = await db
-      .insert(textFeedback)
-      .values(feedback)
-      .returning();
-    return newFeedback;
+  async createTextFeedback(insertFeedback: InsertTextFeedback): Promise<TextFeedback> {
+    const [feedback] = await db.insert(textFeedback).values(insertFeedback).returning();
+    return feedback;
   }
 
   async deleteTextFeedback(generatedObituaryId: number): Promise<void> {
@@ -205,78 +324,56 @@ export class DatabaseStorage implements IStorage {
 
   // Questions
   async getQuestions(): Promise<Question[]> {
-    return await db
-      .select()
-      .from(questions)
-      .where(eq(questions.isActive, true))
-      .orderBy(questions.category, questions.sortOrder);
+    return await db.select().from(questions).orderBy(questions.orderIndex);
   }
 
   async getQuestionsByCategory(category: string): Promise<Question[]> {
-    return await db
-      .select()
-      .from(questions)
-      .where(and(eq(questions.category, category), eq(questions.isActive, true)))
-      .orderBy(questions.sortOrder);
+    return await db.select().from(questions)
+      .where(eq(questions.category, category))
+      .orderBy(questions.orderIndex);
   }
 
-  async createQuestion(question: InsertQuestion): Promise<Question> {
-    const [newQuestion] = await db
-      .insert(questions)
-      .values(question)
-      .returning();
-    return newQuestion;
+  async createQuestion(insertQuestion: InsertQuestion): Promise<Question> {
+    const [question] = await db.insert(questions).values(insertQuestion).returning();
+    return question;
   }
 
-  async updateQuestion(id: number, question: Partial<Question>): Promise<Question> {
-    const [updatedQuestion] = await db
+  async updateQuestion(id: number, updates: Partial<Question>): Promise<Question> {
+    const [question] = await db
       .update(questions)
-      .set(question)
+      .set(updates)
       .where(eq(questions.id, id))
       .returning();
-    return updatedQuestion;
+    return question;
   }
 
   async deleteQuestion(id: number): Promise<void> {
-    await db.update(questions).set({ isActive: false }).where(eq(questions.id, id));
+    await db.delete(questions).where(eq(questions.id, id));
   }
 
   // Prompt Templates
   async getPromptTemplates(): Promise<PromptTemplate[]> {
-    return await db
-      .select()
-      .from(promptTemplates)
-      .where(eq(promptTemplates.isActive, true))
-      .orderBy(promptTemplates.platform, promptTemplates.promptType);
+    return await db.select().from(promptTemplates).orderBy(promptTemplates.platform, promptTemplates.promptType);
   }
 
   async getPromptTemplate(platform: string, promptType: string): Promise<PromptTemplate | undefined> {
-    const [template] = await db
-      .select()
-      .from(promptTemplates)
-      .where(and(
-        eq(promptTemplates.platform, platform),
-        eq(promptTemplates.promptType, promptType),
-        eq(promptTemplates.isActive, true)
-      ));
+    const [template] = await db.select().from(promptTemplates)
+      .where(and(eq(promptTemplates.platform, platform), eq(promptTemplates.promptType, promptType)));
     return template || undefined;
   }
 
-  async createPromptTemplate(template: InsertPromptTemplate): Promise<PromptTemplate> {
-    const [newTemplate] = await db
-      .insert(promptTemplates)
-      .values(template)
-      .returning();
-    return newTemplate;
+  async createPromptTemplate(insertTemplate: InsertPromptTemplate): Promise<PromptTemplate> {
+    const [template] = await db.insert(promptTemplates).values(insertTemplate).returning();
+    return template;
   }
 
-  async updatePromptTemplate(id: number, template: Partial<PromptTemplate>): Promise<PromptTemplate> {
-    const [updatedTemplate] = await db
+  async updatePromptTemplate(id: number, updates: Partial<PromptTemplate>): Promise<PromptTemplate> {
+    const [template] = await db
       .update(promptTemplates)
-      .set({ ...template, updatedAt: new Date() })
+      .set({ ...updates, updatedAt: new Date() })
       .where(eq(promptTemplates.id, id))
       .returning();
-    return updatedTemplate;
+    return template;
   }
 
   async deletePromptTemplate(id: number): Promise<void> {
@@ -284,49 +381,44 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Final Spaces
-  async getFinalSpacesByUser(userId: number): Promise<FinalSpace[]> {
-    return await db
-      .select()
-      .from(finalSpaces)
-      .where(eq(finalSpaces.userId, userId))
+  async getFinalSpacesByFuneralHome(funeralHomeId: number): Promise<FinalSpace[]> {
+    return await db.select().from(finalSpaces)
+      .where(eq(finalSpaces.funeralHomeId, funeralHomeId))
+      .orderBy(desc(finalSpaces.createdAt));
+  }
+
+  async getFinalSpacesByCreator(createdById: number, createdByType: string): Promise<FinalSpace[]> {
+    return await db.select().from(finalSpaces)
+      .where(and(eq(finalSpaces.createdById, createdById), eq(finalSpaces.createdByType, createdByType)))
       .orderBy(desc(finalSpaces.createdAt));
   }
 
   async getAllFinalSpaces(): Promise<FinalSpace[]> {
-    return await db
-      .select()
-      .from(finalSpaces)
-      .orderBy(desc(finalSpaces.createdAt));
+    return await db.select().from(finalSpaces).orderBy(desc(finalSpaces.createdAt));
   }
 
   async getFinalSpace(id: number): Promise<FinalSpace | undefined> {
-    const [space] = await db.select().from(finalSpaces).where(eq(finalSpaces.id, id));
-    return space || undefined;
+    const [finalSpace] = await db.select().from(finalSpaces).where(eq(finalSpaces.id, id));
+    return finalSpace || undefined;
   }
 
   async getFinalSpaceBySlug(slug: string): Promise<FinalSpace | undefined> {
-    const [space] = await db.select().from(finalSpaces).where(eq(finalSpaces.slug, slug));
-    return space || undefined;
+    const [finalSpace] = await db.select().from(finalSpaces).where(eq(finalSpaces.slug, slug));
+    return finalSpace || undefined;
   }
 
-  async createFinalSpace(finalSpace: InsertFinalSpace): Promise<FinalSpace> {
-    const [newSpace] = await db
-      .insert(finalSpaces)
-      .values({
-        ...finalSpace,
-        updatedAt: new Date(),
-      })
-      .returning();
-    return newSpace;
+  async createFinalSpace(insertFinalSpace: InsertFinalSpace): Promise<FinalSpace> {
+    const [finalSpace] = await db.insert(finalSpaces).values(insertFinalSpace).returning();
+    return finalSpace;
   }
 
-  async updateFinalSpace(id: number, finalSpace: Partial<FinalSpace>): Promise<FinalSpace> {
-    const [updatedSpace] = await db
+  async updateFinalSpace(id: number, updates: Partial<FinalSpace>): Promise<FinalSpace> {
+    const [finalSpace] = await db
       .update(finalSpaces)
-      .set({ ...finalSpace, updatedAt: new Date() })
+      .set({ ...updates, updatedAt: new Date() })
       .where(eq(finalSpaces.id, id))
       .returning();
-    return updatedSpace;
+    return finalSpace;
   }
 
   async deleteFinalSpace(id: number): Promise<void> {
@@ -335,19 +427,14 @@ export class DatabaseStorage implements IStorage {
 
   // Final Space Comments
   async getFinalSpaceComments(finalSpaceId: number): Promise<FinalSpaceComment[]> {
-    return await db
-      .select()
-      .from(finalSpaceComments)
+    return await db.select().from(finalSpaceComments)
       .where(eq(finalSpaceComments.finalSpaceId, finalSpaceId))
       .orderBy(desc(finalSpaceComments.createdAt));
   }
 
-  async createFinalSpaceComment(comment: InsertFinalSpaceComment): Promise<FinalSpaceComment> {
-    const [newComment] = await db
-      .insert(finalSpaceComments)
-      .values(comment)
-      .returning();
-    return newComment;
+  async createFinalSpaceComment(insertComment: InsertFinalSpaceComment): Promise<FinalSpaceComment> {
+    const [comment] = await db.insert(finalSpaceComments).values(insertComment).returning();
+    return comment;
   }
 
   async deleteFinalSpaceComment(id: number): Promise<void> {
@@ -356,19 +443,14 @@ export class DatabaseStorage implements IStorage {
 
   // Final Space Images
   async getFinalSpaceImages(commentId: number): Promise<FinalSpaceImage[]> {
-    return await db
-      .select()
-      .from(finalSpaceImages)
+    return await db.select().from(finalSpaceImages)
       .where(eq(finalSpaceImages.commentId, commentId))
       .orderBy(desc(finalSpaceImages.createdAt));
   }
 
-  async createFinalSpaceImage(image: InsertFinalSpaceImage): Promise<FinalSpaceImage> {
-    const [newImage] = await db
-      .insert(finalSpaceImages)
-      .values(image)
-      .returning();
-    return newImage;
+  async createFinalSpaceImage(insertImage: InsertFinalSpaceImage): Promise<FinalSpaceImage> {
+    const [image] = await db.insert(finalSpaceImages).values(insertImage).returning();
+    return image;
   }
 
   async deleteFinalSpaceImage(id: number): Promise<void> {
@@ -377,19 +459,14 @@ export class DatabaseStorage implements IStorage {
 
   // Obituary Collaborators
   async getObituaryCollaborators(obituaryId: number): Promise<ObituaryCollaborator[]> {
-    return await db
-      .select()
-      .from(obituaryCollaborators)
+    return await db.select().from(obituaryCollaborators)
       .where(eq(obituaryCollaborators.obituaryId, obituaryId))
-      .orderBy(desc(obituaryCollaborators.invitedAt));
+      .orderBy(desc(obituaryCollaborators.createdAt));
   }
 
-  async createObituaryCollaborator(collaborator: InsertObituaryCollaborator): Promise<ObituaryCollaborator> {
-    const [newCollaborator] = await db
-      .insert(obituaryCollaborators)
-      .values(collaborator)
-      .returning();
-    return newCollaborator;
+  async createObituaryCollaborator(insertCollaborator: InsertObituaryCollaborator): Promise<ObituaryCollaborator> {
+    const [collaborator] = await db.insert(obituaryCollaborators).values(insertCollaborator).returning();
+    return collaborator;
   }
 
   async deleteObituaryCollaborator(id: number): Promise<void> {
@@ -398,25 +475,23 @@ export class DatabaseStorage implements IStorage {
 
   // Collaboration Sessions
   async getCollaborationSession(uuid: string): Promise<CollaborationSession | undefined> {
-    const [session] = await db.select().from(collaborationSessions).where(eq(collaborationSessions.uuid, uuid));
+    const [session] = await db.select().from(collaborationSessions)
+      .where(eq(collaborationSessions.uuid, uuid));
     return session || undefined;
   }
 
-  async createCollaborationSession(session: InsertCollaborationSession): Promise<CollaborationSession> {
-    const [newSession] = await db
-      .insert(collaborationSessions)
-      .values(session)
-      .returning();
-    return newSession;
+  async createCollaborationSession(insertSession: InsertCollaborationSession): Promise<CollaborationSession> {
+    const [session] = await db.insert(collaborationSessions).values(insertSession).returning();
+    return session;
   }
 
   async updateCollaborationSession(uuid: string, updates: Partial<CollaborationSession>): Promise<CollaborationSession> {
-    const [updatedSession] = await db
+    const [session] = await db
       .update(collaborationSessions)
       .set(updates)
       .where(eq(collaborationSessions.uuid, uuid))
       .returning();
-    return updatedSession;
+    return session;
   }
 }
 
