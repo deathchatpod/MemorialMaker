@@ -121,6 +121,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Created "Individual Need Assessment Survey" with 80 questions and conditional logic functionality
 - June 24, 2025: Implemented ConditionalSurveyForm component with dynamic show/hide questions based on previous answers
 - June 24, 2025: Added conditional question fields to database schema (conditionalQuestionId, conditionalValue, conditionalOperator)
+- June 24, 2025: Replaced all native browser confirm() dialogs with styled AlertDialog components for consistent UI/UX
 
 # User Management Structure
 
