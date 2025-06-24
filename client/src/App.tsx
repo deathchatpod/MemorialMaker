@@ -56,7 +56,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <UserContext.Provider value={{ currentUser, setCurrentUser }}>
+        <UserContext.Provider value={{ currentUser, setCurrentUser }} key={currentUser.id}>
           <div className="min-h-screen bg-gray-50">
             {/* Navigation Header */}
             <header className="bg-white shadow-sm border-b border-gray-200">

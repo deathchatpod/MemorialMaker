@@ -26,7 +26,8 @@ interface Obituary {
 }
 
 export default function Dashboard() {
-  const { currentUser } = useContext(UserContext);
+  const userContext = useContext(UserContext);
+  const currentUser = userContext?.currentUser;
   const [location, setLocation] = useLocation();
   
   // Log when user changes
