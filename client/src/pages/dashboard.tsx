@@ -194,19 +194,14 @@ export default function Dashboard() {
     console.log('Filtering menu items for user type:', currentUser.userType);
 
     const filtered = menuItems.filter(item => {
-      // Direct match for user type
-      if (item.userTypes.includes(currentUser.userType)) {
-        return true;
-      }
-
-      // No backward compatibility mapping needed - use explicit userTypes only
-
-      return false;
+      const hasAccess = item.userTypes.includes(currentUser.userType);
+      console.log(`Item "${item.label}": userTypes=${JSON.stringify(item.userTypes)}, currentUser=${currentUser.userType}, hasAccess=${hasAccess}`);
+      return hasAccess;
     });
 
     console.log('Filtered menu items:', filtered.map(item => item.label));
     return filtered;
-  }, [currentUser]);
+  }, [currentUser?.userType, currentUser?.id]);
 
 
 
@@ -1037,6 +1032,13 @@ export default function Dashboard() {
         {/* Navigation Menu */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
+            {/* Debug info */}
+            {process.env.NODE_ENV === 'development' && (
+              <li className="text-xs text-gray-500 mb-2">
+                User: {currentUser?.userType}, Items: {filteredMenuItems.length}
+              </li>
+            )}
+            
             {filteredMenuItems.map((item) => (
               <li key={item.id}>
                 {item.href ? (
