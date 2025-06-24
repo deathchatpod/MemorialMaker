@@ -16,13 +16,16 @@ import Register from "@/pages/register";
 import NotFound from "@/pages/not-found";
 
 // User context for switching between user types
+interface User {
+  id: number;
+  username: string;
+  userType: string;
+}
+
 export const UserContext = React.createContext<{
-  currentUser: { id: number; username: string; userType: string };
-  setCurrentUser: (user: { id: number; username: string; userType: string }) => void;
-}>({
-  currentUser: { id: 2, username: 'John Admin', userType: 'admin' },
-  setCurrentUser: () => {},
-});
+  currentUser: User;
+  setCurrentUser: (user: User) => void;
+} | null>(null);
 
 function Router() {
   return (
@@ -56,7 +59,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <UserContext.Provider value={{ currentUser, setCurrentUser }} key={currentUser.id}>
+        <UserContext.Provider value={{ currentUser, setCurrentUser }}>
           <div className="min-h-screen bg-gray-50">
             {/* Navigation Header */}
             <header className="bg-white shadow-sm border-b border-gray-200">
