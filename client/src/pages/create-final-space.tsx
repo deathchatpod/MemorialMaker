@@ -249,6 +249,12 @@ export default function CreateFinalSpace() {
                 </div>
               </div>
 
+              {/* Media Upload Section */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Media & Content</h3>
+                <MediaUploader onMediaChange={setMediaData} />
+              </div>
+
               {/* Privacy Settings */}
               <div className="space-y-4">
                 <Label className="text-base font-medium">Privacy Settings</Label>

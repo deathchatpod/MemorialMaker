@@ -177,6 +177,11 @@ export const finalSpaces = pgTable("final_spaces", {
   description: text("description"),
   socialMediaLinks: jsonb("social_media_links"),
   musicPlaylist: text("music_playlist"),
+  images: jsonb("images").default([]), // Array of image objects with url, filename, isPrimary
+  audioFiles: jsonb("audio_files").default([]), // Array of audio objects with url, filename, title, isPrimary
+  youtubeLinks: jsonb("youtube_links").default([]), // Array of youtube objects with url, title, isPrimary
+  primaryMediaType: varchar("primary_media_type", { length: 20 }), // 'image', 'audio', 'youtube'
+  primaryMediaId: varchar("primary_media_id", { length: 100 }), // ID/filename of primary media
   isPublic: boolean("is_public").notNull().default(true),
   allowComments: boolean("allow_comments").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
