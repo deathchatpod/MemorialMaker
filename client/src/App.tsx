@@ -27,7 +27,8 @@ interface User {
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={Home} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/obituary/new" component={ObituaryForm} />
@@ -72,7 +73,7 @@ function App() {
               <div className="flex justify-between items-center h-16">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 flex items-center">
-                    <a href="/" className="flex items-center text-blue-600 hover:text-blue-700">
+                    <a href="/dashboard" className="flex items-center text-blue-600 hover:text-blue-700">
                       <div className="text-blue-600 mr-2">💙</div>
                       <h1 className="text-xl font-bold text-gray-900">DeathMatters</h1>
                     </a>
