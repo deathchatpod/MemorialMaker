@@ -37,7 +37,7 @@ export default function Login() {
       });
 
       if (response.ok) {
-        window.location.href = '/';
+        window.location.href = '/dashboard';
       } else {
         setError('Invalid email or password');
       }
