@@ -232,13 +232,36 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Skull className="h-8 w-8 text-gray-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">DeathMatters</h1>
-            </div>
+            <Link href="/">
+              <div className="flex items-center cursor-pointer">
+                <Skull className="h-8 w-8 text-gray-600 mr-3" />
+                <h1 className="text-2xl font-bold text-gray-900">DeathMatters</h1>
+              </div>
+            </Link>
             <div className="flex items-center space-x-4">
+              {/* User Type Selection */}
+              <div className="flex items-center space-x-2">
+                <Label className="text-sm font-medium text-gray-700">I am a:</Label>
+                <Select
+                  value={selectedUserType}
+                  onValueChange={setSelectedUserType}
+                >
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Select user type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userTypes.map((userType) => (
+                      <SelectItem key={userType.id} value={userType.name}>
+                        {userType.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Auth Buttons */}
               {authenticatedUser ? (
                 <>
                   <Link href="/dashboard">
@@ -268,8 +291,8 @@ export default function Home() {
         {/* Welcome Section */}
         <div className="text-center mb-8">
           <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h2>
-          <p className="text-gray-600 mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h2>
+          <p className="text-lg text-gray-600 mb-8">
             Creating meaningful tributes and lasting memories through AI-powered obituary generation.
           </p>
         </div>
@@ -289,25 +312,6 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* User Type Selection */}
-                <div>
-                  <Label className="text-base font-medium">I am a...</Label>
-                  <Select
-                    value={selectedUserType}
-                    onValueChange={setSelectedUserType}
-                  >
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select your user type..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {userTypes.map((userType) => (
-                        <SelectItem key={userType.id} value={userType.name}>
-                          {userType.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 {/* Survey Questions */}
                 {questions.map((question) => (
@@ -338,25 +342,7 @@ export default function Home() {
         {(!homePageSurvey || questions.length === 0) && (
           <Card className="mb-8">
             <CardContent className="py-8 text-center">
-              <div>
-                <Label className="text-base font-medium">I am a...</Label>
-                <Select
-                  value={selectedUserType}
-                  onValueChange={setSelectedUserType}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select your user type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userTypes.map((userType) => (
-                      <SelectItem key={userType.id} value={userType.name}>
-                        {userType.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <p className="text-gray-500 mt-4">
+              <p className="text-gray-500">
                 Survey content will appear here when an admin publishes a "Home Page" survey.
               </p>
             </CardContent>

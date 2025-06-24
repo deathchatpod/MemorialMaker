@@ -115,6 +115,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Implemented Platform Surveys management system with survey creation, editing, and question building
 - June 24, 2025: Fixed authentication flow - login now properly redirects to dashboard with correct user permissions
 - June 24, 2025: Added Individual user type to dashboard user switching dropdown with restricted access
+- June 24, 2025: Fixed home page header layout - consolidated duplicate headers into single header with user type dropdown
 
 # User Management Structure
 
