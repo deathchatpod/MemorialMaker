@@ -143,6 +143,8 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Extended survey_responses schema with responseType, completedById, completedByType for scalable survey management
 - June 24, 2025: Implemented standard user filtering for evaluations (users see own, funeral homes see team, admin sees all)
 - June 24, 2025: Added evaluation results viewer with formatted question/answer display
+- June 24, 2025: Implemented auto-fill functionality for Pre Need Evaluation - when user selects "yourself", form auto-populates with account info and syncs changes back to user account
+- June 24, 2025: Fixed Pre Need Evaluation navigation - now returns to dashboard Pre Need Evaluation tab after completion
 
 # User Management Structure
 

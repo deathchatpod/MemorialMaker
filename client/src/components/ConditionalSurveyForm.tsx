@@ -186,7 +186,7 @@ export default function ConditionalSurveyForm({
         key !== 'id' && updatedUserData[key] !== currentUser[key as keyof typeof currentUser]
       );
 
-      if (hasChanges) {
+      if (hasChanges && onUserUpdate) {
         onUserUpdate(updatedUserData);
       }
     }

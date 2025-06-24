@@ -115,15 +115,16 @@ export default function TakePreNeedEvaluation() {
         title: "Evaluation Completed",
         description: "Your pre-need evaluation has been submitted successfully"
       });
-      // Navigate back to dashboard
+      // Navigate back to dashboard with Pre Need Evaluation tab active
       const params = new URLSearchParams({
         userId: currentUserId.toString(),
         userType: currentUserType,
+        tab: 'pre-need-evaluation'
       });
       if (currentFuneralHomeId) {
         params.append('funeralHomeId', currentFuneralHomeId.toString());
       }
-      setLocation(`/?${params}`);
+      setLocation(`/dashboard?${params}`);
     },
     onError: () => {
       toast({
@@ -178,11 +179,12 @@ export default function TakePreNeedEvaluation() {
     const params = new URLSearchParams({
       userId: currentUserId.toString(),
       userType: currentUserType,
+      tab: 'pre-need-evaluation'
     });
     if (currentFuneralHomeId) {
       params.append('funeralHomeId', currentFuneralHomeId.toString());
     }
-    setLocation(`/?${params}`);
+    setLocation(`/dashboard?${params}`);
   };
 
   if (surveysLoading || questionsLoading) {
