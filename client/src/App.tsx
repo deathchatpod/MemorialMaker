@@ -61,7 +61,6 @@ function App() {
 
   // Save to localStorage whenever user changes
   React.useEffect(() => {
-    console.log('Saving user to localStorage:', currentUser);
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
   }, [currentUser]);
 
@@ -86,18 +85,17 @@ function App() {
                         value={currentUser.userType}
                         onChange={(e) => {
                           const userType = e.target.value;
-                          console.log('Dropdown changed to:', userType);
+                          let newUser;
+                          
                           if (userType === 'admin') {
-                            const newUser = { id: 2, username: 'John Admin', userType: 'admin' };
-                            console.log('Setting admin user:', newUser);
-                            setCurrentUser(newUser);
+                            newUser = { id: 2, username: 'John Admin', userType: 'admin' };
                           } else if (userType === 'funeral_home') {
-                            const newUser = { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
-                            console.log('Setting funeral home user:', newUser);
-                            setCurrentUser(newUser);
+                            newUser = { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
                           } else if (userType === 'employee') {
-                            const newUser = { id: 3, username: 'Mike Johnson', userType: 'employee' };
-                            console.log('Setting employee user:', newUser);
+                            newUser = { id: 3, username: 'Mike Johnson', userType: 'employee' };
+                          }
+                          
+                          if (newUser) {
                             setCurrentUser(newUser);
                           }
                         }}

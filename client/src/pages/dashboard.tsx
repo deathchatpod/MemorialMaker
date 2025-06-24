@@ -29,16 +29,10 @@ export default function Dashboard() {
   const { currentUser } = useContext(UserContext);
   const [location, setLocation] = useLocation();
   
-  // Debug: Log when component re-renders with new user
+  // Log when user changes
   React.useEffect(() => {
-    console.log('Dashboard re-rendered with user:', currentUser);
-  }, [currentUser]);
-  
-  // Force re-render when currentUser changes
-  const [renderKey, setRenderKey] = React.useState(0);
-  React.useEffect(() => {
-    setRenderKey(prev => prev + 1);
-  }, [currentUser]);
+    console.log('Dashboard user changed to:', currentUser?.userType);
+  }, [currentUser?.userType]);
   
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -146,21 +140,25 @@ export default function Dashboard() {
     }
   ];
 
-  const filteredMenuItems = menuItems.filter(item => {
-    if (!currentUser?.userType) return false;
+  const filteredMenuItems = React.useMemo(() => {
+    if (!currentUser?.userType) return [];
     
-    // Direct match for user type
-    if (item.userTypes.includes(currentUser.userType)) {
-      return true;
-    }
+    console.log('Filtering menu items for user type:', currentUser.userType);
     
-    // Map funeral_home to 'user' for backward compatibility with some menu items
-    if (currentUser.userType === 'funeral_home' && item.userTypes.includes('user')) {
-      return true;
-    }
-    
-    return false;
-  });
+    return menuItems.filter(item => {
+      // Direct match for user type
+      if (item.userTypes.includes(currentUser.userType)) {
+        return true;
+      }
+      
+      // Map funeral_home to 'user' for backward compatibility with some menu items
+      if (currentUser.userType === 'funeral_home' && item.userTypes.includes('user')) {
+        return true;
+      }
+      
+      return false;
+    });
+  }, [currentUser?.userType]);
 
 
 
@@ -952,7 +950,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div key={renderKey} className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <div className={cn(
         "bg-white shadow-sm border-r border-gray-200 transition-all duration-300 flex flex-col min-h-0",
@@ -1108,9 +1106,9 @@ export default function Dashboard() {
                     {activeSection === 'user-management' && 'Funeral Home Management'}
                   </h1>
                   <p className="text-gray-600 mt-1">
-                    {activeSection === 'obituaries' && (currentUser.userType === 'admin' 
+                    {activeSection === 'obituaries' && (currentUser?.userType === 'admin' 
                       ? 'All obituary creations across all funeral homes'
-                      : currentUser.userType === 'funeral_home' 
+                      : currentUser?.userType === 'funeral_home' 
                         ? 'Your obituaries and team member obituaries'
                         : 'Your obituary creations')}
                     {activeSection === 'questions' && 'Manage form questions and answer options'}
@@ -1127,7 +1125,7 @@ export default function Dashboard() {
             {activeSection === 'user-management' && renderUserManagementSection()}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account-information' && (
-              currentUser.userType === 'employee' ? <EmployeeAccount /> : <AccountInformation />
+              currentUser?.userType === 'employee' ? <EmployeeAccount /> : <AccountInformation />
             )}
           </div>
         </main>
