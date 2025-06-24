@@ -66,8 +66,7 @@ export default function Dashboard() {
     { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
     { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
     { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-poll-h' },
-    { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' },
-    { id: 'management', label: 'Funeral Home Management', icon: 'fas fa-building' }
+    { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' }
   ];
 
   const [activeSection, setActiveSection] = useState('obituaries');
@@ -154,7 +153,6 @@ export default function Dashboard() {
               {activeSection === 'finalspaces' && 'FinalSpaces'}
               {activeSection === 'surveys' && 'Platform Surveys'}
               {activeSection === 'prompts' && 'Prompt Templates'}
-              {activeSection === 'management' && 'Team Management'}
               {activeSection === 'team-management' && 'Team Management'}
               {activeSection === 'account' && 'My Account'}
             </h1>
@@ -164,13 +162,12 @@ export default function Dashboard() {
             {activeSection === 'collaborations' && <MyCollaborations userType={currentUser.userType} userId={currentUser.id} />}
             {activeSection === 'finalspaces' && <FinalSpacesList userType={currentUser.userType} userId={currentUser.id} />}
             {activeSection === 'surveys' && <SurveysList />}
-            {activeSection === 'management' && <TeamManagement />}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account' && <AccountInformation />}
             {activeSection === 'prompts' && <PromptTemplates />}
             
             {/* Default placeholder for other sections */}
-            {!['obituaries', 'collaborations', 'finalspaces', 'surveys', 'management', 'team-management', 'account', 'prompts'].includes(activeSection) && (
+            {!['obituaries', 'collaborations', 'finalspaces', 'surveys', 'team-management', 'account', 'prompts'].includes(activeSection) && (
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center py-12">
