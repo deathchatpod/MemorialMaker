@@ -112,7 +112,6 @@ export const obituaryCollaborators = pgTable("obituary_collaborators", {
   obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
   name: text("name"),
-  invitedAt: timestamp("invited_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
