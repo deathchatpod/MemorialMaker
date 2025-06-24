@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
-import { UserContext } from "@/App";
+// UserContext removed
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,14 +29,21 @@ interface Obituary {
 }
 
 export default function Dashboard() {
-  const userContext = useContext(UserContext);
-  
-  if (!userContext) {
-    throw new Error('Dashboard must be used within UserContext provider');
-  }
-  
-  const { currentUser } = userContext;
   const [location, setLocation] = useLocation();
+  
+  // Get current user from URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const userTypeParam = urlParams.get('userType');
+  
+  const currentUser = (() => {
+    if (userTypeParam === 'admin') {
+      return { id: 2, username: 'John Admin', userType: 'admin' };
+    } else if (userTypeParam === 'employee') {
+      return { id: 3, username: 'Mike Johnson', userType: 'employee' };
+    } else {
+      return { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
+    }
+  })();
 
   console.log('Dashboard rendering for user type:', currentUser.userType);
 

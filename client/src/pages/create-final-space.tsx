@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Link, useLocation } from "wouter";
-import { UserContext } from "@/App";
+// UserContext removed
 import { useCreateFinalSpace, useCompletedObituaries } from "@/hooks/use-final-spaces";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
