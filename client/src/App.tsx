@@ -104,11 +104,11 @@ function App() {
               </div>
             </header>
 
-            <Router />
-            <Toaster />
-          </div>
-        </TooltipProvider>
-      </QueryClientProvider>
+          <Router />
+          <Toaster />
+        </div>
+      </TooltipProvider>
+    </QueryClientProvider>
     );
 }
 
