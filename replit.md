@@ -140,6 +140,14 @@ The application supports switching between user types via dropdown for testing:
 - Admin User - John Admin (System Admin)
 - Funeral Home - Jane Smith (Funeral Home Admin) 
 - Employee - Mike Johnson (FH Employee)
+- Individual - Sarah Wilson (Individual User)
+
+## Dummy Login Credentials
+For testing purposes, use these credentials:
+- **Admin**: email: admin@deathmatters.com, password: admin123
+- **Funeral Home**: email: funeral@deathmatters.com, password: funeral123  
+- **Employee**: email: employee@deathmatters.com, password: employee123
+- **Individual**: Individual users can register through the signup form
 
 # User Preferences
 
