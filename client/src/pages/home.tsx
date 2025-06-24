@@ -44,12 +44,18 @@ export default function Home() {
     queryKey: ["/api/surveys"],
   });
 
-  const homePageSurvey = surveys?.find(s => s.name === "Home Page" && s.status === "active");
+  const homePageSurvey = surveys?.find(s => s.name === "Home Page");
+  console.log('Home Page Survey:', homePageSurvey);
+  console.log('All surveys:', surveys);
 
   // Fetch questions for the home page survey
   const { data: questions = [] } = useQuery<Question[]>({
     queryKey: ["/api/questions"],
-    select: (data) => data.filter(q => q.surveyId === homePageSurvey?.id),
+    select: (data) => {
+      const filteredQuestions = data.filter(q => q.surveyId === homePageSurvey?.id);
+      console.log('Filtered questions for survey', homePageSurvey?.id, ':', filteredQuestions);
+      return filteredQuestions;
+    },
     enabled: !!homePageSurvey,
   });
 
