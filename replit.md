@@ -127,6 +127,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Removed all user permissions - all user types now have access to all dashboard functions per user request
 - June 24, 2025: Restored comprehensive dashboard functionality - all built features now accessible through unified dashboard interface
 - June 24, 2025: Cleaned up redundant files (home-old.tsx, employee-account.tsx) - functionality consolidated into main components
+- June 24, 2025: Disabled development error overlays for production-ready user experience
 
 # User Management Structure
 
