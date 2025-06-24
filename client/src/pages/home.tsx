@@ -241,26 +241,6 @@ export default function Home() {
               </div>
             </Link>
             <div className="flex items-center space-x-4">
-              {/* User Type Selection */}
-              <div className="flex items-center space-x-2">
-                <Label className="text-sm font-medium text-gray-700">I am a:</Label>
-                <Select
-                  value={selectedUserType}
-                  onValueChange={setSelectedUserType}
-                >
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Select user type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userTypes.map((userType) => (
-                      <SelectItem key={userType.id} value={userType.name}>
-                        {userType.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
               {/* Auth Buttons */}
               {authenticatedUser ? (
                 <>
@@ -312,6 +292,25 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* User Type Selection */}
+                <div>
+                  <Label className="text-base font-medium">I am a...</Label>
+                  <Select
+                    value={selectedUserType}
+                    onValueChange={setSelectedUserType}
+                  >
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select your user type..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {userTypes.map((userType) => (
+                        <SelectItem key={userType.id} value={userType.name}>
+                          {userType.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Survey Questions */}
                 {questions.map((question) => (
@@ -342,7 +341,25 @@ export default function Home() {
         {(!homePageSurvey || questions.length === 0) && (
           <Card className="mb-8">
             <CardContent className="py-8 text-center">
-              <p className="text-gray-500">
+              <div>
+                <Label className="text-base font-medium">I am a...</Label>
+                <Select
+                  value={selectedUserType}
+                  onValueChange={setSelectedUserType}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Select your user type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userTypes.map((userType) => (
+                      <SelectItem key={userType.id} value={userType.name}>
+                        {userType.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-gray-500 mt-4">
                 Survey content will appear here when an admin publishes a "Home Page" survey.
               </p>
             </CardContent>

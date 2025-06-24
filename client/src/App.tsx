@@ -70,48 +70,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-gray-50">
-          <header className="bg-white shadow-sm border-b border-gray-200">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center h-16">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 flex items-center">
-                    <a href="/" className="flex items-center text-blue-600 hover:text-blue-700">
-                      <div className="text-blue-600 mr-2">💙</div>
-                      <h1 className="text-xl font-bold text-gray-900">DeathMatters</h1>
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="relative">
-                    <select 
-                      value={currentUser.userType}
-                      onChange={(e) => handleUserChange(e.target.value)}
-                      className="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="admin">Admin - John Admin</option>
-                      <option value="funeral_home">Funeral Home - Jane Smith</option>
-                      <option value="employee">Employee - Mike Johnson</option>
-                      <option value="individual">Individual - Sarah Wilson</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-gray-700">
-                        {currentUser.username.charAt(0)}
-                      </span>
-                    </div>
-                    <span className="ml-2 text-sm font-medium text-gray-700">
-                      {currentUser.username}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </header>
-
+        <div className="App">
           <Router />
           <Toaster />
         </div>
