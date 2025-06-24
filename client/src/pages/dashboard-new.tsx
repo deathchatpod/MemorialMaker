@@ -7,6 +7,11 @@ import { cn } from "@/lib/utils";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
 import PromptTemplates from "./prompt-templates";
+import ObituaryForm from "./obituary-form";
+import FinalSpaces from "./final-spaces";
+import SurveyManagement from "./survey-management";
+import GeneratedObituaries from "./generated-obituaries";
+import MyCollaborations from "./my-collaborations";
 
 interface User {
   id: number;
@@ -59,6 +64,7 @@ export default function Dashboard() {
   // All menu items available to all user types
   const menuItems = [
     { id: 'obituaries', label: 'Obituary Generator', icon: 'fas fa-file-alt' },
+    { id: 'generated-obituaries', label: 'Generated Obituaries', icon: 'fas fa-file-text' },
     { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
     { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
     { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-poll-h' },
@@ -162,6 +168,7 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">
               {activeSection === 'obituaries' && 'Obituary Generator'}
+              {activeSection === 'generated-obituaries' && 'Generated Obituaries'}
               {activeSection === 'collaborations' && 'My Collaborations'}
               {activeSection === 'finalspaces' && 'FinalSpaces'}
               {activeSection === 'surveys' && 'Platform Surveys'}
@@ -172,13 +179,18 @@ export default function Dashboard() {
             </h1>
 
             {/* Render specific components based on active section */}
+            {activeSection === 'obituaries' && <ObituaryForm />}
+            {activeSection === 'generated-obituaries' && <GeneratedObituaries />}
+            {activeSection === 'collaborations' && <MyCollaborations />}
+            {activeSection === 'finalspaces' && <FinalSpaces />}
+            {activeSection === 'surveys' && <SurveyManagement />}
             {activeSection === 'management' && <TeamManagement />}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account' && <AccountInformation />}
             {activeSection === 'prompts' && <PromptTemplates />}
             
             {/* Default placeholder for other sections */}
-            {!['management', 'team-management', 'account', 'prompts'].includes(activeSection) && (
+            {!['obituaries', 'generated-obituaries', 'collaborations', 'finalspaces', 'surveys', 'management', 'team-management', 'account', 'prompts'].includes(activeSection) && (
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center py-12">
@@ -189,13 +201,7 @@ export default function Dashboard() {
                       {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Section
                     </h3>
                     <p className="text-gray-600">
-                      {activeSection === 'obituaries' && currentUser.userType === 'admin' && 'All obituary creations across all funeral homes'}
-                      {activeSection === 'obituaries' && currentUser.userType === 'funeral_home' && 'Your obituaries and team member obituaries'}
-                      {activeSection === 'obituaries' && currentUser.userType === 'employee' && 'Your obituary creations'}
-                      {activeSection === 'collaborations' && 'Obituaries you are collaborating on'}
-                      {activeSection === 'finalspaces' && 'Memorial spaces and tributes'}
-                      {activeSection === 'surveys' && 'Manage platform surveys and questions'}
-                      {activeSection === 'prompts' && 'AI prompt templates and configurations'}
+                      {activeSection === 'collaborations' && 'Obituaries you are collaborating on when invited by others'}
                     </p>
                     <Button className="mt-4">
                       Get Started
