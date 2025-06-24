@@ -141,11 +141,15 @@ export const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
   surveyId: integer("survey_id").notNull().references(() => surveys.id, { onDelete: "cascade" }),
   questionText: text("question_text").notNull(),
-  questionType: varchar("question_type", { length: 20 }).notNull(),
+  questionType: varchar("question_type", { length: 20 }).notNull(), // text, textarea, email, tel, number, date, radio, checkbox, select
   placeholder: text("placeholder"),
   isRequired: boolean("is_required").notNull().default(false),
   options: jsonb("options"), // For radio/checkbox options
   orderIndex: integer("order_index").notNull().default(0),
+  // Conditional logic fields
+  conditionalQuestionId: integer("conditional_question_id").references(() => questions.id),
+  conditionalValue: text("conditional_value"), // The value that triggers this question to show
+  conditionalOperator: varchar("conditional_operator", { length: 10 }).default("equals"), // equals, contains, not_equals
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
