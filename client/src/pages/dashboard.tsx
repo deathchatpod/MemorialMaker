@@ -29,7 +29,7 @@ export default function Dashboard() {
   const { currentUser } = useContext(UserContext);
   const [location, setLocation] = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [activeSection, setActiveSection] = useState('prompts');
+  const [activeSection, setActiveSection] = useState('obituaries');
   const [activeCategory, setActiveCategory] = useState("basic");
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const { toast } = useToast();
@@ -110,7 +110,7 @@ export default function Dashboard() {
       id: 'finalspaces',
       label: 'FinalSpaces',
       icon: 'fas fa-heart',
-      userTypes: ['user', 'admin'],
+      userTypes: ['user', 'funeral_home', 'employee', 'admin'],
       href: '/final-spaces'
     },
     {
@@ -128,13 +128,16 @@ export default function Dashboard() {
   ];
 
   const filteredMenuItems = menuItems.filter(item => 
-    item.userTypes.includes(currentUser.userType)
+    item.userTypes.includes(currentUser.userType === 'funeral_home' ? 'user' : currentUser.userType)
   );
 
   const getUserTypeLabel = (userType: string) => {
     switch (userType) {
       case 'user':
+      case 'funeral_home':
         return 'Funeral Home';
+      case 'employee':
+        return 'Employee';
       case 'admin':
         return 'Admin';
       default:
@@ -984,29 +987,29 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
-              {activeTab !== 'team-management' && activeTab !== 'account-information' && (
+              {activeSection !== 'team-management' && activeSection !== 'account-information' && (
                 <>
                   <h1 className="text-2xl font-semibold text-gray-900">
-                    {activeTab === 'obituaries' && 'Obituary Generator'}
-                    {activeTab === 'questions' && 'Obituary Questions'}
-                    {activeTab === 'prompts' && 'Prompt Templates'}
+                    {activeSection === 'obituaries' && 'Obituary Generator'}
+                    {activeSection === 'questions' && 'Obituary Questions'}
+                    {activeSection === 'prompts' && 'Prompt Templates'}
                   </h1>
                   <p className="text-gray-600 mt-1">
-                    {activeTab === 'obituaries' && (currentUser.userType === 'admin' 
+                    {activeSection === 'obituaries' && (currentUser.userType === 'admin' 
                       ? 'All obituary creations across users'
                       : 'Your obituary creations and history')}
-                    {activeTab === 'questions' && 'Manage form questions and answer options'}
-                    {activeTab === 'prompts' && 'Edit AI prompts sent to Claude and ChatGPT'}
+                    {activeSection === 'questions' && 'Manage form questions and answer options'}
+                    {activeSection === 'prompts' && 'Edit AI prompts sent to Claude and ChatGPT'}
                   </p>
                 </>
               )}
             </div>
 
-            {activeTab === 'obituaries' && renderObituariesSection()}
-            {activeTab === 'questions' && renderQuestionsSection()}
-            {activeTab === 'prompts' && renderPromptTemplatesSection()}
-            {activeTab === 'team-management' && <TeamManagement />}
-            {activeTab === 'account-information' && <AccountInformation />}
+            {activeSection === 'obituaries' && renderObituariesSection()}
+            {activeSection === 'questions' && renderQuestionsSection()}
+            {activeSection === 'prompts' && renderPromptTemplatesSection()}
+            {activeSection === 'team-management' && <TeamManagement />}
+            {activeSection === 'account-information' && <AccountInformation />}
           </div>
         </main>
       </div>

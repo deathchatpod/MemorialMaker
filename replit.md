@@ -106,7 +106,11 @@ This is a full-stack obituary generation and collaboration platform built with m
 - **API Keys**: Required for AI service integration
 
 # Changelog
-- June 24, 2025. Initial setup
+- June 24, 2025: Initial setup
+- June 24, 2025: Implemented hierarchical user management system (Admin → Funeral Home → Employee)
+- June 24, 2025: Updated project branding to "DeathMatters"
+- June 24, 2025: Added authentication system with password-based login
+- June 24, 2025: Created team management and account information features for funeral homes
 
 # User Preferences
 

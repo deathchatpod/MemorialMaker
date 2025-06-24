@@ -53,9 +53,9 @@ function App() {
       }
     }
     return { 
-      id: 2, 
-      username: 'John Admin', 
-      userType: 'admin' 
+      id: 1, 
+      username: 'Jane Smith', 
+      userType: 'funeral_home' 
     };
   });
 
@@ -88,12 +88,12 @@ function App() {
                           setCurrentUser(
                             userType === 'admin' 
                               ? { id: 2, username: 'John Admin', userType: 'admin' }
-                              : { id: 1, username: 'Jane Smith', userType: 'user' }
+                              : { id: 1, username: 'Jane Smith', userType: 'funeral_home' }
                           );
                         }}
                         className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       >
-                        <option value="user">Funeral Home - Jane Smith</option>
+                        <option value="funeral_home">Funeral Home - Jane Smith</option>
                         <option value="admin">Admin User - John Admin</option>
                       </select>
                       <i className="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
