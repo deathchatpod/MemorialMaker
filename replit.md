@@ -117,6 +117,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Added Individual user type to dashboard user switching dropdown with restricted access
 - June 24, 2025: Fixed home page header layout - consolidated duplicate headers into single header with user type dropdown
 - June 24, 2025: Created persistent global header across all pages with functional user type dropdown and conditional Dashboard button
+- June 24, 2025: Restored existing user switching functionality to global header for testing all user types across all pages
 
 # User Management Structure
 

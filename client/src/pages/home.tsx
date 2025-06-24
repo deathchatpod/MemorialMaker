@@ -16,8 +16,20 @@ import type { Survey, Question, UserType } from "@shared/schema";
 
 export default function Home() {
   const [formData, setFormData] = useState<Record<string, any>>({});
-  const [selectedUserType, setSelectedUserType] = useState("");
   const { toast } = useToast();
+
+  // Get current user type from URL params for survey context
+  const urlParams = new URLSearchParams(window.location.search);
+  const userTypeParam = urlParams.get('userType');
+  const selectedUserType = (() => {
+    const typeMapping = {
+      'admin': 'Admin',
+      'funeral_home': 'Funeral Home',
+      'employee': 'Employee', 
+      'individual': 'Individual'
+    };
+    return typeMapping[userTypeParam] || 'Funeral Home';
+  })();
 
   // Check if user is authenticated
   const { data: authenticatedUser } = useQuery({
@@ -81,8 +93,8 @@ export default function Home() {
 
   const submitSurveyMutation = useMutation({
     mutationFn: async () => {
-      if (!homePageSurvey || !selectedUserType) {
-        throw new Error("Survey or user type not selected");
+      if (!homePageSurvey) {
+        throw new Error("Survey not found");
       }
 
       const userType = userTypes.find(ut => ut.name === selectedUserType);
@@ -257,24 +269,12 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* User Type Selection */}
+                {/* User Type Display */}
                 <div>
-                  <Label className="text-base font-medium">I am a...</Label>
-                  <Select
-                    value={selectedUserType}
-                    onValueChange={setSelectedUserType}
-                  >
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="Select your user type..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {userTypes.map((userType) => (
-                        <SelectItem key={userType.id} value={userType.name}>
-                          {userType.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-base font-medium">Responding as: {selectedUserType}</Label>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Change user type in the header dropdown to test different perspectives
+                  </p>
                 </div>
 
                 {/* Survey Questions */}
@@ -307,22 +307,10 @@ export default function Home() {
           <Card className="mb-8">
             <CardContent className="py-8 text-center">
               <div>
-                <Label className="text-base font-medium">I am a...</Label>
-                <Select
-                  value={selectedUserType}
-                  onValueChange={setSelectedUserType}
-                >
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="Select your user type..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {userTypes.map((userType) => (
-                      <SelectItem key={userType.id} value={userType.name}>
-                        {userType.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-base font-medium">Viewing as: {selectedUserType}</Label>
+                <p className="text-sm text-gray-500 mt-1">
+                  Use the header dropdown to switch between user types for testing
+                </p>
               </div>
               <p className="text-gray-500 mt-4">
                 Survey content will appear here when an admin publishes a "Home Page" survey.

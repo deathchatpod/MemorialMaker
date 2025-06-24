@@ -5,11 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Link } from "wouter";
 import { Skull } from "lucide-react";
-import type { UserType } from "@shared/schema";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard";
 import Login from "./pages/login";
@@ -35,11 +32,23 @@ interface User {
 function GlobalHeader() {
   const [location] = useLocation();
   
-  // Get current user type from URL params or default
+  // Get current user from URL params (existing functionality)
   const urlParams = new URLSearchParams(window.location.search);
-  const currentUserType = urlParams.get('userType') || 'funeral_home';
+  const userTypeParam = urlParams.get('userType');
   
-  // Check if user is authenticated
+  const currentUser = (() => {
+    if (userTypeParam === 'admin') {
+      return { id: 2, username: 'John Admin', userType: 'admin' };
+    } else if (userTypeParam === 'employee') {
+      return { id: 3, username: 'Mike Johnson', userType: 'employee' };
+    } else if (userTypeParam === 'individual') {
+      return { id: 4, username: 'Sarah Wilson', userType: 'individual' };
+    } else {
+      return { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
+    }
+  })();
+
+  // Check if user is authenticated (but don't require it for testing)
   const { data: authenticatedUser } = useQuery({
     queryKey: ['/auth/user'],
     queryFn: async () => {
@@ -50,27 +59,9 @@ function GlobalHeader() {
     retry: false,
   });
 
-  // Fetch user types for dropdown
-  const { data: userTypes = [] } = useQuery<UserType[]>({
-    queryKey: ["/api/user-types"],
-    queryFn: async () => {
-      const response = await fetch('/api/user-types');
-      if (!response.ok) throw new Error('Failed to fetch user types');
-      return response.json();
-    },
-  });
-
-  const handleUserTypeChange = (userTypeName: string) => {
-    const typeMapping = {
-      'Employee': 'employee',
-      'Funeral Home': 'funeral_home', 
-      'Individual': 'individual'
-    };
-    
-    const userTypeKey = typeMapping[userTypeName] || 'funeral_home';
-    
+  const handleUserChange = (userType: string) => {
     const url = new URL(window.location.href);
-    url.searchParams.set('userType', userTypeKey);
+    url.searchParams.set('userType', userType);
     window.location.href = url.toString();
   };
 
@@ -81,17 +72,6 @@ function GlobalHeader() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
-  };
-
-  // Get display name for current user type
-  const getCurrentUserTypeDisplay = () => {
-    const reverseMapping = {
-      'employee': 'Employee',
-      'funeral_home': 'Funeral Home',
-      'individual': 'Individual',
-      'admin': 'Admin'
-    };
-    return reverseMapping[currentUserType] || 'Funeral Home';
   };
 
   const isDashboard = location.startsWith('/dashboard') || location.startsWith('/admin') || location.startsWith('/obituary') || location.startsWith('/final-spaces');
@@ -107,24 +87,29 @@ function GlobalHeader() {
             </div>
           </Link>
           <div className="flex items-center space-x-4">
-            {/* User Type Selection */}
-            <div className="flex items-center space-x-2">
-              <Label className="text-sm font-medium text-gray-700">I am a:</Label>
-              <Select
-                value={selectedUserType}
-                onValueChange={setSelectedUserType}
+            {/* User Type Switching (Testing) */}
+            <div className="relative">
+              <select 
+                value={currentUser.userType}
+                onChange={(e) => handleUserChange(e.target.value)}
+                className="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Select user type..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {userTypes.map((userType) => (
-                    <SelectItem key={userType.id} value={userType.name}>
-                      {userType.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="admin">Admin - John Admin</option>
+                <option value="funeral_home">Funeral Home - Jane Smith</option>
+                <option value="employee">Employee - Mike Johnson</option>
+                <option value="individual">Individual - Sarah Wilson</option>
+              </select>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-gray-700">
+                  {currentUser.username.charAt(0)}
+                </span>
+              </div>
+              <span className="ml-2 text-sm font-medium text-gray-700">
+                {currentUser.username}
+              </span>
             </div>
             
             {/* Auth Buttons */}
