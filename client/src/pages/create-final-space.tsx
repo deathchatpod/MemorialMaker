@@ -90,7 +90,7 @@ export default function CreateFinalSpace() {
         title: "Success",
         description: "Memorial space created successfully"
       });
-      setLocation("/final-spaces");
+      setLocation(`/dashboard?userType=${userTypeParam}&userId=${userIdParam}`);
     } catch (error) {
       toast({
         title: "Error",
@@ -104,22 +104,22 @@ export default function CreateFinalSpace() {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto max-w-4xl px-6">
         {/* Header */}
-        <div className="flex items-center space-x-4 mb-8">
-          <Link href="/final-spaces">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to FinalSpaces
-            </Button>
-          </Link>
+        <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold flex items-center">
               <Heart className="mr-3 h-8 w-8 text-blue-600" />
-              Create FinalSpace
+              Create Memorial Space
             </h1>
             <p className="text-muted-foreground mt-1">
               Create a memorial space to honor a loved one
             </p>
           </div>
+          <Link href={`/dashboard?userType=${userTypeParam}&userId=${userIdParam}`}>
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
         </div>
 
         {/* Form */}
@@ -286,13 +286,13 @@ export default function CreateFinalSpace() {
 
               {/* Submit Buttons */}
               <div className="flex justify-end space-x-4 pt-6 border-t">
-                <Link href="/final-spaces">
+                <Link href={`/dashboard?userType=${userTypeParam}&userId=${userIdParam}`}>
                   <Button type="button" variant="outline">
                     Cancel
                   </Button>
                 </Link>
                 <Button type="submit" disabled={createFinalSpace.isPending} className="min-w-32">
-                  {createFinalSpace.isPending ? "Creating..." : "Create FinalSpace"}
+                  {createFinalSpace.isPending ? "Creating..." : "Create Memorial Space"}
                 </Button>
               </div>
             </form>
