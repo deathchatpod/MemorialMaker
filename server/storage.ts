@@ -123,6 +123,7 @@ export interface IStorage {
 
   // Survey Responses
   getSurveyResponses(surveyId: number): Promise<SurveyResponse[]>;
+  getSurveyResponsesByType(responseType: string, userId?: number, userType?: string, funeralHomeId?: number): Promise<SurveyResponse[]>;
   createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
 }
 

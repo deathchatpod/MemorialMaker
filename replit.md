@@ -138,6 +138,11 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Fixed collaborator addition issue - added missing API endpoints for collaboration functionality
 - June 24, 2025: Added revision generation system - creates new versions based on feedback with "Revise Claude" and "Revise ChatGPT" buttons
 - June 24, 2025: Removed redundant "Back to Dashboard" button from generated obituaries page - navigation handled by global header
+- June 24, 2025: Added "Pre Need Evaluation" dashboard tab with table view of completed evaluations
+- June 24, 2025: Created "Take Pre Need Evaluation" function using existing Individual Needs Assessment Survey
+- June 24, 2025: Extended survey_responses schema with responseType, completedById, completedByType for scalable survey management
+- June 24, 2025: Implemented standard user filtering for evaluations (users see own, funeral homes see team, admin sees all)
+- June 24, 2025: Added evaluation results viewer with formatted question/answer display
 
 # User Management Structure
 
