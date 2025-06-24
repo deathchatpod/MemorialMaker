@@ -1161,9 +1161,9 @@ export default function Dashboard() {
                 <>
                   <h1 className="text-2xl font-semibold text-gray-900">
                     {activeSection === 'obituaries' && 'Obituary Generator'}
-                    {activeSection === 'questions' && 'Question Management'}
-                    {activeSection === 'prompts' && 'Prompt Templates'}
-                    {activeSection === 'user-management' && 'Funeral Home Management'}
+                    {activeSection === 'questions' && currentUser?.userType === 'admin' && 'Question Management'}
+                    {activeSection === 'prompts' && currentUser?.userType === 'admin' && 'Prompt Templates'}
+                    {activeSection === 'user-management' && currentUser?.userType === 'admin' && 'Funeral Home Management'}
                   </h1>
                   <p className="text-gray-600 mt-1">
                     {activeSection === 'obituaries' && (currentUser?.userType === 'admin' 
@@ -1171,9 +1171,9 @@ export default function Dashboard() {
                       : currentUser?.userType === 'funeral_home' 
                         ? 'Your obituaries and team member obituaries'
                         : 'Your obituary creations')}
-                    {activeSection === 'questions' && 'Manage form questions and answer options'}
-                    {activeSection === 'prompts' && 'Edit AI prompts sent to Claude and ChatGPT'}
-                    {activeSection === 'user-management' && 'Manage funeral home accounts and settings'}
+                    {activeSection === 'questions' && currentUser?.userType === 'admin' && 'Manage form questions and answer options'}
+                    {activeSection === 'prompts' && currentUser?.userType === 'admin' && 'Edit AI prompts sent to Claude and ChatGPT'}
+                    {activeSection === 'user-management' && currentUser?.userType === 'admin' && 'Manage funeral home accounts and settings'}
                   </p>
                 </>
               )}
