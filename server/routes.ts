@@ -161,6 +161,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Employee invitation routes
+  app.get("/api/employee-invitations/:funeralHomeId", async (req, res) => {
+    try {
+      const funeralHomeId = parseInt(req.params.funeralHomeId);
+      const invitations = await storage.getEmployeeInvitationsByFuneralHome(funeralHomeId);
+      res.json(invitations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch invitations" });
+    }
+  });
+
+  app.post("/api/employee-invitations", async (req, res) => {
+    try {
+      const { email, funeralHomeId } = req.body;
+      
+      // Generate invite token and expiration
+      const inviteToken = uuidv4();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+
+      const invitation = await storage.createEmployeeInvitation({
+        funeralHomeId,
+        email,
+        inviteToken,
+        expiresAt,
+        isUsed: false
+      });
+
+      res.json(invitation);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create invitation" });
+    }
+  });
+
+  app.delete("/api/employee-invitations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteEmployeeInvitation(id);
+      res.json({ message: "Invitation deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete invitation" });
+    }
+  });
+
+  app.delete("/api/employees/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteEmployee(id);
+      res.json({ message: "Employee deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete employee" });
+    }
+  });
+
+  app.patch("/api/employees/:id/suspend", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const employee = await storage.suspendEmployee(id);
+      res.json(employee);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to suspend employee" });
+    }
+  });
+
+  app.patch("/api/employees/:id/activate", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const employee = await storage.activateEmployee(id);
+      res.json(employee);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to activate employee" });
+    }
+  });
+
+  // Funeral home account management
+  app.get("/api/funeral-homes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const funeralHome = await storage.getFuneralHome(id);
+      if (!funeralHome) {
+        return res.status(404).json({ message: "Funeral home not found" });
+      }
+      res.json(funeralHome);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch funeral home" });
+    }
+  });
+
+  app.patch("/api/funeral-homes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const funeralHome = await storage.updateFuneralHome(id, updates);
+      res.json(funeralHome);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update funeral home" });
+    }
+  });
+
+  app.patch("/api/funeral-homes/:id/change-password", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { currentPassword, newPassword } = req.body;
+      
+      const funeralHome = await storage.getFuneralHome(id);
+      if (!funeralHome || !funeralHome.password) {
+        return res.status(404).json({ message: "Funeral home not found" });
+      }
+
+      const bcrypt = require('bcryptjs');
+      const isValid = await bcrypt.compare(currentPassword, funeralHome.password);
+      if (!isValid) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      const hashedPassword = await hashPassword(newPassword);
+      await storage.updateFuneralHome(id, { password: hashedPassword });
+      
+      res.json({ message: "Password changed successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to change password" });
+    }
+  });
+
   // Obituary endpoints
   app.get("/api/obituaries", async (req, res) => {
     try {
