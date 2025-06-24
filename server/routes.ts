@@ -61,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Auth routes
   app.post('/auth/login', passport.authenticate('local'), (req, res) => {
-    res.json({ user: req.user, message: 'Login successful' });
+    res.json({ user: req.user, message: 'Login successful', redirect: '/dashboard' });
   });
 
   // Google OAuth routes - temporarily disabled
