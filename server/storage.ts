@@ -552,6 +552,26 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return session;
   }
+
+  // User Types
+  async getUserTypes(): Promise<UserType[]> {
+    return await db.select().from(userTypes).where(eq(userTypes.isActive, true)).orderBy(userTypes.name);
+  }
+
+  async createUserType(insertUserType: InsertUserType): Promise<UserType> {
+    const [userType] = await db.insert(userTypes).values(insertUserType).returning();
+    return userType;
+  }
+
+  // Survey Responses
+  async getSurveyResponses(surveyId: number): Promise<SurveyResponse[]> {
+    return await db.select().from(surveyResponses).where(eq(surveyResponses.surveyId, surveyId));
+  }
+
+  async createSurveyResponse(insertResponse: InsertSurveyResponse): Promise<SurveyResponse> {
+    const [response] = await db.insert(surveyResponses).values(insertResponse).returning();
+    return response;
+  }
 }
 
 export const storage = new DatabaseStorage();
