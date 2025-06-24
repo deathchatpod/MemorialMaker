@@ -199,10 +199,7 @@ export default function Dashboard() {
         return true;
       }
 
-      // Map funeral_home to 'user' for backward compatibility with some menu items
-      if (currentUser.userType === 'funeral_home' && item.userTypes.includes('user')) {
-        return true;
-      }
+      // No backward compatibility mapping needed - use explicit userTypes only
 
       return false;
     });
@@ -1021,7 +1018,8 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-600">
                   {currentUser?.userType === 'admin' ? 'System Admin Panel' : 
                    currentUser?.userType === 'funeral_home' ? 'Funeral Home Panel' : 
-                   currentUser?.userType === 'employee' ? 'Employee Panel' : 'Loading...'}
+                   currentUser?.userType === 'employee' ? 'Employee Panel' : 
+                   currentUser?.userType === 'individual' ? 'Individual Panel' : 'Loading...'}
                 </p>
               </div>
             )}
@@ -1074,7 +1072,7 @@ export default function Dashboard() {
             ))}
 
             {/* User-type specific menu items */}
-            {(currentUser?.userType === 'funeral_home' || currentUser?.userType === 'employee') && (
+            {(currentUser?.userType === 'funeral_home' || currentUser?.userType === 'employee' || currentUser?.userType === 'individual') && (
               <>
                 <li className="my-2">
                   <div className="h-px bg-gray-200"></div>
@@ -1102,22 +1100,7 @@ export default function Dashboard() {
                   </li>
                 )}
 
-                {/* Account Information for funeral home and employee users */}
-                <li>
-                  <button
-                    onClick={() => handleSectionChange('account-information')}
-                    className={cn(
-                      "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                      activeSection === 'account-information'
-                        ? "bg-primary text-white"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    )}
-                  >
-                    <i className={cn("fas fa-user", "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
-                    {!sidebarCollapsed && <span>Account Information</span>}
-                  </button>
-                </li>
-
+                {/* Account Information for all non-admin users */}
                 <li>
                   <button
                     onClick={() => handleSectionChange('account-information')}
