@@ -211,8 +211,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {homePageSurvey && questions.length > 0 ? (
-          <Card>
+        {/* Survey Content Above Login/Signup */}
+        {homePageSurvey && questions.length > 0 && (
+          <Card className="mb-8">
             <CardHeader>
               <CardTitle className="text-2xl text-center">
                 {homePageSurvey.name}
@@ -268,25 +269,26 @@ export default function Home() {
               </form>
             </CardContent>
           </Card>
-        ) : (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h2>
-              <p className="text-gray-600 mb-6">
-                Creating meaningful tributes and lasting memories through AI-powered obituary generation.
-              </p>
-              <div className="space-x-4">
-                <Link href="/login">
-                  <Button variant="outline">Log In</Button>
-                </Link>
-                <Link href="/register">
-                  <Button>Sign Up</Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
         )}
+
+        {/* Welcome Card with Login/Signup */}
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h2>
+            <p className="text-gray-600 mb-6">
+              Creating meaningful tributes and lasting memories through AI-powered obituary generation.
+            </p>
+            <div className="space-x-4">
+              <Link href="/login">
+                <Button variant="outline">Log In</Button>
+              </Link>
+              <Link href="/register">
+                <Button>Sign Up</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </main>
 
       {/* Footer */}

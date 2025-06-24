@@ -1,27 +1,38 @@
 import { useState } from 'react';
+import { useQuery } from "@tanstack/react-query";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { UserType } from "@shared/schema";
 
 export default function Register() {
   const [formData, setFormData] = useState({
     name: '',
-    businessName: '',
     email: '',
     password: '',
     confirmPassword: '',
     phone: '',
+    userType: '',
+    // Funeral Home specific fields
+    companyName: '',
     address: '',
-    website: ''
+    website: '',
+    description: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch user types
+  const { data: userTypes = [] } = useQuery<UserType[]>({
+    queryKey: ["/api/user-types"],
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -36,6 +47,12 @@ export default function Register() {
     setError('');
     setSuccess('');
 
+    if (!formData.userType) {
+      setError('Please select a user type');
+      setIsLoading(false);
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       setIsLoading(false);
@@ -44,6 +61,13 @@ export default function Register() {
 
     if (formData.password.length < 8) {
       setError('Password must be at least 8 characters long');
+      setIsLoading(false);
+      return;
+    }
+
+    // Validate Funeral Home specific fields
+    if (formData.userType === "Funeral Home" && !formData.companyName) {
+      setError('Company name is required for Funeral Home accounts');
       setIsLoading(false);
       return;
     }
