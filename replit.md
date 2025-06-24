@@ -124,6 +124,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Replaced all native browser confirm() dialogs with styled AlertDialog components for consistent UI/UX
 - June 24, 2025: Extended session duration to 7 days and added development bypass for persistent login during testing
 - June 24, 2025: Updated user permissions system with proper access controls for all user types and added Individual user type with collaboration-only obituary access
+- June 24, 2025: Removed all user permissions - all user types now have access to all dashboard functions per user request
 
 # User Management Structure
 
