@@ -13,6 +13,7 @@ import { insertFinalSpaceSchema } from "@shared/schema";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Heart } from "lucide-react";
+import MediaUploader from "@/components/MediaUploader";
 
 const createFinalSpaceSchema = insertFinalSpaceSchema.extend({
   personName: z.string().min(1, "Person name is required"),
@@ -23,7 +24,12 @@ const createFinalSpaceSchema = insertFinalSpaceSchema.extend({
   socialMediaLinks: z.array(z.string()).optional(),
   musicPlaylist: z.string().optional(),
   isPublic: z.boolean().default(true),
-  allowComments: z.boolean().default(true)
+  allowComments: z.boolean().default(true),
+  images: z.array(z.any()).optional(),
+  audioFiles: z.array(z.any()).optional(),
+  youtubeLinks: z.array(z.any()).optional(),
+  primaryMediaType: z.string().optional(),
+  primaryMediaId: z.string().optional()
 });
 
 type CreateFinalSpaceForm = z.infer<typeof createFinalSpaceSchema>;
@@ -31,6 +37,12 @@ type CreateFinalSpaceForm = z.infer<typeof createFinalSpaceSchema>;
 export default function CreateFinalSpace() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [mediaData, setMediaData] = useState({
+    images: [],
+    audioFiles: [],
+    youtubeLinks: [],
+    primaryMedia: null
+  });
 
   // Get current user from URL params like other components
   const urlParams = new URLSearchParams(window.location.search);
@@ -52,22 +64,37 @@ export default function CreateFinalSpace() {
       musicPlaylist: "",
       isPublic: true,
       allowComments: true,
-      userId: userIdParam
+      userId: userIdParam,
+      images: [],
+      audioFiles: [],
+      youtubeLinks: [],
+      primaryMediaType: "",
+      primaryMediaId: ""
     }
   });
 
   const onSubmit = async (data: CreateFinalSpaceForm) => {
     try {
-      await createFinalSpace.mutateAsync(data);
+      // Prepare media data for submission
+      const finalData = {
+        ...data,
+        images: mediaData.images,
+        audioFiles: mediaData.audioFiles,
+        youtubeLinks: mediaData.youtubeLinks,
+        primaryMediaType: mediaData.primaryMedia?.type || null,
+        primaryMediaId: mediaData.primaryMedia?.id || null
+      };
+
+      await createFinalSpace.mutateAsync(finalData);
       toast({
         title: "Success",
-        description: "FinalSpace created successfully"
+        description: "Memorial space created successfully"
       });
       setLocation("/final-spaces");
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create FinalSpace",
+        description: "Failed to create memorial space",
         variant: "destructive"
       });
     }
