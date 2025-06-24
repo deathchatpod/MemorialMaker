@@ -19,6 +19,26 @@ export default function Home() {
   const [selectedUserType, setSelectedUserType] = useState("");
   const { toast } = useToast();
 
+  // Check if user is authenticated
+  const { data: authenticatedUser } = useQuery({
+    queryKey: ['/auth/user'],
+    queryFn: async () => {
+      const response = await fetch('/auth/user');
+      if (!response.ok) throw new Error('Not authenticated');
+      return response.json();
+    },
+    retry: false,
+  });
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/auth/logout', { method: 'POST' });
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   // Fetch the "Home Page" survey
   const { data: surveys } = useQuery<Survey[]>({
     queryKey: ["/api/surveys"],
