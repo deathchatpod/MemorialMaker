@@ -72,8 +72,10 @@ function App() {
               <div className="flex justify-between items-center h-16">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 flex items-center">
-                    <div className="text-blue-600 mr-2">💙</div>
-                    <h1 className="text-xl font-bold text-gray-900">DeathMatters</h1>
+                    <a href="/obituary/new" className="flex items-center text-blue-600 hover:text-blue-700">
+                      <div className="text-blue-600 mr-2">💙</div>
+                      <h1 className="text-xl font-bold text-gray-900">DeathMatters</h1>
+                    </a>
                   </div>
                 </div>
 
