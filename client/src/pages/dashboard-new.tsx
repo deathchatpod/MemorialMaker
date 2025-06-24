@@ -68,6 +68,7 @@ export default function Dashboard() {
     { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
     { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
     { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-poll-h' },
+    { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-file-medical' },
     { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' }
   ];
 
