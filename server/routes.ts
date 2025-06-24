@@ -630,36 +630,8 @@ async function initializeDefaultPromptTemplates() {
 
 async function initializeDefaultQuestions() {
   try {
-    const existingSurveys = await storage.getSurveys();
-    
-    if (existingSurveys.length === 0) {
-      // Create default survey
-      const defaultSurvey = await storage.createSurvey({
-        name: "Obituary Information Form",
-        description: "Standard form for collecting obituary information",
-        createdById: 1, // Default admin user
-        status: "active"
-      });
-
-      const defaultQuestions = [
-        { questionText: "Full Name", questionType: "text", surveyId: defaultSurvey.id, isRequired: true, orderIndex: 1 },
-        { questionText: "Age", questionType: "number", surveyId: defaultSurvey.id, orderIndex: 2 },
-        { questionText: "Date of Birth", questionType: "date", surveyId: defaultSurvey.id, orderIndex: 3 },
-        { questionText: "Date of Death", questionType: "date", surveyId: defaultSurvey.id, orderIndex: 4 },
-        { questionText: "Location", questionType: "text", surveyId: defaultSurvey.id, orderIndex: 5 },
-        { questionText: "Obituary Tone", questionType: "radio", surveyId: defaultSurvey.id, isRequired: true, orderIndex: 6, options: [
-          { label: "Traditional", value: "traditional" },
-          { label: "Celebratory", value: "celebratory" },
-          { label: "Lighthearted", value: "lighthearted" }
-        ]}
-      ];
-
-      for (const question of defaultQuestions) {
-        await storage.createQuestion(question);
-      }
-      
-      console.log("Default survey and questions created");
-    }
+    // Skip survey creation since it's now handled by database initialization
+    console.log("Question initialization skipped - handled by database setup");
   } catch (error) {
     console.error("Error initializing questions:", error);
   }
