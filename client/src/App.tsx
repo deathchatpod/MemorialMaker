@@ -15,20 +15,12 @@ import Login from "@/pages/login";
 import Register from "@/pages/register";
 import NotFound from "@/pages/not-found";
 
-// User context for switching between user types
+// Simple user switching without context for now
 interface User {
   id: number;
   username: string;
   userType: string;
 }
-
-export const UserContext = React.createContext<{
-  currentUser: User;
-  setCurrentUser: (user: User) => void;
-}>({
-  currentUser: { id: 1, username: 'Jane Smith', userType: 'funeral_home' },
-  setCurrentUser: () => {},
-});
 
 function Router() {
   return (
@@ -53,11 +45,6 @@ function App() {
     username: 'Jane Smith', 
     userType: 'funeral_home' 
   });
-
-  // Debug the state updates
-  React.useEffect(() => {
-    console.log('App level currentUser changed:', currentUser);
-  }, [currentUser]);
 
   return (
     <QueryClientProvider client={queryClient}>

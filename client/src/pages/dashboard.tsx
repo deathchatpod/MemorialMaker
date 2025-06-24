@@ -38,10 +38,7 @@ export default function Dashboard() {
   const { currentUser } = userContext;
   const [location, setLocation] = useLocation();
 
-  // Log when user changes
-  React.useEffect(() => {
-    console.log('Dashboard received user:', currentUser);
-  }, [currentUser]);
+  console.log('Dashboard rendering for user type:', currentUser.userType);
 
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
