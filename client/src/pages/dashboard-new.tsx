@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
+import PromptTemplates from "./prompt-templates";
 
 interface User {
   id: number;
@@ -174,9 +175,10 @@ export default function Dashboard() {
             {activeSection === 'management' && <TeamManagement />}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account' && <AccountInformation />}
+            {activeSection === 'prompts' && <PromptTemplates />}
             
             {/* Default placeholder for other sections */}
-            {!['management', 'team-management', 'account'].includes(activeSection) && (
+            {!['management', 'team-management', 'account', 'prompts'].includes(activeSection) && (
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center py-12">
