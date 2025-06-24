@@ -31,11 +31,33 @@ interface Obituary {
 export default function Dashboard() {
   const [location, setLocation] = useLocation();
   
-  // Get current user from URL params
+  // Get current user from authentication or URL params for testing
   const urlParams = new URLSearchParams(window.location.search);
   const userTypeParam = urlParams.get('userType');
   
+  // Try to get authenticated user first, fall back to URL param for testing
+  const { data: authenticatedUser } = useQuery({
+    queryKey: ['/auth/user'],
+    queryFn: async () => {
+      const response = await fetch('/auth/user');
+      if (!response.ok) throw new Error('Not authenticated');
+      return response.json();
+    },
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+  
   const currentUser = (() => {
+    // Use authenticated user if available
+    if (authenticatedUser) {
+      return {
+        id: authenticatedUser.id,
+        username: authenticatedUser.name,
+        userType: authenticatedUser.userType
+      };
+    }
+    
+    // Fall back to URL param for testing
     if (userTypeParam === 'admin') {
       return { id: 2, username: 'John Admin', userType: 'admin' };
     } else if (userTypeParam === 'employee') {

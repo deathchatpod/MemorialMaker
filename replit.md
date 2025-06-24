@@ -113,6 +113,8 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Created team management and account information features for funeral homes
 - June 24, 2025: Rebuilt user switching system with URL-based state management for clean transitions
 - June 24, 2025: Implemented Platform Surveys management system with survey creation, editing, and question building
+- June 24, 2025: Fixed authentication flow - login now properly redirects to dashboard with correct user permissions
+- June 24, 2025: Added Individual user type to dashboard user switching dropdown with restricted access
 
 # User Management Structure
 
@@ -148,6 +150,12 @@ For testing purposes, use these credentials:
 - **Funeral Home**: email: funeral@deathmatters.com, password: funeral123  
 - **Employee**: email: employee@deathmatters.com, password: employee123
 - **Individual**: Individual users can register through the signup form
+
+## Authentication Flow
+- Login redirects to /dashboard with proper user type detection
+- Session persistence maintains authentication state
+- Dashboard dynamically shows menu items based on authenticated user permissions
+- User switching dropdown available for testing different permission levels
 
 # User Preferences
 

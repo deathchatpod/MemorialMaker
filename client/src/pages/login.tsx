@@ -37,7 +37,11 @@ export default function Login() {
       });
 
       if (response.ok) {
-        window.location.href = '/dashboard';
+        const data = await response.json();
+        console.log('Login response:', data);
+        // Redirect with user type parameter
+        const userType = data.user?.userType || 'funeral_home';
+        window.location.href = `/dashboard?userType=${userType}`;
       } else {
         setError('Invalid email or password');
       }
