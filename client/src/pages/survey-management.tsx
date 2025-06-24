@@ -101,7 +101,7 @@ export default function SurveyManagement() {
     defaultValues: {
       name: "",
       description: "",
-      createdById: 2, // Default admin user ID
+      createdById: 1, // Default admin user ID
     },
   });
 

@@ -423,13 +423,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Survey routes
+  app.get("/api/surveys", async (req, res) => {
+    try {
+      const surveys = await storage.getSurveys();
+      res.json(surveys);
+    } catch (error) {
+      console.error("Error fetching surveys:", error);
+      res.status(500).json({ error: "Failed to fetch surveys" });
+    }
+  });
+
+  app.get("/api/surveys/:id", async (req, res) => {
+    try {
+      const survey = await storage.getSurvey(parseInt(req.params.id));
+      if (!survey) {
+        return res.status(404).json({ error: "Survey not found" });
+      }
+      res.json(survey);
+    } catch (error) {
+      console.error("Error fetching survey:", error);
+      res.status(500).json({ error: "Failed to fetch survey" });
+    }
+  });
+
+  app.post("/api/surveys", async (req, res) => {
+    try {
+      const survey = await storage.createSurvey(req.body);
+      res.status(201).json(survey);
+    } catch (error) {
+      console.error("Error creating survey:", error);
+      res.status(500).json({ error: "Failed to create survey" });
+    }
+  });
+
+  app.put("/api/surveys/:id", async (req, res) => {
+    try {
+      const survey = await storage.updateSurvey(parseInt(req.params.id), req.body);
+      res.json(survey);
+    } catch (error) {
+      console.error("Error updating survey:", error);
+      res.status(500).json({ error: "Failed to update survey" });
+    }
+  });
+
+  app.delete("/api/surveys/:id", async (req, res) => {
+    try {
+      await storage.deleteSurvey(parseInt(req.params.id));
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting survey:", error);
+      res.status(500).json({ error: "Failed to delete survey" });
+    }
+  });
+
   // Questions endpoints
   app.get("/api/questions", async (req, res) => {
     try {
-      const questions = await storage.getQuestions();
+      const { surveyId } = req.query;
+      const questions = surveyId 
+        ? await storage.getQuestionsBySurvey(parseInt(surveyId as string))
+        : await storage.getQuestions();
       res.json(questions);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch questions" });
+      console.error("Error fetching questions:", error);
+      res.status(500).json({ error: "Failed to fetch questions" });
     }
   });
 
@@ -579,7 +637,7 @@ async function initializeDefaultQuestions() {
       const defaultSurvey = await storage.createSurvey({
         name: "Obituary Information Form",
         description: "Standard form for collecting obituary information",
-        createdById: 2, // Default admin user
+        createdById: 1, // Default admin user
         status: "active"
       });
 

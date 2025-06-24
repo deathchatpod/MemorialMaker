@@ -134,10 +134,11 @@ export default function Dashboard() {
       href: '/final-spaces'
     },
     {
-      id: 'questions',
-      label: 'Question Management',
-      icon: 'fas fa-edit',
-      userTypes: ['admin']
+      id: 'surveys',
+      label: 'Platform Surveys',
+      icon: 'fas fa-poll-h',
+      userTypes: ['admin'],
+      href: '/admin/surveys'
     },
     {
       id: 'prompts',
