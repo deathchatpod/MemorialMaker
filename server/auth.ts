@@ -1,5 +1,5 @@
 import passport from "passport";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+// import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -10,51 +10,14 @@ import type { Request, Response, NextFunction } from "express";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
-// Google OAuth Strategy
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID!,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-  callbackURL: "/auth/google/callback"
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    const email = profile.emails?.[0]?.value;
-    const name = profile.displayName;
-    const googleId = profile.id;
-
-    if (!email) {
-      return done(new Error("No email found in Google profile"));
-    }
-
-    // Check if user exists as funeral home
-    let user = await db.select().from(funeralHomes).where(eq(funeralHomes.email, email)).limit(1);
-    if (user.length > 0) {
-      // Update Google ID if not set
-      if (!user[0].googleId) {
-        await db.update(funeralHomes)
-          .set({ googleId })
-          .where(eq(funeralHomes.id, user[0].id));
-      }
-      return done(null, { ...user[0], userType: 'funeral_home' });
-    }
-
-    // Check if user exists as employee
-    let employee = await db.select().from(employees).where(eq(employees.email, email)).limit(1);
-    if (employee.length > 0) {
-      // Update Google ID if not set
-      if (!employee[0].googleId) {
-        await db.update(employees)
-          .set({ googleId })
-          .where(eq(employees.id, employee[0].id));
-      }
-      return done(null, { ...employee[0], userType: 'employee' });
-    }
-
-    // No existing user found
-    return done(null, false);
-  } catch (error) {
-    return done(error);
-  }
-}));
+// Google OAuth Strategy - temporarily disabled
+// passport.use(new GoogleStrategy({
+//   clientID: process.env.GOOGLE_CLIENT_ID!,
+//   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+//   callbackURL: "/auth/google/callback"
+// }, async (accessToken, refreshToken, profile, done) => {
+//   // Google OAuth implementation will be added later
+// }));
 
 // Local Strategy for password login
 passport.use(new LocalStrategy({
