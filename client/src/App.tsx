@@ -34,7 +34,10 @@ interface User {
 
 function GlobalHeader() {
   const [location] = useLocation();
-  const [selectedUserType, setSelectedUserType] = useState("");
+  
+  // Get current user type from URL params or default
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentUserType = urlParams.get('userType') || 'funeral_home';
   
   // Check if user is authenticated
   const { data: authenticatedUser } = useQuery({
@@ -57,6 +60,20 @@ function GlobalHeader() {
     },
   });
 
+  const handleUserTypeChange = (userTypeName: string) => {
+    const typeMapping = {
+      'Employee': 'employee',
+      'Funeral Home': 'funeral_home', 
+      'Individual': 'individual'
+    };
+    
+    const userTypeKey = typeMapping[userTypeName] || 'funeral_home';
+    
+    const url = new URL(window.location.href);
+    url.searchParams.set('userType', userTypeKey);
+    window.location.href = url.toString();
+  };
+
   const handleLogout = async () => {
     try {
       await fetch('/auth/logout', { method: 'POST' });
@@ -64,6 +81,17 @@ function GlobalHeader() {
     } catch (error) {
       console.error('Logout failed:', error);
     }
+  };
+
+  // Get display name for current user type
+  const getCurrentUserTypeDisplay = () => {
+    const reverseMapping = {
+      'employee': 'Employee',
+      'funeral_home': 'Funeral Home',
+      'individual': 'Individual',
+      'admin': 'Admin'
+    };
+    return reverseMapping[currentUserType] || 'Funeral Home';
   };
 
   const isDashboard = location.startsWith('/dashboard') || location.startsWith('/admin') || location.startsWith('/obituary') || location.startsWith('/final-spaces');
