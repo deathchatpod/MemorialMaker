@@ -29,7 +29,8 @@ export function PreNeedEvaluationTab() {
   const urlParams = new URLSearchParams(window.location.search);
   const currentUserId = parseInt(urlParams.get('userId') || '1');
   const currentUserType = urlParams.get('userType') || 'admin';
-  const currentFuneralHomeId = urlParams.get('funeralHomeId') ? parseInt(urlParams.get('funeralHomeId')!) : undefined;
+  const currentFuneralHomeId = currentUserType === 'funeral_home' ? currentUserId : 
+                               currentUserType === 'employee' ? 1 : undefined;
 
   // Fetch pre-need evaluations
   const { data: evaluations = [], isLoading } = useQuery<PreNeedEvaluation[]>({

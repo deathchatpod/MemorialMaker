@@ -12,6 +12,7 @@ import ObituariesList from "./obituaries-list";
 import FinalSpacesList from "./finalspaces-list";
 import SurveysList from "./surveys-list";
 import MyCollaborations from "./my-collaborations";
+import { PreNeedEvaluationTab } from "@/components/pre-need-evaluation-tab";
 
 interface User {
   id: number;
@@ -153,6 +154,7 @@ export default function Dashboard() {
               {activeSection === 'collaborations' && 'My Collaborations'}
               {activeSection === 'finalspaces' && 'FinalSpaces'}
               {activeSection === 'surveys' && 'Platform Surveys'}
+              {activeSection === 'pre-need' && 'Pre Need Evaluation'}
               {activeSection === 'prompts' && 'Prompt Templates'}
               {activeSection === 'team-management' && 'Team Management'}
               {activeSection === 'account' && 'My Account'}
@@ -163,12 +165,13 @@ export default function Dashboard() {
             {activeSection === 'collaborations' && <MyCollaborations userType={currentUser.userType} userId={currentUser.id} />}
             {activeSection === 'finalspaces' && <FinalSpacesList userType={currentUser.userType} userId={currentUser.id} />}
             {activeSection === 'surveys' && <SurveysList />}
+            {activeSection === 'pre-need' && <PreNeedEvaluationSection userType={currentUser.userType} userId={currentUser.id} />}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account' && <AccountInformation />}
             {activeSection === 'prompts' && <PromptTemplates />}
             
             {/* Default placeholder for other sections */}
-            {!['obituaries', 'collaborations', 'finalspaces', 'surveys', 'team-management', 'account', 'prompts'].includes(activeSection) && (
+            {!['obituaries', 'collaborations', 'finalspaces', 'surveys', 'pre-need', 'team-management', 'account', 'prompts'].includes(activeSection) && (
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center py-12">
@@ -254,5 +257,16 @@ function MyCollaborationsTab({ userType, userId }: { userType: string; userId: n
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function PreNeedEvaluationSection({ userType, userId }: { userType: string; userId: number }) {
+  // Get funeral home ID based on user type
+  const funeralHomeId = userType === 'funeral_home' ? userId : userType === 'employee' ? 1 : undefined;
+  
+  return (
+    <div className="space-y-6">
+      <PreNeedEvaluationTab />
+    </div>
   );
 }
