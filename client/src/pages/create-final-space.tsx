@@ -52,7 +52,7 @@ export default function CreateFinalSpace() {
       musicPlaylist: "",
       isPublic: true,
       allowComments: true,
-      userId: currentUser?.id
+      userId: userIdParam
     }
   });
 
