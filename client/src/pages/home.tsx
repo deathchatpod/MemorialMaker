@@ -1,7 +1,6 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Skull } from "lucide-react";
@@ -27,25 +26,7 @@ export default function Home() {
     return typeMapping[userTypeParam] || 'Funeral Home';
   })();
 
-  // Check if user is authenticated
-  const { data: authenticatedUser } = useQuery({
-    queryKey: ['/auth/user'],
-    queryFn: async () => {
-      const response = await fetch('/auth/user');
-      if (!response.ok) throw new Error('Not authenticated');
-      return response.json();
-    },
-    retry: false,
-  });
 
-  const handleLogout = async () => {
-    try {
-      await fetch('/auth/logout', { method: 'POST' });
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
-  };
 
   // Fetch all surveys to find "Home Page" survey
   const { data: surveys = [] } = useQuery<Survey[]>({
@@ -177,64 +158,7 @@ export default function Home() {
           </Card>
         )}
 
-        {/* Feature Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">AI-Powered Writing</h3>
-              <p className="text-gray-600">
-                Our advanced AI helps create personalized, meaningful obituaries that capture a life's essence.
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6 text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Collaborative Creation</h3>
-              <p className="text-gray-600">
-                Family and friends can collaborate together to ensure every important detail is included.
-              </p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6 text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Memorial Spaces</h3>
-              <p className="text-gray-600">
-                Create lasting digital memorials where loved ones can share memories and condolences.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* CTA Section */}
-        <div className="text-center">
-          {authenticatedUser ? (
-            <div className="space-y-4">
-              <p className="text-lg text-gray-600">Welcome back! Ready to continue your work?</p>
-              <div className="flex justify-center space-x-4">
-                <Link href="/dashboard">
-                  <Button size="lg">Go to Dashboard</Button>
-                </Link>
-                <Button variant="outline" size="lg" onClick={handleLogout}>
-                  Sign Out
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-lg text-gray-600">Ready to create meaningful tributes?</p>
-              <div className="flex justify-center space-x-4">
-                <Link href="/login">
-                  <Button size="lg">Sign In</Button>
-                </Link>
-                <Link href="/register">
-                  <Button variant="outline" size="lg">Create Account</Button>
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
       </main>
 
       {/* Footer */}
