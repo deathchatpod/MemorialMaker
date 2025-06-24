@@ -125,6 +125,7 @@ export default function Dashboard() {
       if (!response.ok) throw new Error('Failed to fetch obituaries');
       return response.json();
     },
+    enabled: activeSection === 'obituaries' || activeSection === 'collaborations'
   });
 
   const { data: questions = [], isLoading: questionsLoading } = useQuery<Question[]>({
@@ -187,7 +188,13 @@ export default function Dashboard() {
       id: 'obituaries',
       label: 'Obituary Generator',
       icon: 'fas fa-file-alt',
-      userTypes: ['individual', 'funeral_home', 'employee', 'admin']
+      userTypes: ['funeral_home', 'employee', 'admin'] // Individual users don't create obituaries, only collaborate
+    },
+    {
+      id: 'collaborations',
+      label: 'My Collaborations',
+      icon: 'fas fa-users',
+      userTypes: ['individual'] // Individual users only see obituaries they're collaborating on
     },
     {
       id: 'finalspaces',
@@ -246,13 +253,17 @@ export default function Dashboard() {
       <CardContent className="p-0">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium text-gray-900">Recent Obituaries</h3>
-            <Link href="/obituary/new">
-              <Button className="bg-primary text-white hover:bg-blue-700">
-                <i className="fas fa-plus mr-2"></i>
-                New Obituary
-              </Button>
-            </Link>
+            <h3 className="text-lg font-medium text-gray-900">
+              {currentUser.userType === 'individual' ? 'My Collaborations' : 'Recent Obituaries'}
+            </h3>
+            {currentUser.userType !== 'individual' && (
+              <Link href="/obituary/new">
+                <Button className="bg-primary text-white hover:bg-blue-700">
+                  <i className="fas fa-plus mr-2"></i>
+                  New Obituary
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -264,8 +275,14 @@ export default function Dashboard() {
         ) : obituaries.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <i className="fas fa-file-alt text-4xl mb-4 text-gray-300"></i>
-            <p className="text-lg font-medium mb-2">No obituaries yet</p>
-            <p className="text-sm">Create your first obituary to get started.</p>
+            <p className="text-lg font-medium mb-2">
+              {currentUser.userType === 'individual' ? 'No collaborations yet' : 'No obituaries yet'}
+            </p>
+            <p className="text-sm">
+              {currentUser.userType === 'individual' 
+                ? 'You haven\'t been invited to collaborate on any obituaries yet.' 
+                : 'Create your first obituary to get started.'}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -1183,19 +1200,23 @@ export default function Dashboard() {
               {!['team-management', 'account-information'].includes(activeSection) && (
                 <>
                   <h1 className="text-2xl font-semibold text-gray-900">
-                    {activeSection === 'obituaries' && 'Obituary Generator'}
+                    {(activeSection === 'obituaries' || activeSection === 'collaborations') && (
+                      currentUser?.userType === 'individual' ? 'My Collaborations' : 'Obituary Generator'
+                    )}
                     {activeSection === 'questions' && currentUser?.userType === 'admin' && 'Question Management'}
                     {activeSection === 'prompts' && currentUser?.userType === 'admin' && 'Prompt Templates'}
                     {activeSection === 'user-management' && currentUser?.userType === 'admin' && 'Funeral Home Management'}
                   </h1>
                   <p className="text-gray-600 mt-1">
-                    {activeSection === 'obituaries' && (currentUser?.userType === 'admin' 
-                      ? 'All obituary creations across all funeral homes'
-                      : currentUser?.userType === 'funeral_home' 
-                        ? 'Your obituaries and team member obituaries'
-                        : currentUser?.userType === 'individual'
-                          ? 'Obituaries you are collaborating on'
-                          : 'Your obituary creations')}
+                    {(activeSection === 'obituaries' || activeSection === 'collaborations') && (
+                      currentUser?.userType === 'admin' 
+                        ? 'All obituary creations across all funeral homes'
+                        : currentUser?.userType === 'funeral_home' 
+                          ? 'Your obituaries and team member obituaries'
+                          : currentUser?.userType === 'individual'
+                            ? 'Obituaries you are collaborating on'
+                            : 'Your obituary creations'
+                    )}
                     {activeSection === 'questions' && currentUser?.userType === 'admin' && 'Manage form questions and answer options'}
                     {activeSection === 'prompts' && currentUser?.userType === 'admin' && 'Edit AI prompts sent to Claude and ChatGPT'}
                     {activeSection === 'user-management' && currentUser?.userType === 'admin' && 'Manage funeral home accounts and settings'}
@@ -1204,7 +1225,7 @@ export default function Dashboard() {
               )}
             </div>
 
-            {activeSection === 'obituaries' && renderObituariesSection()}
+            {(activeSection === 'obituaries' || activeSection === 'collaborations') && renderObituariesSection()}
             {activeSection === 'questions' && currentUser?.userType === 'admin' && renderQuestionsSection()}
             {activeSection === 'prompts' && currentUser?.userType === 'admin' && renderPromptTemplatesSection()}
             {activeSection === 'user-management' && currentUser?.userType === 'admin' && renderUserManagementSection()}
