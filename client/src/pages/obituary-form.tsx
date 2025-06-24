@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -59,7 +59,22 @@ const obituaryFormSchema = z.object({
 type ObituaryFormData = z.infer<typeof obituaryFormSchema>;
 
 export default function ObituaryForm() {
-  const { currentUser } = useContext(UserContext);
+  // Get current user from URL params (same pattern as dashboard)
+  const urlParams = new URLSearchParams(window.location.search);
+  const userTypeParam = urlParams.get('userType');
+  
+  const currentUser = (() => {
+    if (userTypeParam === 'admin') {
+      return { id: 1, username: 'John Admin', userType: 'admin' };
+    } else if (userTypeParam === 'employee') {
+      return { id: 2, username: 'Mike Johnson', userType: 'employee' };
+    } else if (userTypeParam === 'individual') {
+      return { id: 3, username: 'Sarah Wilson', userType: 'individual' };
+    } else {
+      return { id: 4, username: 'Jane Smith', userType: 'funeral_home' };
+    }
+  })();
+  
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
