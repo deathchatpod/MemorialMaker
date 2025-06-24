@@ -40,6 +40,24 @@ export default function Collaborate() {
   const { data: collaborationData, isLoading, error } = useCollaborationSession(uuid);
   const identifyMutation = useIdentifyCollaborator();
 
+  // Fetch feedback for all generated obituaries
+  const { data: allFeedback } = useQuery({
+    queryKey: ["/api/collaborate", uuid, "feedback"],
+    queryFn: async () => {
+      if (!collaborationData?.generatedObituaries) return {};
+      
+      const feedbackPromises = collaborationData.generatedObituaries.map(async (obituary: any) => {
+        const response = await fetch(`/api/generated-obituaries/${obituary.id}/feedback`);
+        const feedback = await response.json();
+        return { [obituary.id]: feedback };
+      });
+      
+      const results = await Promise.all(feedbackPromises);
+      return results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+    },
+    enabled: !!collaborationData?.generatedObituaries && collaborationData.generatedObituaries.length > 0,
+  });
+
   // Text feedback mutation for collaborators
   const saveFeedbackMutation = useMutation({
     mutationFn: async ({ generatedObituaryId, selectedText, feedbackType }: {
@@ -63,12 +81,22 @@ export default function Collaborate() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate feedback cache
+      queryClient.invalidateQueries({ queryKey: ["/api/collaborate", uuid, "feedback"] });
       toast({
         title: "Feedback saved",
         description: "Your feedback has been recorded"
       });
     },
   });
+
+  const handleTextSelection = (obituaryId: number, selectedText: string, feedbackType: 'liked' | 'disliked') => {
+    saveFeedbackMutation.mutate({
+      generatedObituaryId: obituaryId,
+      selectedText,
+      feedbackType
+    });
+  };
 
   useEffect(() => {
     if (collaborationData?.session?.collaboratorName) {

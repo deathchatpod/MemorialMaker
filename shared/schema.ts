@@ -123,11 +123,6 @@ export const collaborationSessions = pgTable("collaboration_sessions", {
   collaboratorName: text("collaborator_name"),
   uuid: text("uuid").notNull().unique(),
   isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  uuid: text("uuid").notNull().unique(),
-  collaboratorEmail: text("collaborator_email").notNull(),
-  collaboratorName: text("collaborator_name"),
-  isActive: boolean("is_active").notNull().default(true),
   expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
