@@ -47,7 +47,7 @@ export default function Dashboard() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   
-  const currentUser = (() => {
+  const [currentUser, setCurrentUser] = useState(() => {
     // Use authenticated user if available
     if (authenticatedUser) {
       return {
@@ -64,10 +64,42 @@ export default function Dashboard() {
       return { id: 3, username: 'Mike Johnson', userType: 'employee' };
     } else if (userTypeParam === 'individual') {
       return { id: 4, username: 'Sarah Wilson', userType: 'individual' };
-    } else {
+    } else if (userTypeParam === 'funeral_home') {
       return { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
+    } else {
+      return { id: 2, username: 'John Admin', userType: 'admin' };
     }
-  })();
+  });
+
+  // Update user when URL changes
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const newUserTypeParam = urlParams.get('userType');
+    
+    let newUser;
+    if (authenticatedUser) {
+      newUser = {
+        id: authenticatedUser.id,
+        username: authenticatedUser.name,
+        userType: authenticatedUser.userType
+      };
+    } else if (newUserTypeParam === 'admin') {
+      newUser = { id: 2, username: 'John Admin', userType: 'admin' };
+    } else if (newUserTypeParam === 'employee') {
+      newUser = { id: 3, username: 'Mike Johnson', userType: 'employee' };
+    } else if (newUserTypeParam === 'individual') {
+      newUser = { id: 4, username: 'Sarah Wilson', userType: 'individual' };
+    } else if (newUserTypeParam === 'funeral_home') {
+      newUser = { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
+    } else {
+      newUser = { id: 2, username: 'John Admin', userType: 'admin' };
+    }
+    
+    if (newUser.userType !== currentUser.userType) {
+      console.log('Updating user from', currentUser.userType, 'to', newUser.userType);
+      setCurrentUser(newUser);
+    }
+  }, [userTypeParam, authenticatedUser]);
 
   console.log('Dashboard rendering for user type:', currentUser.userType);
 
