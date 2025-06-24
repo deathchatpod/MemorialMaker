@@ -42,7 +42,7 @@ function Router() {
 }
 
 function App() {
-  const [currentUser, setCurrentUser] = useState({ 
+  const [currentUser, setCurrentUser] = useState<User>({ 
     id: 1, 
     username: 'Jane Smith', 
     userType: 'funeral_home' 
@@ -74,7 +74,9 @@ function App() {
                         value={currentUser.userType}
                         onChange={(e) => {
                           const userType = e.target.value;
-                          let newUser;
+                          console.log('Dropdown onChange triggered for:', userType);
+                          
+                          let newUser: User;
                           
                           if (userType === 'admin') {
                             newUser = { id: 2, username: 'John Admin', userType: 'admin' };
@@ -82,11 +84,12 @@ function App() {
                             newUser = { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
                           } else if (userType === 'employee') {
                             newUser = { id: 3, username: 'Mike Johnson', userType: 'employee' };
+                          } else {
+                            return;
                           }
                           
-                          if (newUser) {
-                            setCurrentUser(newUser);
-                          }
+                          console.log('Setting new user:', newUser);
+                          setCurrentUser(newUser);
                         }}
                         className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       >

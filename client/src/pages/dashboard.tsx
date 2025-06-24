@@ -27,7 +27,12 @@ interface Obituary {
 
 export default function Dashboard() {
   const userContext = useContext(UserContext);
-  const currentUser = userContext?.currentUser;
+  
+  if (!userContext) {
+    throw new Error('Dashboard must be used within UserContext provider');
+  }
+  
+  const { currentUser } = userContext;
   const [location, setLocation] = useLocation();
   
   // Log when user changes
@@ -142,11 +147,14 @@ export default function Dashboard() {
   ];
 
   const filteredMenuItems = React.useMemo(() => {
-    if (!currentUser?.userType) return [];
+    if (!currentUser?.userType) {
+      console.log('No user type, returning empty menu');
+      return [];
+    }
     
     console.log('Filtering menu items for user type:', currentUser.userType);
     
-    return menuItems.filter(item => {
+    const filtered = menuItems.filter(item => {
       // Direct match for user type
       if (item.userTypes.includes(currentUser.userType)) {
         return true;
@@ -159,6 +167,9 @@ export default function Dashboard() {
       
       return false;
     });
+    
+    console.log('Filtered menu items:', filtered.map(item => item.label));
+    return filtered;
   }, [currentUser?.userType]);
 
 
