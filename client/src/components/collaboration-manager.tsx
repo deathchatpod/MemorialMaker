@@ -160,7 +160,7 @@ export default function CollaborationManager({ obituaryId }: CollaborationManage
                   <div>
                     <p className="text-sm font-medium">{collaborator.email}</p>
                     <p className="text-xs text-muted-foreground">
-                      Invited {format(new Date(collaborator.invitedAt), 'MMM d, yyyy')}
+                      Added {collaborator.createdAt ? format(new Date(collaborator.createdAt), 'MMM d, yyyy') : 'Recently'}
                     </p>
                   </div>
                 </div>
