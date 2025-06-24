@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,8 +19,11 @@ export default function ConditionalSurveyForm({ questions, onSubmit, isLoading =
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [visibleQuestions, setVisibleQuestions] = useState<number[]>([]);
 
-  // Sort questions by order index
-  const sortedQuestions = [...questions].sort((a, b) => a.orderIndex - b.orderIndex);
+  // Sort questions by order index (memoize to prevent re-creation)
+  const sortedQuestions = useMemo(() => 
+    [...questions].sort((a, b) => a.orderIndex - b.orderIndex), 
+    [questions]
+  );
 
   // Determine which questions should be visible based on conditional logic
   useEffect(() => {
@@ -69,8 +72,14 @@ export default function ConditionalSurveyForm({ questions, onSubmit, isLoading =
       }
     });
     
-    setVisibleQuestions(visible);
-  }, [formData, sortedQuestions]);
+    // Only update if the visible questions actually changed
+    setVisibleQuestions(prev => {
+      if (prev.length !== visible.length || !prev.every((id, index) => id === visible[index])) {
+        return visible;
+      }
+      return prev;
+    });
+  }, [formData]); // Remove sortedQuestions from dependencies to prevent infinite loop
 
   const handleInputChange = (questionId: number, value: any) => {
     setFormData(prev => ({
