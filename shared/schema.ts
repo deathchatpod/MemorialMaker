@@ -112,12 +112,18 @@ export const obituaryCollaborators = pgTable("obituary_collaborators", {
   obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
   name: text("name"),
+  invitedAt: timestamp("invited_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const collaborationSessions = pgTable("collaboration_sessions", {
   id: serial("id").primaryKey(),
   obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
+  collaboratorEmail: text("collaborator_email").notNull(),
+  collaboratorName: text("collaborator_name"),
+  uuid: text("uuid").notNull().unique(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
   uuid: text("uuid").notNull().unique(),
   collaboratorEmail: text("collaborator_email").notNull(),
   collaboratorName: text("collaborator_name"),

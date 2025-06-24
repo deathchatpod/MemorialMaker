@@ -481,6 +481,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Collaborator endpoints
+  app.get("/api/obituaries/:id/collaborators", async (req, res) => {
+    try {
+      const obituaryId = parseInt(req.params.id);
+      const collaborators = await storage.getObituaryCollaborators(obituaryId);
+      res.json(collaborators);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch collaborators" });
+    }
+  });
+
+  app.post("/api/obituaries/:id/collaborators", async (req, res) => {
+    try {
+      const obituaryId = parseInt(req.params.id);
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Generate unique collaboration session
+      const uuid = require('uuid').v4();
+      
+      // Create collaboration session
+      const session = await storage.createCollaborationSession({
+        obituaryId,
+        collaboratorEmail: email,
+        uuid,
+        isActive: true
+      });
+
+      // Create collaborator record
+      const collaborator = await storage.createObituaryCollaborator({
+        obituaryId,
+        email,
+        invitedAt: new Date()
+      });
+
+      const shareableLink = `${req.protocol}://${req.get('host')}/collaborate/${uuid}`;
+      
+      res.json({
+        collaborator,
+        shareableLink
+      });
+    } catch (error) {
+      console.error('Error adding collaborator:', error);
+      res.status(500).json({ message: "Failed to add collaborator" });
+    }
+  });
+
+  app.delete("/api/obituaries/collaborators/:id", async (req, res) => {
+    try {
+      const collaboratorId = parseInt(req.params.id);
+      await storage.deleteObituaryCollaborator(collaboratorId);
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to remove collaborator" });
+    }
+  });
+
+  // Collaboration session endpoints
+  app.get("/api/collaborate/:uuid", async (req, res) => {
+    try {
+      const uuid = req.params.uuid;
+      const session = await storage.getCollaborationSession(uuid);
+      
+      if (!session) {
+        return res.status(404).json({ message: "Collaboration session not found" });
+      }
+
+      const obituary = await storage.getObituary(session.obituaryId);
+      const generatedObituaries = await storage.getGeneratedObituaries(session.obituaryId);
+      
+      res.json({
+        session,
+        obituary,
+        generatedObituaries
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch collaboration session" });
+    }
+  });
+
+  app.post("/api/collaborate/:uuid/identify", async (req, res) => {
+    try {
+      const uuid = req.params.uuid;
+      const { name } = req.body;
+      
+      const session = await storage.updateCollaborationSession(uuid, {
+        collaboratorName: name
+      });
+      
+      res.json(session);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to identify collaborator" });
+    }
+  });
+
+  // Text feedback endpoints
+  app.post("/api/generated-obituaries/:id/feedback", async (req, res) => {
+    try {
+      const generatedObituaryId = parseInt(req.params.id);
+      const { selectedText, feedbackType, collaboratorName, collaboratorEmail } = req.body;
+      
+      const feedback = await storage.createTextFeedback({
+        generatedObituaryId,
+        selectedText,
+        feedbackType,
+        collaboratorName,
+        collaboratorEmail
+      });
+      
+      res.json(feedback);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to save feedback" });
+    }
+  });
+
+  app.get("/api/generated-obituaries/:id/feedback", async (req, res) => {
+    try {
+      const generatedObituaryId = parseInt(req.params.id);
+      const feedback = await storage.getTextFeedback(generatedObituaryId);
+      res.json(feedback);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch feedback" });
+    }
+  });
+
+  // Revision endpoints
+  app.post("/api/obituaries/:id/revise", async (req, res) => {
+    try {
+      const obituaryId = parseInt(req.params.id);
+      const { aiProvider } = req.body;
+      
+      const obituary = await storage.getObituary(obituaryId);
+      if (!obituary) {
+        return res.status(404).json({ message: "Obituary not found" });
+      }
+
+      // Get existing generated obituaries to get feedback
+      const existingObituaries = await storage.getGeneratedObituaries(obituaryId);
+      const latestVersion = existingObituaries
+        .filter(o => o.aiProvider === aiProvider)
+        .sort((a, b) => b.version - a.version)[0];
+
+      if (!latestVersion) {
+        return res.status(400).json({ message: "No existing obituary to revise" });
+      }
+
+      // Get feedback for the latest version
+      const feedback = await storage.getTextFeedback(latestVersion.id);
+      
+      // Generate revision based on feedback
+      let revisedContent;
+      if (aiProvider === 'claude') {
+        revisedContent = await generateClaudeRevision(latestVersion.content, feedback);
+      } else {
+        revisedContent = await generateChatGPTRevision(latestVersion.content, feedback);
+      }
+
+      // Create new revision with incremented version
+      const revision = await storage.createGeneratedObituary({
+        obituaryId,
+        aiProvider,
+        version: latestVersion.version + 1,
+        content: revisedContent,
+        isRevision: true,
+        revisionPrompt: `Revision based on ${feedback.length} feedback items`
+      });
+
+      res.json(revision);
+    } catch (error) {
+      console.error('Error creating revision:', error);
+      res.status(500).json({ message: "Failed to create revision" });
+    }
+  });
+
   // Survey routes
   app.get("/api/surveys", async (req, res) => {
     try {
