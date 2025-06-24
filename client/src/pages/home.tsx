@@ -230,41 +230,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <Link href="/">
-              <div className="flex items-center cursor-pointer">
-                <Skull className="h-8 w-8 text-gray-600 mr-3" />
-                <h1 className="text-2xl font-bold text-gray-900">DeathMatters</h1>
-              </div>
-            </Link>
-            <div className="flex items-center space-x-4">
-              {/* Auth Buttons */}
-              {authenticatedUser ? (
-                <>
-                  <Link href="/dashboard">
-                    <Button variant="outline">Dashboard</Button>
-                  </Link>
-                  <Button variant="outline" onClick={handleLogout}>
-                    Sign out
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Link href="/login">
-                    <Button variant="outline">Log In</Button>
-                  </Link>
-                  <Link href="/register">
-                    <Button>Sign Up</Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
