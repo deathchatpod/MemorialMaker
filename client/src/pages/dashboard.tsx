@@ -29,6 +29,11 @@ export default function Dashboard() {
   const { currentUser } = useContext(UserContext);
   const [location, setLocation] = useLocation();
   
+  // Debug: Log when component re-renders with new user
+  React.useEffect(() => {
+    console.log('Dashboard re-rendered with user:', currentUser);
+  }, [currentUser]);
+  
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('obituaries');

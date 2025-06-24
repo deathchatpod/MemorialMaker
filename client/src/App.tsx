@@ -61,6 +61,7 @@ function App() {
 
   // Save to localStorage whenever user changes
   React.useEffect(() => {
+    console.log('Saving user to localStorage:', currentUser);
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
   }, [currentUser]);
 
@@ -85,12 +86,19 @@ function App() {
                         value={currentUser.userType}
                         onChange={(e) => {
                           const userType = e.target.value;
+                          console.log('Dropdown changed to:', userType);
                           if (userType === 'admin') {
-                            setCurrentUser({ id: 2, username: 'John Admin', userType: 'admin' });
+                            const newUser = { id: 2, username: 'John Admin', userType: 'admin' };
+                            console.log('Setting admin user:', newUser);
+                            setCurrentUser(newUser);
                           } else if (userType === 'funeral_home') {
-                            setCurrentUser({ id: 1, username: 'Jane Smith', userType: 'funeral_home' });
+                            const newUser = { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
+                            console.log('Setting funeral home user:', newUser);
+                            setCurrentUser(newUser);
                           } else if (userType === 'employee') {
-                            setCurrentUser({ id: 3, username: 'Mike Johnson', userType: 'employee' });
+                            const newUser = { id: 3, username: 'Mike Johnson', userType: 'employee' };
+                            console.log('Setting employee user:', newUser);
+                            setCurrentUser(newUser);
                           }
                         }}
                         className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
