@@ -123,6 +123,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Added conditional question fields to database schema (conditionalQuestionId, conditionalValue, conditionalOperator)
 - June 24, 2025: Replaced all native browser confirm() dialogs with styled AlertDialog components for consistent UI/UX
 - June 24, 2025: Extended session duration to 7 days and added development bypass for persistent login during testing
+- June 24, 2025: Updated user permissions system with proper access controls for all user types and added Individual user type with collaboration-only obituary access
 
 # User Management Structure
 
@@ -144,6 +145,11 @@ This is a full-stack obituary generation and collaboration platform built with m
    - Create obituaries (visible to funeral home admin)
    - Personal account settings
    - FinalSpaces
+
+4. **Individual**: Collaborates on obituaries when invited
+   - View/edit only obituaries they are invited to collaborate on
+   - FinalSpaces
+   - Personal account management with notification preferences
 
 ## User Switching
 The application supports switching between user types via dropdown for testing:

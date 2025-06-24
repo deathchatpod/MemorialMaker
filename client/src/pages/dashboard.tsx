@@ -82,7 +82,14 @@ export default function Dashboard() {
   const { data: obituaries = [], isLoading } = useQuery<Obituary[]>({
     queryKey: ["/api/obituaries", currentUser.id, currentUser.userType],
     queryFn: async () => {
-      const response = await fetch(`/api/obituaries?userId=${currentUser.id}&userType=${currentUser.userType}`);
+      let endpoint = `/api/obituaries?userId=${currentUser.id}&userType=${currentUser.userType}`;
+      
+      // For individual users, only fetch obituaries they are collaborators on
+      if (currentUser.userType === 'individual') {
+        endpoint = `/api/obituaries/collaborations?userId=${currentUser.id}`;
+      }
+      
+      const response = await fetch(endpoint);
       if (!response.ok) throw new Error('Failed to fetch obituaries');
       return response.json();
     },
@@ -148,13 +155,13 @@ export default function Dashboard() {
       id: 'obituaries',
       label: 'Obituary Generator',
       icon: 'fas fa-file-alt',
-      userTypes: ['user', 'funeral_home', 'employee', 'admin']
+      userTypes: ['individual', 'funeral_home', 'employee', 'admin']
     },
     {
       id: 'finalspaces',
       label: 'FinalSpaces',
       icon: 'fas fa-heart',
-      userTypes: ['user', 'funeral_home', 'employee', 'admin'],
+      userTypes: ['individual', 'funeral_home', 'employee', 'admin'],
       href: '/final-spaces'
     },
     {
@@ -1149,7 +1156,8 @@ export default function Dashboard() {
                 <p className="text-xs text-gray-500">
                   {currentUser?.userType === 'admin' ? 'System Admin' : 
                    currentUser?.userType === 'funeral_home' ? 'Funeral Home Admin' : 
-                   currentUser?.userType === 'employee' ? 'FH Employee' : 'Loading...'}
+                   currentUser?.userType === 'employee' ? 'FH Employee' : 
+                   currentUser?.userType === 'individual' ? 'Individual User' : 'Loading...'}
                 </p>
               </div>
             )}
@@ -1175,7 +1183,9 @@ export default function Dashboard() {
                       ? 'All obituary creations across all funeral homes'
                       : currentUser?.userType === 'funeral_home' 
                         ? 'Your obituaries and team member obituaries'
-                        : 'Your obituary creations')}
+                        : currentUser?.userType === 'individual'
+                          ? 'Obituaries you are collaborating on'
+                          : 'Your obituary creations')}
                     {activeSection === 'questions' && currentUser?.userType === 'admin' && 'Manage form questions and answer options'}
                     {activeSection === 'prompts' && currentUser?.userType === 'admin' && 'Edit AI prompts sent to Claude and ChatGPT'}
                     {activeSection === 'user-management' && currentUser?.userType === 'admin' && 'Manage funeral home accounts and settings'}
@@ -1190,10 +1200,210 @@ export default function Dashboard() {
             {activeSection === 'user-management' && currentUser?.userType === 'admin' && renderUserManagementSection()}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account-information' && (
-              currentUser.userType === 'employee' ? <EmployeeAccount /> : <AccountInformation />
+              currentUser.userType === 'employee' ? <EmployeeAccount /> : 
+              currentUser.userType === 'individual' ? <IndividualAccount /> : 
+              <AccountInformation />
             )}
           </div>
         </main>
+      </div>
+    </div>
+  );
+}
+
+// Individual Account Component
+function IndividualAccount() {
+  const [isEditing, setIsEditing] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Mock individual user data - in real app this would come from authenticated user
+  const [accountData, setAccountData] = useState({
+    name: 'Sarah Wilson',
+    email: 'sarah.wilson@email.com',
+    phone: '(555) 987-6543',
+    address: '456 Oak Street, Springfield, IL 62702',
+    emergencyContact: 'John Wilson - (555) 123-4567',
+    preferences: {
+      emailNotifications: true,
+      smsNotifications: false,
+      collaborationInvites: true
+    }
+  });
+
+  const handleSave = async () => {
+    try {
+      // In real app, this would make an API call to update account info
+      console.log('Saving individual account data:', accountData);
+      setIsEditing(false);
+      // queryClient.invalidateQueries(['/api/individual/account']);
+    } catch (error) {
+      console.error('Failed to save account information:', error);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    // Reset to original data
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
+        {!isEditing ? (
+          <Button onClick={() => setIsEditing(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit Account
+          </Button>
+        ) : (
+          <div className="flex space-x-2">
+            <Button onClick={handleSave}>
+              <Save className="h-4 w-4 mr-2" />
+              Save Changes
+            </Button>
+            <Button variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Personal Information</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                {isEditing ? (
+                  <Input
+                    id="name"
+                    value={accountData.name}
+                    onChange={(e) => setAccountData({...accountData, name: e.target.value})}
+                  />
+                ) : (
+                  <p className="mt-1 text-gray-900">{accountData.name}</p>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="email">Email</Label>
+                {isEditing ? (
+                  <Input
+                    id="email"
+                    type="email"
+                    value={accountData.email}
+                    onChange={(e) => setAccountData({...accountData, email: e.target.value})}
+                  />
+                ) : (
+                  <p className="mt-1 text-gray-900">{accountData.email}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                {isEditing ? (
+                  <Input
+                    id="phone"
+                    value={accountData.phone}
+                    onChange={(e) => setAccountData({...accountData, phone: e.target.value})}
+                  />
+                ) : (
+                  <p className="mt-1 text-gray-900">{accountData.phone}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="emergencyContact">Emergency Contact</Label>
+                {isEditing ? (
+                  <Input
+                    id="emergencyContact"
+                    value={accountData.emergencyContact}
+                    onChange={(e) => setAccountData({...accountData, emergencyContact: e.target.value})}
+                  />
+                ) : (
+                  <p className="mt-1 text-gray-900">{accountData.emergencyContact}</p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <Label htmlFor="address">Address</Label>
+                {isEditing ? (
+                  <Input
+                    id="address"
+                    value={accountData.address}
+                    onChange={(e) => setAccountData({...accountData, address: e.target.value})}
+                  />
+                ) : (
+                  <p className="mt-1 text-gray-900">{accountData.address}</p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Notification Preferences</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="emailNotifications">Email Notifications</Label>
+                <p className="text-sm text-gray-500">Receive updates about collaboration invites and obituary status</p>
+              </div>
+              <Checkbox
+                id="emailNotifications"
+                checked={accountData.preferences.emailNotifications}
+                onCheckedChange={(checked) => 
+                  setAccountData({
+                    ...accountData, 
+                    preferences: {...accountData.preferences, emailNotifications: checked}
+                  })
+                }
+                disabled={!isEditing}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="smsNotifications">SMS Notifications</Label>
+                <p className="text-sm text-gray-500">Receive text messages for urgent updates</p>
+              </div>
+              <Checkbox
+                id="smsNotifications"
+                checked={accountData.preferences.smsNotifications}
+                onCheckedChange={(checked) => 
+                  setAccountData({
+                    ...accountData, 
+                    preferences: {...accountData.preferences, smsNotifications: checked}
+                  })
+                }
+                disabled={!isEditing}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="collaborationInvites">Allow Collaboration Invites</Label>
+                <p className="text-sm text-gray-500">Allow funeral homes to invite you to collaborate on obituaries</p>
+              </div>
+              <Checkbox
+                id="collaborationInvites"
+                checked={accountData.preferences.collaborationInvites}
+                onCheckedChange={(checked) => 
+                  setAccountData({
+                    ...accountData, 
+                    preferences: {...accountData.preferences, collaborationInvites: checked}
+                  })
+                }
+                disabled={!isEditing}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
