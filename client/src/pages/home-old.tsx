@@ -1,0 +1,334 @@
+import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Skull } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import ConditionalSurveyForm from "@/components/ConditionalSurveyForm";
+import type { Survey, Question, UserType } from "@shared/schema";
+
+export default function Home() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Get current user type from URL params for survey context
+  const urlParams = new URLSearchParams(window.location.search);
+  const userTypeParam = urlParams.get('userType');
+  const selectedUserType = (() => {
+    const typeMapping = {
+      'admin': 'Admin',
+      'funeral_home': 'Funeral Home',
+      'employee': 'Employee', 
+      'individual': 'Individual'
+    };
+    return typeMapping[userTypeParam] || 'Funeral Home';
+  })();
+
+  // Check if user is authenticated
+  const { data: authenticatedUser } = useQuery({
+    queryKey: ['/auth/user'],
+    queryFn: async () => {
+      const response = await fetch('/auth/user');
+      if (!response.ok) throw new Error('Not authenticated');
+      return response.json();
+    },
+    retry: false,
+  });
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/auth/logout', { method: 'POST' });
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  // Fetch the "Home Page" survey
+  const { data: surveys } = useQuery<Survey[]>({
+    queryKey: ["/api/surveys"],
+    queryFn: async () => {
+      const response = await fetch('/api/surveys');
+      if (!response.ok) throw new Error('Failed to fetch surveys');
+      return response.json();
+    },
+  });
+
+  const homePageSurvey = surveys?.find(s => s.name === "Home Page");
+  console.log('Home Page Survey:', homePageSurvey);
+  console.log('All surveys:', surveys);
+
+  // Fetch questions for the home page survey
+  const { data: questions = [] } = useQuery<Question[]>({
+    queryKey: ["/api/questions"],
+    queryFn: async () => {
+      const response = await fetch('/api/questions');
+      if (!response.ok) throw new Error('Failed to fetch questions');
+      return response.json();
+    },
+    select: (data) => {
+      const filteredQuestions = data.filter(q => q.surveyId === homePageSurvey?.id);
+      console.log('Filtered questions for survey', homePageSurvey?.id, ':', filteredQuestions);
+      return filteredQuestions;
+    },
+    enabled: !!homePageSurvey,
+  });
+
+  // Fetch user types
+  const { data: userTypes = [] } = useQuery<UserType[]>({
+    queryKey: ["/api/user-types"],
+    queryFn: async () => {
+      const response = await fetch('/api/user-types');
+      if (!response.ok) throw new Error('Failed to fetch user types');
+      return response.json();
+    },
+  });
+
+  const submitSurveyMutation = useMutation({
+    mutationFn: async (formData: Record<string, any>) => {
+      if (!homePageSurvey) {
+        throw new Error("Survey not found");
+      }
+
+      const userType = userTypes.find(ut => ut.name === selectedUserType);
+      if (!userType) {
+        throw new Error("Invalid user type");
+      }
+
+      return await apiRequest("POST", "/api/survey-responses", {
+        surveyId: homePageSurvey.id,
+        userTypeId: userType.id,
+        responses: formData,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Survey Submitted",
+        description: "Thank you for your feedback!"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/survey-responses'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to submit your information. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleInputChange = (questionId: number, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [questionId]: value,
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserType) {
+      toast({
+        title: "Please select user type",
+        description: "Please select what type of user you are before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    submitSurveyMutation.mutate();
+  };
+
+  const renderQuestion = (question: Question) => {
+    const questionId = question.id;
+    const value = formData[questionId] || "";
+
+    switch (question.questionType) {
+      case "text":
+        return (
+          <Input
+            value={value}
+            onChange={(e) => handleInputChange(questionId, e.target.value)}
+            placeholder="Your answer..."
+          />
+        );
+
+      case "textarea":
+        return (
+          <Textarea
+            value={value}
+            onChange={(e) => handleInputChange(questionId, e.target.value)}
+            placeholder="Your answer..."
+            rows={3}
+          />
+        );
+
+      case "select":
+        const selectOptions = question.options as string[] || [];
+        return (
+          <Select
+            value={value}
+            onValueChange={(val) => handleInputChange(questionId, val)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an option..." />
+            </SelectTrigger>
+            <SelectContent>
+              {selectOptions.map((option, index) => (
+                <SelectItem key={index} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+
+      case "radio":
+        const radioOptions = question.options as string[] || [];
+        return (
+          <RadioGroup
+            value={value}
+            onValueChange={(val) => handleInputChange(questionId, val)}
+          >
+            {radioOptions.map((option, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <RadioGroupItem value={option} id={`${questionId}-${index}`} />
+                <Label htmlFor={`${questionId}-${index}`}>{option}</Label>
+              </div>
+            ))}
+          </RadioGroup>
+        );
+
+      case "checkbox":
+        const checkboxOptions = question.options as string[] || [];
+        const selectedOptions = Array.isArray(value) ? value : [];
+        return (
+          <div className="space-y-2">
+            {checkboxOptions.map((option, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`${questionId}-${index}`}
+                  checked={selectedOptions.includes(option)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      handleInputChange(questionId, [...selectedOptions, option]);
+                    } else {
+                      handleInputChange(questionId, selectedOptions.filter((o: string) => o !== option));
+                    }
+                  }}
+                />
+                <Label htmlFor={`${questionId}-${index}`}>{option}</Label>
+              </div>
+            ))}
+          </div>
+        );
+
+      default:
+        return (
+          <Input
+            value={value}
+            onChange={(e) => handleInputChange(questionId, e.target.value)}
+            placeholder="Your answer..."
+          />
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Welcome Section */}
+        <div className="text-center mb-8">
+          <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h2>
+          <p className="text-lg text-gray-600 mb-8">
+            Creating meaningful tributes and lasting memories through AI-powered obituary generation.
+          </p>
+        </div>
+
+        {/* Survey Content */}
+        {homePageSurvey && questions.length > 0 && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">
+                {homePageSurvey.name}
+              </CardTitle>
+              {homePageSurvey.description && (
+                <p className="text-gray-600 text-center">
+                  {homePageSurvey.description}
+                </p>
+              )}
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* User Type Display */}
+                <div>
+                  <Label className="text-base font-medium">Responding as: {selectedUserType}</Label>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Change user type in the header dropdown to test different perspectives
+                  </p>
+                </div>
+
+                {/* Survey Questions */}
+                {questions.map((question) => (
+                  <div key={question.id}>
+                    <Label className="text-base font-medium">
+                      {question.questionText}
+                      {question.isRequired && <span className="text-red-500 ml-1">*</span>}
+                    </Label>
+                    <div className="mt-2">
+                      {renderQuestion(question)}
+                    </div>
+                  </div>
+                ))}
+
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={submitSurveyMutation.isPending}
+                >
+                  {submitSurveyMutation.isPending ? "Submitting..." : "Submit"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Always show placeholder when no survey */}
+        {(!homePageSurvey || questions.length === 0) && (
+          <Card className="mb-8">
+            <CardContent className="py-8 text-center">
+              <div>
+                <Label className="text-base font-medium">Viewing as: {selectedUserType}</Label>
+                <p className="text-sm text-gray-500 mt-1">
+                  Use the header dropdown to switch between user types for testing
+                </p>
+              </div>
+              <p className="text-gray-500 mt-4">
+                Survey content will appear here when an admin publishes a "Home Page" survey.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-200 mt-16">
+        <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="flex items-center justify-center mb-4">
+              <Skull className="h-6 w-6 text-gray-600 mr-2" />
+              <span className="text-xl font-bold text-gray-900">DeathMatters</span>
+            </div>
+            <p className="text-gray-500">
+              Creating meaningful tributes and preserving memories with compassion and technology.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

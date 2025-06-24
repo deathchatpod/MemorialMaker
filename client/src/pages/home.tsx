@@ -1,21 +1,18 @@
-import React, { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Skull } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import ConditionalSurveyForm from "@/components/ConditionalSurveyForm";
 import type { Survey, Question, UserType } from "@shared/schema";
 
 export default function Home() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Get current user type from URL params for survey context
   const urlParams = new URLSearchParams(window.location.search);
@@ -50,8 +47,8 @@ export default function Home() {
     }
   };
 
-  // Fetch the "Home Page" survey
-  const { data: surveys } = useQuery<Survey[]>({
+  // Fetch all surveys to find "Home Page" survey
+  const { data: surveys = [] } = useQuery<Survey[]>({
     queryKey: ["/api/surveys"],
     queryFn: async () => {
       const response = await fetch('/api/surveys');
@@ -60,27 +57,17 @@ export default function Home() {
     },
   });
 
-  const homePageSurvey = surveys?.find(s => s.name === "Home Page");
-  console.log('Home Page Survey:', homePageSurvey);
-  console.log('All surveys:', surveys);
-
-  // Fetch questions for the home page survey
-  const { data: questions = [] } = useQuery<Question[]>({
+  // Fetch all questions
+  const { data: allQuestions = [] } = useQuery<Question[]>({
     queryKey: ["/api/questions"],
     queryFn: async () => {
       const response = await fetch('/api/questions');
       if (!response.ok) throw new Error('Failed to fetch questions');
       return response.json();
     },
-    select: (data) => {
-      const filteredQuestions = data.filter(q => q.surveyId === homePageSurvey?.id);
-      console.log('Filtered questions for survey', homePageSurvey?.id, ':', filteredQuestions);
-      return filteredQuestions;
-    },
-    enabled: !!homePageSurvey,
   });
 
-  // Fetch user types
+  // Fetch user types for dropdown
   const { data: userTypes = [] } = useQuery<UserType[]>({
     queryKey: ["/api/user-types"],
     queryFn: async () => {
@@ -90,8 +77,19 @@ export default function Home() {
     },
   });
 
+  // Find "Home Page" survey
+  const homePageSurvey = surveys.find(survey => survey.name === "Home Page");
+  console.log("Home Page Survey:", homePageSurvey);
+  console.log("All surveys:", surveys);
+
+  // Get questions for the home page survey
+  const questions = homePageSurvey 
+    ? allQuestions.filter(q => q.surveyId === homePageSurvey.id)
+    : [];
+  console.log("Filtered questions for survey", homePageSurvey?.id, ":", questions);
+
   const submitSurveyMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (formData: Record<string, any>) => {
       if (!homePageSurvey) {
         throw new Error("Survey not found");
       }
@@ -109,139 +107,26 @@ export default function Home() {
     },
     onSuccess: () => {
       toast({
-        title: "Thank you!",
-        description: "Your information has been submitted successfully.",
+        title: "Survey Submitted",
+        description: "Thank you for your feedback!"
       });
-      setFormData({});
-      setSelectedUserType("");
+      queryClient.invalidateQueries({ queryKey: ['/api/survey-responses'] });
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to submit your information. Please try again.",
+        description: "Failed to submit survey. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const handleInputChange = (questionId: number, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [questionId]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedUserType) {
-      toast({
-        title: "Please select user type",
-        description: "Please select what type of user you are before submitting.",
-        variant: "destructive",
-      });
-      return;
-    }
-    submitSurveyMutation.mutate();
-  };
-
-  const renderQuestion = (question: Question) => {
-    const questionId = question.id;
-    const value = formData[questionId] || "";
-
-    switch (question.questionType) {
-      case "text":
-        return (
-          <Input
-            value={value}
-            onChange={(e) => handleInputChange(questionId, e.target.value)}
-            placeholder="Your answer..."
-          />
-        );
-
-      case "textarea":
-        return (
-          <Textarea
-            value={value}
-            onChange={(e) => handleInputChange(questionId, e.target.value)}
-            placeholder="Your answer..."
-            rows={3}
-          />
-        );
-
-      case "select":
-        const selectOptions = question.options as string[] || [];
-        return (
-          <Select
-            value={value}
-            onValueChange={(val) => handleInputChange(questionId, val)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select an option..." />
-            </SelectTrigger>
-            <SelectContent>
-              {selectOptions.map((option, index) => (
-                <SelectItem key={index} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        );
-
-      case "radio":
-        const radioOptions = question.options as string[] || [];
-        return (
-          <RadioGroup
-            value={value}
-            onValueChange={(val) => handleInputChange(questionId, val)}
-          >
-            {radioOptions.map((option, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <RadioGroupItem value={option} id={`${questionId}-${index}`} />
-                <Label htmlFor={`${questionId}-${index}`}>{option}</Label>
-              </div>
-            ))}
-          </RadioGroup>
-        );
-
-      case "checkbox":
-        const checkboxOptions = question.options as string[] || [];
-        const selectedOptions = Array.isArray(value) ? value : [];
-        return (
-          <div className="space-y-2">
-            {checkboxOptions.map((option, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${questionId}-${index}`}
-                  checked={selectedOptions.includes(option)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      handleInputChange(questionId, [...selectedOptions, option]);
-                    } else {
-                      handleInputChange(questionId, selectedOptions.filter((o: string) => o !== option));
-                    }
-                  }}
-                />
-                <Label htmlFor={`${questionId}-${index}`}>{option}</Label>
-              </div>
-            ))}
-          </div>
-        );
-
-      default:
-        return (
-          <Input
-            value={value}
-            onChange={(e) => handleInputChange(questionId, e.target.value)}
-            placeholder="Your answer..."
-          />
-        );
-    }
+  const handleSurveySubmit = (formData: Record<string, any>) => {
+    submitSurveyMutation.mutate(formData);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
@@ -253,50 +138,24 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Survey Content */}
+        {/* Display Survey */}
         {homePageSurvey && questions.length > 0 && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">
+              <CardTitle className="text-xl font-semibold text-gray-900">
                 {homePageSurvey.name}
               </CardTitle>
               {homePageSurvey.description && (
-                <p className="text-gray-600 text-center">
-                  {homePageSurvey.description}
-                </p>
+                <p className="text-gray-600">{homePageSurvey.description}</p>
               )}
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* User Type Display */}
-                <div>
-                  <Label className="text-base font-medium">Responding as: {selectedUserType}</Label>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Change user type in the header dropdown to test different perspectives
-                  </p>
-                </div>
-
-                {/* Survey Questions */}
-                {questions.map((question) => (
-                  <div key={question.id}>
-                    <Label className="text-base font-medium">
-                      {question.questionText}
-                      {question.isRequired && <span className="text-red-500 ml-1">*</span>}
-                    </Label>
-                    <div className="mt-2">
-                      {renderQuestion(question)}
-                    </div>
-                  </div>
-                ))}
-
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={submitSurveyMutation.isPending}
-                >
-                  {submitSurveyMutation.isPending ? "Submitting..." : "Submit"}
-                </Button>
-              </form>
+              <ConditionalSurveyForm
+                questions={questions}
+                onSubmit={handleSurveySubmit}
+                isLoading={submitSurveyMutation.isPending}
+                userType={selectedUserType}
+              />
             </CardContent>
           </Card>
         )}
@@ -317,6 +176,65 @@ export default function Home() {
             </CardContent>
           </Card>
         )}
+
+        {/* Feature Cards */}
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">AI-Powered Writing</h3>
+              <p className="text-gray-600">
+                Our advanced AI helps create personalized, meaningful obituaries that capture a life's essence.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6 text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Collaborative Creation</h3>
+              <p className="text-gray-600">
+                Family and friends can collaborate together to ensure every important detail is included.
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6 text-center">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Memorial Spaces</h3>
+              <p className="text-gray-600">
+                Create lasting digital memorials where loved ones can share memories and condolences.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* CTA Section */}
+        <div className="text-center">
+          {authenticatedUser ? (
+            <div className="space-y-4">
+              <p className="text-lg text-gray-600">Welcome back! Ready to continue your work?</p>
+              <div className="flex justify-center space-x-4">
+                <Link href="/dashboard">
+                  <Button size="lg">Go to Dashboard</Button>
+                </Link>
+                <Button variant="outline" size="lg" onClick={handleLogout}>
+                  Sign Out
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-lg text-gray-600">Ready to create meaningful tributes?</p>
+              <div className="flex justify-center space-x-4">
+                <Link href="/login">
+                  <Button size="lg">Sign In</Button>
+                </Link>
+                <Link href="/register">
+                  <Button variant="outline" size="lg">Create Account</Button>
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Footer */}
