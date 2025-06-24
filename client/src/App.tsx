@@ -20,6 +20,8 @@ import FinalSpaces from "./pages/final-spaces";
 import CreateFinalSpace from "./pages/create-final-space";
 import Collaborate from "./pages/collaborate";
 import NotFound from "./pages/not-found";
+import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";
+import ViewEvaluation from "./pages/view-evaluation";
 
 const queryClient = new QueryClient();
 
