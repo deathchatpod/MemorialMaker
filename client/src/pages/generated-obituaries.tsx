@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
-// UserContext removed
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +10,8 @@ import { apiRequest } from "@/lib/queryClient";
 import TextHighlighter from "@/components/text-highlighter";
 import ObituaryEditor from "@/components/obituary-editor";
 import CollaborationManager from "@/components/collaboration-manager";
+import VersionManager from "@/components/version-manager";
+import { RefreshCw } from "lucide-react";
 
 interface GeneratedObituary {
   id: number;
@@ -47,6 +48,51 @@ export default function GeneratedObituaries() {
       return response.json();
     },
     enabled: !!obituaryId,
+  });
+
+  // Fetch feedback for all generated obituaries
+  const { data: allFeedback } = useQuery({
+    queryKey: ["/api/obituaries", obituaryId, "feedback"],
+    queryFn: async () => {
+      if (!generatedObituaries.length) return {};
+      
+      const feedbackPromises = generatedObituaries.map(async (obituary: any) => {
+        const response = await fetch(`/api/generated-obituaries/${obituary.id}/feedback`);
+        const feedback = await response.json();
+        return { [obituary.id]: feedback };
+      });
+      
+      const results = await Promise.all(feedbackPromises);
+      return results.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+    },
+    enabled: generatedObituaries.length > 0,
+  });
+
+  // Revision mutation
+  const createRevision = useMutation({
+    mutationFn: async ({ aiProvider }: { aiProvider: string }) => {
+      const response = await fetch(`/api/obituaries/${obituaryId}/revise`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ aiProvider })
+      });
+      if (!response.ok) throw new Error('Failed to create revision');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/obituaries", obituaryId, "generated"] });
+      toast({
+        title: "Revision Created",
+        description: "New version generated based on feedback"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create revision",
+        variant: "destructive"
+      });
+    }
   });
 
   const generateRevisionMutation = useMutation({
@@ -114,6 +160,13 @@ export default function GeneratedObituaries() {
   const chatgptObituaries = generatedObituaries.filter(o => o.aiProvider === 'chatgpt');
 
   const handleTextSelection = (obituaryId: number, selectedText: string, feedbackType: 'liked' | 'disliked') => {
+    // Save feedback via API
+    saveFeedbackMutation.mutate({
+      generatedObituaryId: obituaryId,
+      selectedText,
+      feedbackType
+    });
+
     const currentFeedback = selectedTexts[obituaryId] || [];
     const existingIndex = currentFeedback.findIndex(f => f.selectedText === selectedText);
     
@@ -230,6 +283,11 @@ export default function GeneratedObituaries() {
     );
   }
 
+  // Check if we have both providers with feedback for revision button
+  const claudeVersions = generatedObituaries.filter((o: any) => o.aiProvider === 'claude');
+  const chatgptVersions = generatedObituaries.filter((o: any) => o.aiProvider === 'chatgpt');
+  const canRevise = claudeVersions.length > 0 && chatgptVersions.length > 0;
+
   if (editingObituary) {
     return (
       <ObituaryEditor
@@ -272,12 +330,49 @@ export default function GeneratedObituaries() {
         <CollaborationManager obituaryId={obituaryId} />
       </div>
 
-      {/* AI Service Tabs */}
-      <Card className="mb-8">
-        <Tabs defaultValue="claude" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="claude" className="flex items-center">
-              <i className="fas fa-robot mr-2"></i>
+      {/* Generated Obituaries with Version Management */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Generated Obituaries</CardTitle>
+              <p className="text-muted-foreground">
+                Review the AI-generated obituaries and select text you like or dislike for refinement
+              </p>
+            </div>
+            {canRevise && (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => createRevision.mutate({ aiProvider: 'claude' })}
+                  disabled={createRevision.isPending}
+                  size="sm"
+                  variant="outline"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Revise Claude
+                </Button>
+                <Button
+                  onClick={() => createRevision.mutate({ aiProvider: 'chatgpt' })}
+                  disabled={createRevision.isPending}
+                  size="sm"
+                  variant="outline"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Revise ChatGPT
+                </Button>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <VersionManager
+            obituaries={generatedObituaries}
+            feedback={allFeedback || {}}
+            onSelectText={handleTextSelection}
+            isCollaborator={false}
+          />
+        </CardContent>
+      </Card>
               Claude AI ({claudeObituaries.length} versions)
             </TabsTrigger>
             <TabsTrigger value="chatgpt" className="flex items-center">

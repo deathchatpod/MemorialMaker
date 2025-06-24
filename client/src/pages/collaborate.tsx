@@ -133,41 +133,6 @@ export default function Collaborate() {
     }
   };
 
-  const handleTextSelection = (obituaryId: number, text: string, type: 'liked' | 'disliked') => {
-    const currentFeedback = selectedTexts[obituaryId] || [];
-    const existingIndex = currentFeedback.findIndex(f => f.selectedText === text);
-    
-    let newFeedback;
-    if (existingIndex >= 0) {
-      if (currentFeedback[existingIndex].feedbackType === type) {
-        // Remove if same type selected again
-        newFeedback = currentFeedback.filter(f => f.selectedText !== text);
-      } else {
-        // Update type if different type selected
-        newFeedback = currentFeedback.map(f => 
-          f.selectedText === text ? { ...f, feedbackType: type } : f
-        );
-      }
-    } else {
-      // Add new feedback
-      newFeedback = [...currentFeedback, { 
-        selectedText: text, 
-        feedbackType: type,
-        collaboratorName,
-        collaboratorEmail: collaborationData?.session?.collaboratorEmail
-      }];
-    }
-    
-    setSelectedTexts(prev => ({ ...prev, [obituaryId]: newFeedback }));
-    
-    // Save to backend
-    saveFeedbackMutation.mutate({
-      generatedObituaryId: obituaryId,
-      selectedText: text,
-      feedbackType: type
-    });
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -270,88 +235,20 @@ export default function Collaborate() {
 
         {/* Obituary Tabs */}
         <Card>
-          <Tabs defaultValue="claude" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="claude">
-                Claude AI ({claudeObituaries.length} versions)
-              </TabsTrigger>
-              <TabsTrigger value="chatgpt">
-                ChatGPT ({chatgptObituaries.length} versions)
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="claude" className="mt-0">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {claudeObituaries.map((obituary: GeneratedObituary) => (
-                    <Card key={obituary.id} className="border border-gray-200">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <h4 className="font-medium text-gray-900">
-                            {obituary.isRevision ? 'Revised Version' : `Version ${obituary.version}`} - {obituary.tone}
-                          </h4>
-                        </div>
-                        
-                        <TextHighlighter
-                          content={obituary.content}
-                          onTextSelect={(text, type) => handleTextSelection(obituary.id, text, type)}
-                          selectedTexts={selectedTexts[obituary.id] || []}
-                        />
-
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <div className="text-xs text-gray-500">
-                            <span className="text-green-600">
-                              {(selectedTexts[obituary.id] || []).filter(f => f.feedbackType === 'liked').length} liked
-                            </span>
-                            {' • '}
-                            <span className="text-red-600">
-                              {(selectedTexts[obituary.id] || []).filter(f => f.feedbackType === 'disliked').length} want changed
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </TabsContent>
-
-            <TabsContent value="chatgpt" className="mt-0">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {chatgptObituaries.map((obituary: GeneratedObituary) => (
-                    <Card key={obituary.id} className="border border-gray-200">
-                      <CardContent className="p-6">
-                        <div className="mb-4">
-                          <h4 className="font-medium text-gray-900">
-                            {obituary.isRevision ? 'Revised Version' : `Version ${obituary.version}`} - {obituary.tone}
-                          </h4>
-                        </div>
-                        
-                        <TextHighlighter
-                          content={obituary.content}
-                          onTextSelect={(text, type) => handleTextSelection(obituary.id, text, type)}
-                          selectedTexts={selectedTexts[obituary.id] || []}
-                        />
-
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <div className="text-xs text-gray-500">
-                            <span className="text-green-600">
-                              {(selectedTexts[obituary.id] || []).filter(f => f.feedbackType === 'liked').length} liked
-                            </span>
-                            {' • '}
-                            <span className="text-red-600">
-                              {(selectedTexts[obituary.id] || []).filter(f => f.feedbackType === 'disliked').length} want changed
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </TabsContent>
-          </Tabs>
+          <CardHeader>
+            <CardTitle>Obituary for {collaborationData.obituary?.fullName}</CardTitle>
+            <p className="text-muted-foreground">
+              Review the AI-generated obituaries and select text you like or want changed
+            </p>
+          </CardHeader>
+          <CardContent>
+            <VersionManager
+              obituaries={collaborationData.generatedObituaries || []}
+              feedback={allFeedback || {}}
+              onSelectText={handleTextSelection}
+              isCollaborator={true}
+            />
+          </CardContent>
         </Card>
       </div>
     </div>
