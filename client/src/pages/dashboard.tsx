@@ -34,6 +34,12 @@ export default function Dashboard() {
     console.log('Dashboard re-rendered with user:', currentUser);
   }, [currentUser]);
   
+  // Force re-render when currentUser changes
+  const [renderKey, setRenderKey] = React.useState(0);
+  React.useEffect(() => {
+    setRenderKey(prev => prev + 1);
+  }, [currentUser]);
+  
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeSection, setActiveSection] = useState('obituaries');
@@ -946,7 +952,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div key={renderKey} className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <div className={cn(
         "bg-white shadow-sm border-r border-gray-200 transition-all duration-300 flex flex-col min-h-0",
@@ -959,9 +965,9 @@ export default function Dashboard() {
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">DeathMatters</h2>
                 <p className="text-sm text-gray-600">
-                  {currentUser?.userType === 'admin' && 'System Admin Panel'}
-                  {currentUser?.userType === 'funeral_home' && 'Funeral Home Panel'}
-                  {currentUser?.userType === 'employee' && 'Employee Panel'}
+                  {currentUser?.userType === 'admin' ? 'System Admin Panel' : 
+                   currentUser?.userType === 'funeral_home' ? 'Funeral Home Panel' : 
+                   currentUser?.userType === 'employee' ? 'Employee Panel' : 'Loading...'}
                 </p>
               </div>
             )}
@@ -1078,10 +1084,9 @@ export default function Dashboard() {
                   {currentUser?.username || 'Unknown User'}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {currentUser?.userType === 'admin' && 'System Admin'}
-                  {currentUser?.userType === 'funeral_home' && 'Funeral Home Admin'}
-                  {currentUser?.userType === 'employee' && 'FH Employee'}
-                  {!currentUser?.userType && 'Loading...'}
+                  {currentUser?.userType === 'admin' ? 'System Admin' : 
+                   currentUser?.userType === 'funeral_home' ? 'Funeral Home Admin' : 
+                   currentUser?.userType === 'employee' ? 'FH Employee' : 'Loading...'}
                 </p>
               </div>
             )}
