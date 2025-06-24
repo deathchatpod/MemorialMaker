@@ -1,6 +1,5 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Link } from "wouter";
-// UserContext removed
 import { useFinalSpaces, useDeleteFinalSpace } from "@/hooks/use-final-spaces";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +9,13 @@ import { Heart, Share2, Music, MessageCircle, Trash2, ExternalLink, Calendar, Gl
 import { format } from "date-fns";
 
 export default function FinalSpaces() {
-  const { currentUser } = useContext(UserContext);
+  // Get current user from URL params like other components
+  const urlParams = new URLSearchParams(window.location.search);
+  const userTypeParam = urlParams.get('userType') || 'funeral_home';
+  const userIdParam = parseInt(urlParams.get('userId') || '2', 10);
   const { toast } = useToast();
 
-  const { data: finalSpaces, isLoading } = useFinalSpaces(currentUser?.id || 0, currentUser?.userType || 'regular');
+  const { data: finalSpaces, isLoading } = useFinalSpaces(userIdParam, userTypeParam);
   const deleteFinalSpace = useDeleteFinalSpace();
 
   const handleDelete = async (id: number) => {
