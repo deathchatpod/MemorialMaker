@@ -136,9 +136,19 @@ export default function Dashboard() {
   ];
 
   const filteredMenuItems = menuItems.filter(item => {
-    // Map funeral_home to 'user' for backward compatibility with menu items
-    const userTypeForFilter = currentUser.userType === 'funeral_home' ? 'user' : currentUser.userType;
-    return item.userTypes.includes(userTypeForFilter) || item.userTypes.includes(currentUser.userType);
+    if (!currentUser?.userType) return false;
+    
+    // Direct match for user type
+    if (item.userTypes.includes(currentUser.userType)) {
+      return true;
+    }
+    
+    // Map funeral_home to 'user' for backward compatibility with some menu items
+    if (currentUser.userType === 'funeral_home' && item.userTypes.includes('user')) {
+      return true;
+    }
+    
+    return false;
   });
 
 
@@ -934,7 +944,7 @@ export default function Dashboard() {
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <div className={cn(
-        "bg-white shadow-sm border-r border-gray-200 transition-all duration-300 flex flex-col",
+        "bg-white shadow-sm border-r border-gray-200 transition-all duration-300 flex flex-col min-h-0",
         sidebarCollapsed ? "w-16" : "w-64"
       )}>
         {/* Sidebar Header */}
@@ -944,9 +954,9 @@ export default function Dashboard() {
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">DeathMatters</h2>
                 <p className="text-sm text-gray-600">
-                  {currentUser.userType === 'admin' && 'System Admin Panel'}
-                  {currentUser.userType === 'funeral_home' && 'Funeral Home Panel'}
-                  {currentUser.userType === 'employee' && 'Employee Panel'}
+                  {currentUser?.userType === 'admin' && 'System Admin Panel'}
+                  {currentUser?.userType === 'funeral_home' && 'Funeral Home Panel'}
+                  {currentUser?.userType === 'employee' && 'Employee Panel'}
                 </p>
               </div>
             )}
@@ -962,7 +972,41 @@ export default function Dashboard() {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <ul className="space-y-2">
+            {filteredMenuItems.map((item) => (
+              <li key={item.id}>
+                {item.href ? (
+                  <Link href={item.href}>
+                    <button
+                      onClick={() => handleSectionChange(item.id)}
+                      className={cn(
+                        "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                        activeSection === item.id
+                          ? "bg-primary text-white"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                      )}
+                    >
+                      <i className={cn(item.icon, "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                      {!sidebarCollapsed && <span>{item.label}</span>}
+                    </button>
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => handleSectionChange(item.id)}
+                    className={cn(
+                      "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                      activeSection === item.id
+                        ? "bg-primary text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <i className={cn(item.icon, "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                    {!sidebarCollapsed && <span>{item.label}</span>}
+                  </button>
+                )}
+              </li>
+            ))}
           <ul className="space-y-2">
             {filteredMenuItems.map((item) => (
               <li key={item.id}>
@@ -996,18 +1040,18 @@ export default function Dashboard() {
             ))}
 
             {/* User-type specific menu items */}
-            {(currentUser.userType === 'funeral_home' || currentUser.userType === 'employee') && (
+            {(currentUser?.userType === 'funeral_home' || currentUser?.userType === 'employee') && (
               <>
                 <li className="my-2">
                   <div className="h-px bg-gray-200"></div>
                   {!sidebarCollapsed && (
                     <p className="text-xs font-medium text-gray-500 mt-2 px-3">
-                      {currentUser.userType === 'funeral_home' ? 'Management' : 'Account'}
+                      {currentUser?.userType === 'funeral_home' ? 'Management' : 'Account'}
                     </p>
                   )}
                 </li>
                 
-                {currentUser.userType === 'funeral_home' && (
+                {currentUser?.userType === 'funeral_home' && (
                   <li>
                     <button
                       onClick={() => handleSectionChange('team-management')}
@@ -1036,7 +1080,7 @@ export default function Dashboard() {
                   >
                     <i className={cn("fas fa-cog", "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
                     {!sidebarCollapsed && <span>
-                      {currentUser.userType === 'funeral_home' ? 'Account Information' : 'My Account'}
+                      {currentUser?.userType === 'funeral_home' ? 'Account Information' : 'My Account'}
                     </span>}
                   </button>
                 </li>
@@ -1046,18 +1090,18 @@ export default function Dashboard() {
         </nav>
 
         {/* User Info */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <div className={cn(
             "flex items-center",
             sidebarCollapsed ? "justify-center" : "space-x-3"
           )}>
             <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium">
-              {currentUser.username.charAt(0).toUpperCase()}
+              {currentUser?.username?.charAt(0).toUpperCase() || 'U'}
             </div>
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {currentUser.username}
+                  {currentUser?.username || 'Unknown User'}
                 </p>
                 <p className="text-xs text-gray-500">
                   {currentUser?.userType === 'admin' && 'System Admin'}
