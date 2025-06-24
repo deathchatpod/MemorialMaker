@@ -118,6 +118,9 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Fixed home page header layout - consolidated duplicate headers into single header with user type dropdown
 - June 24, 2025: Created persistent global header across all pages with functional user type dropdown and conditional Dashboard button
 - June 24, 2025: Restored existing user switching functionality to global header for testing all user types across all pages
+- June 24, 2025: Created "Individual Need Assessment Survey" with 80 questions and conditional logic functionality
+- June 24, 2025: Implemented ConditionalSurveyForm component with dynamic show/hide questions based on previous answers
+- June 24, 2025: Added conditional question fields to database schema (conditionalQuestionId, conditionalValue, conditionalOperator)
 
 # User Management Structure
 

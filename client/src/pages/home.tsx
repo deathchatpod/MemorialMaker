@@ -15,7 +15,6 @@ import { useToast } from "@/hooks/use-toast";
 import type { Survey, Question, UserType } from "@shared/schema";
 
 export default function Home() {
-  const [formData, setFormData] = useState<Record<string, any>>({});
   const { toast } = useToast();
 
   // Get current user type from URL params for survey context
