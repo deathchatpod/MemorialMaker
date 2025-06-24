@@ -7,8 +7,6 @@ import { cn } from "@/lib/utils";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
 import PromptTemplates from "./prompt-templates";
-import TeamManagement from "./team-management";
-import AccountInformation from "./account-information";
 import ObituariesList from "./obituaries-list";
 import FinalSpacesList from "./finalspaces-list";
 import SurveysList from "./surveys-list";
