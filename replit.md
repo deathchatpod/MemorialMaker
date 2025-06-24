@@ -130,6 +130,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Disabled development error overlays for production-ready user experience
 - June 24, 2025: Reorganized dashboard with 4 main menu items (Obituaries, FinalSpaces, My Collaborations, Platform Surveys) showing table views with create buttons that route to separate pages
 - June 24, 2025: Fixed CreateFinalSpace UserContext error - replaced with URL parameter user data for consistent authentication pattern
+- June 24, 2025: Removed cluttering user profile section from dashboard sidebar for cleaner interface
 
 # User Management Structure
 

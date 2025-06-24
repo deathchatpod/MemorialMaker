@@ -141,23 +141,7 @@ export default function Dashboard() {
           </button>
         </nav>
 
-        {/* User Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-              {currentUser.username.charAt(0)}
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-900">{currentUser.username}</p>
-              <p className="text-xs text-gray-500">
-                {currentUser.userType === 'admin' ? 'System Admin' : 
-                 currentUser.userType === 'funeral_home' ? 'Funeral Home Admin' : 
-                 currentUser.userType === 'employee' ? 'Employee' : 
-                 currentUser.userType === 'individual' ? 'Individual User' : 'User'}
-              </p>
-            </div>
-          </div>
-        </div>
+
       </div>
 
       {/* Main Content */}
