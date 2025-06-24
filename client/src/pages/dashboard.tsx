@@ -1007,37 +1007,6 @@ export default function Dashboard() {
                 )}
               </li>
             ))}
-          <ul className="space-y-2">
-            {filteredMenuItems.map((item) => (
-              <li key={item.id}>
-                {item.href ? (
-                  <Link href={item.href}>
-                    <button
-                      className={cn(
-                        "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                        "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                      )}
-                    >
-                      <i className={cn(item.icon, "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
-                      {!sidebarCollapsed && <span>{item.label}</span>}
-                    </button>
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => handleSectionChange(item.id)}
-                    className={cn(
-                      "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                      activeSection === item.id
-                        ? "bg-primary text-white"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    )}
-                  >
-                    <i className={cn(item.icon, "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
-                    {!sidebarCollapsed && <span>{item.label}</span>}
-                  </button>
-                )}
-              </li>
-            ))}
 
             {/* User-type specific menu items */}
             {(currentUser?.userType === 'funeral_home' || currentUser?.userType === 'employee') && (
