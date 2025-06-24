@@ -31,8 +31,8 @@ export default function Dashboard() {
   
   // Log when user changes
   React.useEffect(() => {
-    console.log('Dashboard user changed to:', currentUser?.userType);
-  }, [currentUser?.userType]);
+    console.log('Dashboard received user:', currentUser);
+  }, [currentUser]);
   
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
