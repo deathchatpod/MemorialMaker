@@ -65,9 +65,16 @@ export interface IStorage {
   createTextFeedback(feedback: InsertTextFeedback): Promise<TextFeedback>;
   deleteTextFeedback(generatedObituaryId: number): Promise<void>;
   
+  // Surveys
+  getSurveys(): Promise<Survey[]>;
+  getSurvey(id: number): Promise<Survey | undefined>;
+  createSurvey(survey: InsertSurvey): Promise<Survey>;
+  updateSurvey(id: number, updates: Partial<Survey>): Promise<Survey>;
+  deleteSurvey(id: number): Promise<void>;
+  
   // Questions
   getQuestions(): Promise<Question[]>;
-  getQuestionsByCategory(category: string): Promise<Question[]>;
+  getQuestionsBySurvey(surveyId: number): Promise<Question[]>;
   createQuestion(question: InsertQuestion): Promise<Question>;
   updateQuestion(id: number, question: Partial<Question>): Promise<Question>;
   deleteQuestion(id: number): Promise<void>;
@@ -322,31 +329,44 @@ export class DatabaseStorage implements IStorage {
     await db.delete(textFeedback).where(eq(textFeedback.generatedObituaryId, generatedObituaryId));
   }
 
-  // Questions
-  async getQuestions(): Promise<Question[]> {
-    // Use raw query to handle column name mismatch temporarily  
-    const questionsData = await db.execute(sql`
-      SELECT id, question_text, question_type, category, placeholder, is_required, options, 
-             COALESCE(order_index, sort_order, 0) as order_index, created_at 
-      FROM questions 
-      ORDER BY COALESCE(order_index, sort_order, 0)
-    `);
-    return questionsData.rows.map(row => ({
-      id: row.id as number,
-      questionText: row.question_text as string,
-      questionType: row.question_type as string,
-      category: row.category as string,
-      placeholder: row.placeholder as string,
-      isRequired: row.is_required as boolean,
-      options: row.options as any,
-      orderIndex: row.order_index as number,
-      createdAt: row.created_at as Date,
-    }));
+  // Surveys
+  async getSurveys(): Promise<Survey[]> {
+    return await db.select().from(surveys)
+      .orderBy(desc(surveys.updatedAt));
   }
 
-  async getQuestionsByCategory(category: string): Promise<Question[]> {
+  async getSurvey(id: number): Promise<Survey | undefined> {
+    const [survey] = await db.select().from(surveys).where(eq(surveys.id, id));
+    return survey || undefined;
+  }
+
+  async createSurvey(insertSurvey: InsertSurvey): Promise<Survey> {
+    const [survey] = await db.insert(surveys).values(insertSurvey).returning();
+    return survey;
+  }
+
+  async updateSurvey(id: number, updates: Partial<Survey>): Promise<Survey> {
+    const [survey] = await db
+      .update(surveys)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(surveys.id, id))
+      .returning();
+    return survey;
+  }
+
+  async deleteSurvey(id: number): Promise<void> {
+    await db.delete(surveys).where(eq(surveys.id, id));
+  }
+
+  // Questions
+  async getQuestions(): Promise<Question[]> {
     return await db.select().from(questions)
-      .where(eq(questions.category, category))
+      .orderBy(questions.surveyId, questions.orderIndex);
+  }
+
+  async getQuestionsBySurvey(surveyId: number): Promise<Question[]> {
+    return await db.select().from(questions)
+      .where(eq(questions.surveyId, surveyId))
       .orderBy(questions.orderIndex);
   }
 

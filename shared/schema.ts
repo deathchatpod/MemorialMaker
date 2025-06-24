@@ -126,11 +126,22 @@ export const collaborationSessions = pgTable("collaboration_sessions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const surveys = pgTable("surveys", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  status: varchar("status", { length: 20 }).notNull().default("draft"), // draft, active
+  createdById: integer("created_by_id").notNull().references(() => adminUsers.id),
+  version: integer("version").notNull().default(1),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
+  surveyId: integer("survey_id").notNull().references(() => surveys.id, { onDelete: "cascade" }),
   questionText: text("question_text").notNull(),
   questionType: varchar("question_type", { length: 20 }).notNull(),
-  category: varchar("category", { length: 50 }).notNull(),
   placeholder: text("placeholder"),
   isRequired: boolean("is_required").notNull().default(false),
   options: jsonb("options"), // For radio/checkbox options
@@ -270,6 +281,21 @@ export const obituaryCollaboratorsRelations = relations(obituaryCollaborators, (
   }),
 }));
 
+export const surveysRelations = relations(surveys, ({ one, many }) => ({
+  createdBy: one(adminUsers, {
+    fields: [surveys.createdById],
+    references: [adminUsers.id],
+  }),
+  questions: many(questions),
+}));
+
+export const questionsRelations = relations(questions, ({ one }) => ({
+  survey: one(surveys, {
+    fields: [questions.surveyId],
+    references: [surveys.id],
+  }),
+}));
+
 export const collaborationSessionsRelations = relations(collaborationSessions, ({ one }) => ({
   obituary: one(obituaries, {
     fields: [collaborationSessions.obituaryId],
@@ -315,6 +341,12 @@ export const insertGeneratedObituarySchema = createInsertSchema(generatedObituar
 export const insertTextFeedbackSchema = createInsertSchema(textFeedback).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertSurveySchema = createInsertSchema(surveys).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertQuestionSchema = createInsertSchema(questions).omit({
@@ -377,6 +409,9 @@ export type InsertGeneratedObituary = z.infer<typeof insertGeneratedObituarySche
 
 export type TextFeedback = typeof textFeedback.$inferSelect;
 export type InsertTextFeedback = z.infer<typeof insertTextFeedbackSchema>;
+
+export type Survey = typeof surveys.$inferSelect;
+export type InsertSurvey = z.infer<typeof insertSurveySchema>;
 
 export type Question = typeof questions.$inferSelect;
 export type InsertQuestion = z.infer<typeof insertQuestionSchema>;

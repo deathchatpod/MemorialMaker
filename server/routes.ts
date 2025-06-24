@@ -572,16 +572,24 @@ async function initializeDefaultPromptTemplates() {
 
 async function initializeDefaultQuestions() {
   try {
-    const existingQuestions = await storage.getQuestions();
+    const existingSurveys = await storage.getSurveys();
     
-    if (existingQuestions.length === 0) {
+    if (existingSurveys.length === 0) {
+      // Create default survey
+      const defaultSurvey = await storage.createSurvey({
+        name: "Obituary Information Form",
+        description: "Standard form for collecting obituary information",
+        createdById: 2, // Default admin user
+        status: "active"
+      });
+
       const defaultQuestions = [
-        { questionText: "Full Name", questionType: "text", category: "basic", isRequired: true, orderIndex: 1 },
-        { questionText: "Age", questionType: "number", category: "basic", orderIndex: 2 },
-        { questionText: "Date of Birth", questionType: "date", category: "basic", orderIndex: 3 },
-        { questionText: "Date of Death", questionType: "date", category: "basic", orderIndex: 4 },
-        { questionText: "Location", questionType: "text", category: "basic", orderIndex: 5 },
-        { questionText: "Obituary Tone", questionType: "radio", category: "style", isRequired: true, orderIndex: 6, options: [
+        { questionText: "Full Name", questionType: "text", surveyId: defaultSurvey.id, isRequired: true, orderIndex: 1 },
+        { questionText: "Age", questionType: "number", surveyId: defaultSurvey.id, orderIndex: 2 },
+        { questionText: "Date of Birth", questionType: "date", surveyId: defaultSurvey.id, orderIndex: 3 },
+        { questionText: "Date of Death", questionType: "date", surveyId: defaultSurvey.id, orderIndex: 4 },
+        { questionText: "Location", questionType: "text", surveyId: defaultSurvey.id, orderIndex: 5 },
+        { questionText: "Obituary Tone", questionType: "radio", surveyId: defaultSurvey.id, isRequired: true, orderIndex: 6, options: [
           { label: "Traditional", value: "traditional" },
           { label: "Celebratory", value: "celebratory" },
           { label: "Lighthearted", value: "lighthearted" }
@@ -592,7 +600,7 @@ async function initializeDefaultQuestions() {
         await storage.createQuestion(question);
       }
       
-      console.log("Default questions created");
+      console.log("Default survey and questions created");
     }
   } catch (error) {
     console.error("Error initializing questions:", error);

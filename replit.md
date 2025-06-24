@@ -111,6 +111,8 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Updated project branding to "DeathMatters"
 - June 24, 2025: Added authentication system with password-based login
 - June 24, 2025: Created team management and account information features for funeral homes
+- June 24, 2025: Rebuilt user switching system with URL-based state management for clean transitions
+- June 24, 2025: Implemented Platform Surveys management system with survey creation, editing, and question building
 
 # User Management Structure
 

@@ -7,6 +7,8 @@ import Dashboard from "@/pages/dashboard";
 import ObituaryForm from "@/pages/obituary-form";
 import GeneratedObituaries from "@/pages/generated-obituaries";
 import QuestionManagement from "@/pages/question-management";
+import SurveyManagement from "@/pages/survey-management";
+import SurveyEditor from "@/pages/survey-editor";
 import FinalSpaces from "@/pages/final-spaces";
 import CreateFinalSpace from "@/pages/create-final-space";
 import Collaborate from "@/pages/collaborate";
@@ -31,6 +33,8 @@ function Router() {
       <Route path="/obituary/new" component={ObituaryForm} />
       <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
       <Route path="/admin/questions" component={QuestionManagement} />
+      <Route path="/admin/surveys" component={SurveyManagement} />
+      <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
       <Route path="/collaborate/:uuid" component={Collaborate} />
