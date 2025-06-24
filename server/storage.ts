@@ -1,14 +1,15 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  obituaryCollaborators, collaborationSessions,
+  obituaryCollaborators, collaborationSessions, userTypes, surveyResponses,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
   type TextFeedback, type InsertTextFeedback, type Survey, type InsertSurvey, type Question, type InsertQuestion, 
   type PromptTemplate, type InsertPromptTemplate, type FinalSpace, type InsertFinalSpace, 
   type FinalSpaceComment, type InsertFinalSpaceComment, type FinalSpaceImage, type InsertFinalSpaceImage,
-  type ObituaryCollaborator, type InsertObituaryCollaborator, type CollaborationSession, type InsertCollaborationSession
+  type ObituaryCollaborator, type InsertObituaryCollaborator, type CollaborationSession, type InsertCollaborationSession,
+  type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql } from "drizzle-orm";

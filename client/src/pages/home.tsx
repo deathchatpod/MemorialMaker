@@ -42,6 +42,11 @@ export default function Home() {
   // Fetch the "Home Page" survey
   const { data: surveys } = useQuery<Survey[]>({
     queryKey: ["/api/surveys"],
+    queryFn: async () => {
+      const response = await fetch('/api/surveys');
+      if (!response.ok) throw new Error('Failed to fetch surveys');
+      return response.json();
+    },
   });
 
   const homePageSurvey = surveys?.find(s => s.name === "Home Page");
@@ -51,6 +56,11 @@ export default function Home() {
   // Fetch questions for the home page survey
   const { data: questions = [] } = useQuery<Question[]>({
     queryKey: ["/api/questions"],
+    queryFn: async () => {
+      const response = await fetch('/api/questions');
+      if (!response.ok) throw new Error('Failed to fetch questions');
+      return response.json();
+    },
     select: (data) => {
       const filteredQuestions = data.filter(q => q.surveyId === homePageSurvey?.id);
       console.log('Filtered questions for survey', homePageSurvey?.id, ':', filteredQuestions);
@@ -62,6 +72,11 @@ export default function Home() {
   // Fetch user types
   const { data: userTypes = [] } = useQuery<UserType[]>({
     queryKey: ["/api/user-types"],
+    queryFn: async () => {
+      const response = await fetch('/api/user-types');
+      if (!response.ok) throw new Error('Failed to fetch user types');
+      return response.json();
+    },
   });
 
   const submitSurveyMutation = useMutation({
@@ -224,12 +239,25 @@ export default function Home() {
               <h1 className="text-2xl font-bold text-gray-900">DeathMatters</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/login">
-                <Button variant="outline">Log In</Button>
-              </Link>
-              <Link href="/register">
-                <Button>Sign Up</Button>
-              </Link>
+              {authenticatedUser ? (
+                <>
+                  <Link href="/dashboard">
+                    <Button variant="outline">Dashboard</Button>
+                  </Link>
+                  <Button variant="outline" onClick={handleLogout}>
+                    Sign out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login">
+                    <Button variant="outline">Log In</Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button>Sign Up</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

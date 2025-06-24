@@ -197,6 +197,24 @@ export const finalSpaceImages = pgTable("final_space_images", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// User Types
+export const userTypes = pgTable("user_types", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Survey Responses  
+export const surveyResponses = pgTable("survey_responses", {
+  id: serial("id").primaryKey(),
+  surveyId: integer("survey_id").references(() => surveys.id).notNull(),
+  userTypeId: integer("user_type_id").references(() => userTypes.id), 
+  responses: jsonb("responses").notNull(),
+  submittedAt: timestamp("submitted_at").defaultNow(),
+});
+
 // Relations
 export const funeralHomesRelations = relations(funeralHomes, ({ many }) => ({
   employees: many(employees),
