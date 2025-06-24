@@ -133,9 +133,11 @@ export default function Dashboard() {
     }
   ];
 
-  const filteredMenuItems = menuItems.filter(item => 
-    item.userTypes.includes(currentUser.userType === 'funeral_home' ? 'user' : currentUser.userType)
-  );
+  const filteredMenuItems = menuItems.filter(item => {
+    // Map funeral_home to 'user' for backward compatibility with menu items
+    const userTypeForFilter = currentUser.userType === 'funeral_home' ? 'user' : currentUser.userType;
+    return item.userTypes.includes(userTypeForFilter) || item.userTypes.includes(currentUser.userType);
+  });
 
   const getUserTypeLabel = (userType: string) => {
     switch (userType) {
@@ -1068,7 +1070,9 @@ export default function Dashboard() {
                   {currentUser.username}
                 </p>
                 <p className="text-xs text-gray-500">
-                  {getUserTypeLabel(currentUser.userType)}
+                  {currentUser.userType === 'admin' && 'System Admin'}
+                  {currentUser.userType === 'funeral_home' && 'Funeral Home Admin'}
+                  {currentUser.userType === 'employee' && 'FH Employee'}
                 </p>
               </div>
             )}
