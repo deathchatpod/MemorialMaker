@@ -16,6 +16,9 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { usePromptTemplates, useUpdatePromptTemplate } from "@/hooks/use-prompt-templates";
 import type { Question, PromptTemplate } from "@shared/schema";
+import TeamManagement from "./team-management";
+import EmployeeAccount from "./employee-account";
+import AccountInformation from "./account-information";
 
 interface Obituary {
   id: number;
@@ -27,7 +30,12 @@ interface Obituary {
 
 export default function Dashboard() {
   const userContext = useContext(UserContext);
-  const currentUser = userContext?.currentUser || { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
+  
+  if (!userContext) {
+    throw new Error('Dashboard must be used within UserContext provider');
+  }
+  
+  const { currentUser } = userContext;
   const [location, setLocation] = useLocation();
 
   // Log when user changes
@@ -165,7 +173,7 @@ export default function Dashboard() {
 
     console.log('Filtered menu items:', filtered.map(item => item.label));
     return filtered;
-  }, [currentUser?.userType]);
+  }, [currentUser]);
 
 
 
