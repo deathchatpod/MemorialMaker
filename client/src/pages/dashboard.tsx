@@ -984,23 +984,29 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
-              <h1 className="text-2xl font-semibold text-gray-900">
-                {activeSection === 'obituaries' && 'Obituary Generator'}
-                {activeSection === 'questions' && 'Obituary Questions'}
-                {activeSection === 'prompts' && 'Prompt Templates'}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {activeSection === 'obituaries' && (currentUser.userType === 'admin' 
-                  ? 'All obituary creations across users'
-                  : 'Your obituary creations and history')}
-                {activeSection === 'questions' && 'Manage form questions and answer options'}
-                {activeSection === 'prompts' && 'Edit AI prompts sent to Claude and ChatGPT'}
-              </p>
+              {activeTab !== 'team-management' && activeTab !== 'account-information' && (
+                <>
+                  <h1 className="text-2xl font-semibold text-gray-900">
+                    {activeTab === 'obituaries' && 'Obituary Generator'}
+                    {activeTab === 'questions' && 'Obituary Questions'}
+                    {activeTab === 'prompts' && 'Prompt Templates'}
+                  </h1>
+                  <p className="text-gray-600 mt-1">
+                    {activeTab === 'obituaries' && (currentUser.userType === 'admin' 
+                      ? 'All obituary creations across users'
+                      : 'Your obituary creations and history')}
+                    {activeTab === 'questions' && 'Manage form questions and answer options'}
+                    {activeTab === 'prompts' && 'Edit AI prompts sent to Claude and ChatGPT'}
+                  </p>
+                </>
+              )}
             </div>
 
-            {activeSection === 'obituaries' && renderObituariesSection()}
-            {activeSection === 'questions' && renderQuestionsSection()}
-            {activeSection === 'prompts' && renderPromptTemplatesSection()}
+            {activeTab === 'obituaries' && renderObituariesSection()}
+            {activeTab === 'questions' && renderQuestionsSection()}
+            {activeTab === 'prompts' && renderPromptTemplatesSection()}
+            {activeTab === 'team-management' && <TeamManagement />}
+            {activeTab === 'account-information' && <AccountInformation />}
           </div>
         </main>
       </div>

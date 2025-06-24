@@ -11,6 +11,8 @@ import QuestionManagement from "@/pages/question-management";
 import FinalSpaces from "@/pages/final-spaces";
 import CreateFinalSpace from "@/pages/create-final-space";
 import Collaborate from "@/pages/collaborate";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
 import NotFound from "@/pages/not-found";
 
 // User context for switching between user types
@@ -26,6 +28,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/obituary/new" component={ObituaryForm} />
       <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
       <Route path="/admin/questions" component={QuestionManagement} />
@@ -71,7 +75,7 @@ function App() {
                 <div className="flex justify-between items-center h-16">
                   <div className="flex items-center space-x-4">
                     <i className="fas fa-heart text-primary text-2xl"></i>
-                    <h1 className="text-xl font-semibold text-gray-900">AI Obituary Generator</h1>
+                    <h1 className="text-xl font-semibold text-gray-900">DeathMatters</h1>
                   </div>
                   
                   {/* User Type Switcher */}

@@ -11,7 +11,7 @@ import {
   type ObituaryCollaborator, type InsertObituaryCollaborator, type CollaborationSession, type InsertCollaborationSession
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, count } from "drizzle-orm";
+import { eq, desc, and, count, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Admin Users
@@ -324,7 +324,24 @@ export class DatabaseStorage implements IStorage {
 
   // Questions
   async getQuestions(): Promise<Question[]> {
-    return await db.select().from(questions).orderBy(questions.orderIndex);
+    // Use raw query to handle column name mismatch temporarily  
+    const questionsData = await db.execute(sql`
+      SELECT id, question_text, question_type, category, placeholder, is_required, options, 
+             COALESCE(order_index, sort_order, 0) as order_index, created_at 
+      FROM questions 
+      ORDER BY COALESCE(order_index, sort_order, 0)
+    `);
+    return questionsData.rows.map(row => ({
+      id: row.id as number,
+      questionText: row.question_text as string,
+      questionType: row.question_type as string,
+      category: row.category as string,
+      placeholder: row.placeholder as string,
+      isRequired: row.is_required as boolean,
+      options: row.options as any,
+      orderIndex: row.order_index as number,
+      createdAt: row.created_at as Date,
+    }));
   }
 
   async getQuestionsByCategory(category: string): Promise<Question[]> {
@@ -353,7 +370,21 @@ export class DatabaseStorage implements IStorage {
 
   // Prompt Templates
   async getPromptTemplates(): Promise<PromptTemplate[]> {
-    return await db.select().from(promptTemplates).orderBy(promptTemplates.platform, promptTemplates.promptType);
+    // Use raw query to handle column name mismatch temporarily
+    const templates = await db.execute(sql`
+      SELECT id, name, platform, prompt_type, template as content, created_at, updated_at 
+      FROM prompt_templates 
+      ORDER BY platform, prompt_type
+    `);
+    return templates.rows.map(row => ({
+      id: row.id as number,
+      name: row.name as string,
+      platform: row.platform as string,
+      promptType: row.prompt_type as string,
+      content: row.content as string,
+      createdAt: row.created_at as Date,
+      updatedAt: row.updated_at as Date,
+    }));
   }
 
   async getPromptTemplate(platform: string, promptType: string): Promise<PromptTemplate | undefined> {
