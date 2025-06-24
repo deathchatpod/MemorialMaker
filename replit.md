@@ -112,6 +112,33 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 24, 2025: Added authentication system with password-based login
 - June 24, 2025: Created team management and account information features for funeral homes
 
+# User Management Structure
+
+## User Hierarchy
+1. **System Admin**: Full platform access
+   - All obituaries across funeral homes
+   - Question Management
+   - Prompt Templates  
+   - Funeral Home Management
+   - FinalSpaces
+
+2. **Funeral Home Admin**: Manages funeral home account
+   - Team obituaries (own + employees)
+   - Team Management (invite/manage up to 5 employees)
+   - Account Information
+   - FinalSpaces
+
+3. **Employee**: Creates content for funeral home
+   - Create obituaries (visible to funeral home admin)
+   - Personal account settings
+   - FinalSpaces
+
+## User Switching
+The application supports switching between user types via dropdown for testing:
+- Admin User - John Admin (System Admin)
+- Funeral Home - Jane Smith (Funeral Home Admin) 
+- Employee - Mike Johnson (FH Employee)
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.

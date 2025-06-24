@@ -115,7 +115,7 @@ export default function Dashboard() {
     },
     {
       id: 'questions',
-      label: 'Obituary Questions',
+      label: 'Question Management',
       icon: 'fas fa-edit',
       userTypes: ['admin']
     },
@@ -123,6 +123,12 @@ export default function Dashboard() {
       id: 'prompts',
       label: 'Prompt Templates',
       icon: 'fas fa-code',
+      userTypes: ['admin']
+    },
+    {
+      id: 'user-management',
+      label: 'Funeral Home Management',
+      icon: 'fas fa-building',
       userTypes: ['admin']
     }
   ];
@@ -135,11 +141,11 @@ export default function Dashboard() {
     switch (userType) {
       case 'user':
       case 'funeral_home':
-        return 'Funeral Home';
+        return 'Funeral Home Admin';
       case 'employee':
-        return 'Employee';
+        return 'FH Employee';
       case 'admin':
-        return 'Admin';
+        return 'System Admin';
       default:
         return userType;
     }
@@ -894,6 +900,44 @@ export default function Dashboard() {
     );
   };
 
+  const renderUserManagementSection = () => {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Funeral Home Management</h3>
+            <p className="text-gray-600 mb-4">
+              Manage funeral home accounts across the platform. View all registered funeral homes, 
+              their team sizes, and account status.
+            </p>
+            
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">12</div>
+                  <div className="text-sm text-gray-600">Active Funeral Homes</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">47</div>
+                  <div className="text-sm text-gray-600">Total Employees</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">234</div>
+                  <div className="text-sm text-gray-600">Total Obituaries</div>
+                </div>
+              </div>
+              
+              <div className="text-center text-gray-500">
+                <p>Full funeral home management interface coming soon...</p>
+                <p className="text-sm mt-2">Contact system administrator for detailed management needs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -908,7 +952,9 @@ export default function Dashboard() {
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">DeathMatters</h2>
                 <p className="text-sm text-gray-600">
-                  {currentUser.userType === 'admin' ? 'Admin Panel' : 'Funeral Home Panel'}
+                  {currentUser.userType === 'admin' && 'System Admin Panel'}
+                  {currentUser.userType === 'funeral_home' && 'Funeral Home Panel'}
+                  {currentUser.userType === 'employee' && 'Employee Panel'}
                 </p>
               </div>
             )}
@@ -957,29 +1003,35 @@ export default function Dashboard() {
               </li>
             ))}
 
-            {/* Funeral Home specific menu items */}
-            {currentUser.userType === 'funeral_home' && (
+            {/* User-type specific menu items */}
+            {(currentUser.userType === 'funeral_home' || currentUser.userType === 'employee') && (
               <>
                 <li className="my-2">
                   <div className="h-px bg-gray-200"></div>
                   {!sidebarCollapsed && (
-                    <p className="text-xs font-medium text-gray-500 mt-2 px-3">Management</p>
+                    <p className="text-xs font-medium text-gray-500 mt-2 px-3">
+                      {currentUser.userType === 'funeral_home' ? 'Management' : 'Account'}
+                    </p>
                   )}
                 </li>
-                <li>
-                  <button
-                    onClick={() => handleSectionChange('team-management')}
-                    className={cn(
-                      "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                      activeSection === 'team-management'
-                        ? "bg-primary text-white"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                    )}
-                  >
-                    <i className={cn("fas fa-users", "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
-                    {!sidebarCollapsed && <span>Team Management</span>}
-                  </button>
-                </li>
+                
+                {currentUser.userType === 'funeral_home' && (
+                  <li>
+                    <button
+                      onClick={() => handleSectionChange('team-management')}
+                      className={cn(
+                        "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                        activeSection === 'team-management'
+                          ? "bg-primary text-white"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                      )}
+                    >
+                      <i className={cn("fas fa-users", "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                      {!sidebarCollapsed && <span>Team Management</span>}
+                    </button>
+                  </li>
+                )}
+
                 <li>
                   <button
                     onClick={() => handleSectionChange('account-information')}
@@ -991,7 +1043,9 @@ export default function Dashboard() {
                     )}
                   >
                     <i className={cn("fas fa-cog", "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
-                    {!sidebarCollapsed && <span>Account Information</span>}
+                    {!sidebarCollapsed && <span>
+                      {currentUser.userType === 'funeral_home' ? 'Account Information' : 'My Account'}
+                    </span>}
                   </button>
                 </li>
               </>
@@ -1027,19 +1081,23 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
-              {activeSection !== 'team-management' && activeSection !== 'account-information' && (
+              {!['team-management', 'account-information'].includes(activeSection) && (
                 <>
                   <h1 className="text-2xl font-semibold text-gray-900">
                     {activeSection === 'obituaries' && 'Obituary Generator'}
-                    {activeSection === 'questions' && 'Obituary Questions'}
+                    {activeSection === 'questions' && 'Question Management'}
                     {activeSection === 'prompts' && 'Prompt Templates'}
+                    {activeSection === 'user-management' && 'Funeral Home Management'}
                   </h1>
                   <p className="text-gray-600 mt-1">
                     {activeSection === 'obituaries' && (currentUser.userType === 'admin' 
-                      ? 'All obituary creations across users'
-                      : 'Your obituary creations and history')}
+                      ? 'All obituary creations across all funeral homes'
+                      : currentUser.userType === 'funeral_home' 
+                        ? 'Your obituaries and team member obituaries'
+                        : 'Your obituary creations')}
                     {activeSection === 'questions' && 'Manage form questions and answer options'}
                     {activeSection === 'prompts' && 'Edit AI prompts sent to Claude and ChatGPT'}
+                    {activeSection === 'user-management' && 'Manage funeral home accounts and settings'}
                   </p>
                 </>
               )}
@@ -1048,8 +1106,11 @@ export default function Dashboard() {
             {activeSection === 'obituaries' && renderObituariesSection()}
             {activeSection === 'questions' && renderQuestionsSection()}
             {activeSection === 'prompts' && renderPromptTemplatesSection()}
+            {activeSection === 'user-management' && renderUserManagementSection()}
             {activeSection === 'team-management' && <TeamManagement />}
-            {activeSection === 'account-information' && <AccountInformation />}
+            {activeSection === 'account-information' && (
+              currentUser.userType === 'employee' ? <EmployeeAccount /> : <AccountInformation />
+            )}
           </div>
         </main>
       </div>

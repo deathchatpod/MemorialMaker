@@ -85,15 +85,18 @@ function App() {
                         value={currentUser.userType}
                         onChange={(e) => {
                           const userType = e.target.value;
-                          setCurrentUser(
-                            userType === 'admin' 
-                              ? { id: 2, username: 'John Admin', userType: 'admin' }
-                              : { id: 1, username: 'Jane Smith', userType: 'funeral_home' }
-                          );
+                          if (userType === 'admin') {
+                            setCurrentUser({ id: 2, username: 'John Admin', userType: 'admin' });
+                          } else if (userType === 'funeral_home') {
+                            setCurrentUser({ id: 1, username: 'Jane Smith', userType: 'funeral_home' });
+                          } else if (userType === 'employee') {
+                            setCurrentUser({ id: 3, username: 'Mike Johnson', userType: 'employee' });
+                          }
                         }}
                         className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                       >
                         <option value="funeral_home">Funeral Home - Jane Smith</option>
+                        <option value="employee">Employee - Mike Johnson</option>
                         <option value="admin">Admin User - John Admin</option>
                       </select>
                       <i className="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
