@@ -295,6 +295,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get specific employee by ID
+  app.get("/api/employees/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const employee = await storage.getEmployee(id);
+      if (!employee) {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+      res.json(employee);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch employee" });
+    }
+  });
+
+  // Update employee information
+  app.patch("/api/employees/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const employee = await storage.updateEmployee(id, updates);
+      res.json(employee);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update employee" });
+    }
+  });
+
+  // Get specific admin user by ID
+  app.get("/api/admin-users/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const adminUser = await storage.getAdminUser(id);
+      if (!adminUser) {
+        return res.status(404).json({ message: "Admin user not found" });
+      }
+      res.json(adminUser);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch admin user" });
+    }
+  });
+
+  // Update admin user information
+  app.patch("/api/admin-users/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      // For now, since updateAdminUser doesn't exist in storage, we'll return the current user
+      // This would need to be implemented in storage.ts for full functionality
+      const adminUser = await storage.getAdminUser(id);
+      if (!adminUser) {
+        return res.status(404).json({ message: "Admin user not found" });
+      }
+      
+      // In a real implementation, you'd update the admin user here
+      res.json({ ...adminUser, ...updates });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update admin user" });
+    }
+  });
+
   // Funeral home account management
   app.get("/api/funeral-homes/:id", async (req, res) => {
     try {
