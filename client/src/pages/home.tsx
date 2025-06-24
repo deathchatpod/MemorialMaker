@@ -211,7 +211,16 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Survey Content Above Login/Signup */}
+        {/* Welcome Section */}
+        <div className="text-center mb-8">
+          <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h2>
+          <p className="text-gray-600 mb-8">
+            Creating meaningful tributes and lasting memories through AI-powered obituary generation.
+          </p>
+        </div>
+
+        {/* Survey Content */}
         {homePageSurvey && questions.length > 0 && (
           <Card className="mb-8">
             <CardHeader>
@@ -271,24 +280,34 @@ export default function Home() {
           </Card>
         )}
 
-        {/* Welcome Card with Login/Signup */}
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h2>
-            <p className="text-gray-600 mb-6">
-              Creating meaningful tributes and lasting memories through AI-powered obituary generation.
-            </p>
-            <div className="space-x-4">
-              <Link href="/login">
-                <Button variant="outline">Log In</Button>
-              </Link>
-              <Link href="/register">
-                <Button>Sign Up</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Always show placeholder when no survey */}
+        {(!homePageSurvey || questions.length === 0) && (
+          <Card className="mb-8">
+            <CardContent className="py-8 text-center">
+              <div>
+                <Label className="text-base font-medium">I am a...</Label>
+                <Select
+                  value={selectedUserType}
+                  onValueChange={setSelectedUserType}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="Select your user type..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userTypes.map((userType) => (
+                      <SelectItem key={userType.id} value={userType.name}>
+                        {userType.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-gray-500 mt-4">
+                Survey content will appear here when an admin publishes a "Home Page" survey.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </main>
 
       {/* Footer */}
