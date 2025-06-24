@@ -5,8 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Link } from "wouter";
 import { Skull } from "lucide-react";
+import type { UserType } from "@shared/schema";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard";
 import Login from "./pages/login";
@@ -31,6 +34,7 @@ interface User {
 
 function GlobalHeader() {
   const [location] = useLocation();
+  const [selectedUserType, setSelectedUserType] = useState("");
   
   // Check if user is authenticated
   const { data: authenticatedUser } = useQuery({
@@ -41,6 +45,16 @@ function GlobalHeader() {
       return response.json();
     },
     retry: false,
+  });
+
+  // Fetch user types for dropdown
+  const { data: userTypes = [] } = useQuery<UserType[]>({
+    queryKey: ["/api/user-types"],
+    queryFn: async () => {
+      const response = await fetch('/api/user-types');
+      if (!response.ok) throw new Error('Failed to fetch user types');
+      return response.json();
+    },
   });
 
   const handleLogout = async () => {
@@ -65,6 +79,27 @@ function GlobalHeader() {
             </div>
           </Link>
           <div className="flex items-center space-x-4">
+            {/* User Type Selection */}
+            <div className="flex items-center space-x-2">
+              <Label className="text-sm font-medium text-gray-700">I am a:</Label>
+              <Select
+                value={selectedUserType}
+                onValueChange={setSelectedUserType}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select user type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {userTypes.map((userType) => (
+                    <SelectItem key={userType.id} value={userType.name}>
+                      {userType.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Auth Buttons */}
             {authenticatedUser ? (
               <>
                 {!isDashboard && (
