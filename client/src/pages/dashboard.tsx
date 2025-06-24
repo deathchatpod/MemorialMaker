@@ -1064,13 +1064,6 @@ export default function Dashboard() {
         {/* Navigation Menu */}
         <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-2">
-            {/* Debug info */}
-            {process.env.NODE_ENV === 'development' && (
-              <li className="text-xs text-gray-500 mb-2">
-                User: {currentUser?.userType}, Items: {filteredMenuItems.length}
-              </li>
-            )}
-            
             {filteredMenuItems.map((item) => (
               <li key={item.id}>
                 {item.href ? (
