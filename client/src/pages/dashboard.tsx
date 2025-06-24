@@ -301,6 +301,11 @@ export default function Dashboard() {
   );
 
   const renderQuestionsSection = () => {
+    // Only render for admin users
+    if (currentUser?.userType !== 'admin') {
+      return <div>Access denied. Admin privileges required.</div>;
+    }
+
     const categories = Array.from(new Set(questions.map(q => q.category)));
     const filteredQuestions = questions.filter(q => q.category === activeCategory);
 
@@ -1180,9 +1185,9 @@ export default function Dashboard() {
             </div>
 
             {activeSection === 'obituaries' && renderObituariesSection()}
-            {activeSection === 'questions' && renderQuestionsSection()}
-            {activeSection === 'prompts' && renderPromptTemplatesSection()}
-            {activeSection === 'user-management' && renderUserManagementSection()}
+            {activeSection === 'questions' && currentUser?.userType === 'admin' && renderQuestionsSection()}
+            {activeSection === 'prompts' && currentUser?.userType === 'admin' && renderPromptTemplatesSection()}
+            {activeSection === 'user-management' && currentUser?.userType === 'admin' && renderUserManagementSection()}
             {activeSection === 'team-management' && <TeamManagement />}
             {activeSection === 'account-information' && (
               currentUser.userType === 'employee' ? <EmployeeAccount /> : <AccountInformation />
