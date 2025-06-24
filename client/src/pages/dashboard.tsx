@@ -1090,6 +1090,22 @@ export default function Dashboard() {
                   </li>
                 )}
 
+                {/* Account Information for funeral home and employee users */}
+                <li>
+                  <button
+                    onClick={() => handleSectionChange('account-information')}
+                    className={cn(
+                      "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                      activeSection === 'account-information'
+                        ? "bg-primary text-white"
+                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                    )}
+                  >
+                    <i className={cn("fas fa-user", "w-5 h-5", sidebarCollapsed ? "mx-auto" : "mr-3")}></i>
+                    {!sidebarCollapsed && <span>Account Information</span>}
+                  </button>
+                </li>
+
                 <li>
                   <button
                     onClick={() => handleSectionChange('account-information')}
