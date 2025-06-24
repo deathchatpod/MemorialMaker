@@ -658,6 +658,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add missing storage methods - these need to be implemented in storage
+  const generateClaudeRevision = async (content: string, feedback: any[]) => {
+    // Placeholder - implement with actual Claude API
+    return content + "\n\n[Revised based on feedback]";
+  };
+
+  const generateChatGPTRevision = async (content: string, feedback: any[]) => {
+    // Placeholder - implement with actual ChatGPT API
+    return content + "\n\n[Revised based on feedback]";
+  };
+
   // Survey routes
   app.get("/api/surveys", async (req, res) => {
     try {

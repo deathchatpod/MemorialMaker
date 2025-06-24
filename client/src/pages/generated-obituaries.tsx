@@ -373,15 +373,9 @@ export default function GeneratedObituaries() {
           />
         </CardContent>
       </Card>
-              Claude AI ({claudeObituaries.length} versions)
-            </TabsTrigger>
-            <TabsTrigger value="chatgpt" className="flex items-center">
-              <i className="fas fa-brain mr-2"></i>
-              ChatGPT ({chatgptObituaries.length} versions)
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="claude" className="mt-0">
+    </main>
+  );
+}
             <CardContent className="p-6">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {claudeObituaries.map((obituary) => (

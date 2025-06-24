@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import TextHighlighter from "@/components/text-highlighter";
 import { Heart, Users } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import VersionManager from "@/components/version-manager";
 
 interface GeneratedObituary {
   id: number;
