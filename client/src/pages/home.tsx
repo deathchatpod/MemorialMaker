@@ -161,20 +161,7 @@ export default function Home() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
-        <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <Skull className="h-6 w-6 text-gray-600 mr-2" />
-              <span className="text-xl font-bold text-gray-900">DeathMatters</span>
-            </div>
-            <p className="text-gray-500">
-              Creating meaningful tributes and preserving memories with compassion and technology.
-            </p>
-          </div>
-        </div>
-      </footer>
+
     </div>
   );
 }

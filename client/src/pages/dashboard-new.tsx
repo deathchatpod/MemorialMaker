@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import TeamManagement from "./team-management";
+import AccountInformation from "./account-information";
 
 interface User {
   id: number;
@@ -163,38 +165,43 @@ export default function Dashboard() {
               {activeSection === 'finalspaces' && 'FinalSpaces'}
               {activeSection === 'surveys' && 'Platform Surveys'}
               {activeSection === 'prompts' && 'Prompt Templates'}
-              {activeSection === 'management' && 'Funeral Home Management'}
+              {activeSection === 'management' && 'Team Management'}
               {activeSection === 'team-management' && 'Team Management'}
               {activeSection === 'account' && 'My Account'}
             </h1>
 
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center py-12">
-                  <div className="text-gray-400 mb-4">
-                    <i className="fas fa-cog text-4xl"></i>
+            {/* Render specific components based on active section */}
+            {activeSection === 'management' && <TeamManagement />}
+            {activeSection === 'team-management' && <TeamManagement />}
+            {activeSection === 'account' && <AccountInformation />}
+            
+            {/* Default placeholder for other sections */}
+            {!['management', 'team-management', 'account'].includes(activeSection) && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 mb-4">
+                      <i className="fas fa-cog text-4xl"></i>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Section
+                    </h3>
+                    <p className="text-gray-600">
+                      {activeSection === 'obituaries' && currentUser.userType === 'admin' && 'All obituary creations across all funeral homes'}
+                      {activeSection === 'obituaries' && currentUser.userType === 'funeral_home' && 'Your obituaries and team member obituaries'}
+                      {activeSection === 'obituaries' && currentUser.userType === 'employee' && 'Your obituary creations'}
+                      {activeSection === 'collaborations' && 'Obituaries you are collaborating on'}
+                      {activeSection === 'finalspaces' && 'Memorial spaces and tributes'}
+                      {activeSection === 'surveys' && 'Manage platform surveys and questions'}
+                      {activeSection === 'prompts' && 'AI prompt templates and configurations'}
+                    </p>
+                    <Button className="mt-4">
+                      Get Started
+                    </Button>
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Section
-                  </h3>
-                  <p className="text-gray-600">
-                    {activeSection === 'obituaries' && currentUser.userType === 'admin' && 'All obituary creations across all funeral homes'}
-                    {activeSection === 'obituaries' && currentUser.userType === 'funeral_home' && 'Your obituaries and team member obituaries'}
-                    {activeSection === 'obituaries' && currentUser.userType === 'employee' && 'Your obituary creations'}
-                    {activeSection === 'collaborations' && 'Obituaries you are collaborating on'}
-                    {activeSection === 'finalspaces' && 'Memorial spaces and tributes'}
-                    {activeSection === 'surveys' && 'Manage platform surveys and questions'}
-                    {activeSection === 'prompts' && 'AI prompt templates and configurations'}
-                    {activeSection === 'management' && 'Manage funeral homes and accounts'}
-                    {activeSection === 'team-management' && 'Manage your team members and invitations'}
-                    {activeSection === 'account' && 'Personal account settings and preferences'}
-                  </p>
-                  <Button className="mt-4">
-                    Get Started
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </main>
       </div>
