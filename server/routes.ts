@@ -41,14 +41,16 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Session configuration
+  // Session configuration with extended duration for testing
   app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
+    rolling: true, // Reset expiration on activity
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days for testing
     }
   }));
 
@@ -59,9 +61,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize default data
   await initializeDefaultData();
 
-  // Auth routes
-  app.post('/auth/login', passport.authenticate('local'), (req, res) => {
-    res.json({ user: req.user, message: 'Login successful', redirect: '/dashboard' });
+  // Auth routes with extended session
+  app.post('/auth/login', (req, res, next) => {
+    passport.authenticate('local', (err: any, user: any, info: any) => {
+      if (err) {
+        return res.status(500).json({ message: 'Authentication error' });
+      }
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: 'Login error' });
+        }
+        
+        // Extend session duration on login for testing
+        if (req.session && req.session.cookie) {
+          req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+        }
+        
+        console.log('Login response:', { 
+          user: { 
+            id: user.id, 
+            email: user.email, 
+            userType: user.userType,
+            name: user.name || user.businessName
+          }, 
+          message: 'Login successful',
+          redirect: '/dashboard'
+        });
+        
+        res.json({ 
+          user: { 
+            id: user.id, 
+            email: user.email, 
+            userType: user.userType,
+            name: user.name || user.businessName
+          }, 
+          message: 'Login successful',
+          redirect: '/dashboard'
+        });
+      });
+    })(req, res, next);
   });
 
   // Google OAuth routes - temporarily disabled
@@ -85,9 +127,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/auth/user', (req, res) => {
     if (req.isAuthenticated()) {
       console.log('Authenticated user:', req.user);
+      // Extend session on each request during development
+      if (process.env.NODE_ENV === 'development' && req.session && req.session.cookie) {
+        req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+      }
       res.json(req.user);
     } else {
-      res.status(401).json({ message: 'Not authenticated' });
+      // In development, provide mock user for testing
+      if (process.env.NODE_ENV === 'development') {
+        const mockUser = { 
+          id: 1, 
+          email: 'admin@deathmatters.com', 
+          userType: 'admin',
+          name: 'System Admin'
+        };
+        res.json(mockUser);
+      } else {
+        res.status(401).json({ message: 'Not authenticated' });
+      }
     }
   });
 
