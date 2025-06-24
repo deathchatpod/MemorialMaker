@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { FileText, AlertCircle } from 'lucide-react';
-import { ConditionalSurveyForm } from '@/components/conditional-survey-form';
+import ConditionalSurveyForm from '@/components/ConditionalSurveyForm';
 
 interface Survey {
   id: number;
@@ -190,11 +190,14 @@ export default function TakePreNeedEvaluation() {
           <ConditionalSurveyForm
             questions={questions}
             onSubmit={handleSubmit}
-            onCancel={handleCancel}
             isLoading={submitEvaluation.isPending}
-            submitButtonText="Submit Evaluation"
-            cancelButtonText="Cancel"
           />
+          
+          <div className="mt-6 flex gap-4">
+            <Button type="button" variant="outline" onClick={handleCancel}>
+              Cancel
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </main>

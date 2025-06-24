@@ -158,6 +158,8 @@ function Router() {
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
       <Route path="/collaborate/:uuid" component={Collaborate} />
+      <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />
+      <Route path="/view-evaluation/:id" component={ViewEvaluation} />
       <Route component={NotFound} />
     </Switch>
   );
