@@ -433,3 +433,9 @@ export type InsertObituaryCollaborator = z.infer<typeof insertObituaryCollaborat
 
 export type CollaborationSession = typeof collaborationSessions.$inferSelect;
 export type InsertCollaborationSession = z.infer<typeof insertCollaborationSessionSchema>;
+
+export type UserType = typeof userTypes.$inferSelect;
+export type InsertUserType = typeof userTypes.$inferInsert;
+
+export type SurveyResponse = typeof surveyResponses.$inferSelect;
+export type InsertSurveyResponse = typeof surveyResponses.$inferInsert;

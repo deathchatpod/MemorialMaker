@@ -565,6 +565,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Type routes
+  app.get("/api/user-types", async (req, res) => {
+    try {
+      const userTypes = await storage.getUserTypes();
+      res.json(userTypes);
+    } catch (error) {
+      console.error("Error fetching user types:", error);
+      res.status(500).json({ message: "Failed to fetch user types" });
+    }
+  });
+
+  // Survey Response routes
+  app.get("/api/survey-responses/:surveyId", async (req, res) => {
+    try {
+      const surveyId = parseInt(req.params.surveyId);
+      if (isNaN(surveyId)) {
+        return res.status(400).json({ message: "Invalid survey ID" });
+      }
+
+      const responses = await storage.getSurveyResponses(surveyId);
+      res.json(responses);
+    } catch (error) {
+      console.error("Error fetching survey responses:", error);
+      res.status(500).json({ message: "Failed to fetch survey responses" });
+    }
+  });
+
+  app.post("/api/survey-responses", async (req, res) => {
+    try {
+      const response = await storage.createSurveyResponse(req.body);
+      res.status(201).json(response);
+    } catch (error) {
+      console.error("Error creating survey response:", error);
+      res.status(500).json({ message: "Failed to create survey response" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

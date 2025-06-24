@@ -115,6 +115,14 @@ export interface IStorage {
   getCollaborationSession(uuid: string): Promise<CollaborationSession | undefined>;
   createCollaborationSession(session: InsertCollaborationSession): Promise<CollaborationSession>;
   updateCollaborationSession(uuid: string, updates: Partial<CollaborationSession>): Promise<CollaborationSession>;
+  
+  // User Types
+  getUserTypes(): Promise<UserType[]>;
+  createUserType(userType: InsertUserType): Promise<UserType>;
+
+  // Survey Responses
+  getSurveyResponses(surveyId: number): Promise<SurveyResponse[]>;
+  createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
 }
 
 export class DatabaseStorage implements IStorage {
