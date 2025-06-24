@@ -54,6 +54,8 @@ function App() {
       return { id: 2, username: 'John Admin', userType: 'admin' };
     } else if (userTypeParam === 'employee') {
       return { id: 3, username: 'Mike Johnson', userType: 'employee' };
+    } else if (userTypeParam === 'individual') {
+      return { id: 4, username: 'Sarah Wilson', userType: 'individual' };
     } else {
       return { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
     }
@@ -91,6 +93,7 @@ function App() {
                       <option value="admin">Admin - John Admin</option>
                       <option value="funeral_home">Funeral Home - Jane Smith</option>
                       <option value="employee">Employee - Mike Johnson</option>
+                      <option value="individual">Individual - Sarah Wilson</option>
                     </select>
                   </div>
 

@@ -40,6 +40,8 @@ export default function Dashboard() {
       return { id: 2, username: 'John Admin', userType: 'admin' };
     } else if (userTypeParam === 'employee') {
       return { id: 3, username: 'Mike Johnson', userType: 'employee' };
+    } else if (userTypeParam === 'individual') {
+      return { id: 4, username: 'Sarah Wilson', userType: 'individual' };
     } else {
       return { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
     }
