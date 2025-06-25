@@ -39,6 +39,8 @@ export default function EditFinalSpace() {
   const userTypeParam = urlParams.get('userType') || 'admin';
   const userIdParam = parseInt(urlParams.get('userId') || '1');
 
+  console.log('Edit Final Space - Route params:', { id, userTypeParam, userIdParam });
+
   // Fetch the final space data
   const { data: finalSpace, isLoading } = useQuery({
     queryKey: ['/api/final-spaces', id],

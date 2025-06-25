@@ -128,7 +128,7 @@ export default function FinalSpacesList({ userType, userId }: FinalSpacesListPro
                             <Eye className="w-4 h-4" />
                           </Button>
                         </Link>
-                        <Link href={`/final-spaces/${space.id}/edit`}>
+                        <Link href={`/final-spaces/${space.id}/edit?userType=${userType}&userId=${userId}`}>
                           <Button size="sm" variant="outline">
                             <Edit className="w-4 h-4" />
                           </Button>

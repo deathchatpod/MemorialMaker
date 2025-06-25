@@ -160,7 +160,7 @@ function Router() {
       <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
-      <Route path="/final-spaces/edit/:id" component={EditFinalSpace} />
+      <Route path="/final-spaces/:id/edit" component={EditFinalSpace} />
       <Route path="/memorial/:slug" component={MemorialPage} />
       <Route path="/collaborate/:uuid" component={Collaborate} />
       <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />

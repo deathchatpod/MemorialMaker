@@ -233,7 +233,7 @@ export default function MemorialPage() {
                   size="sm"
                   onClick={() => {
                     console.log('Navigating to edit memorial:', memorial.id);
-                    window.location.href = `/final-spaces/edit/${memorial.id}?userType=${currentUserType}&userId=${currentUserId}`;
+                    window.location.href = `/final-spaces/${memorial.id}/edit?userType=${currentUserType}&userId=${currentUserId}`;
                   }}
                 >
                   <Edit className="w-4 h-4 mr-2" />
