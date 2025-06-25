@@ -399,7 +399,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
             <div className="flex items-center gap-4">
               <span>{(elements as MemorialElement[]).length} elements</span>
               {selectedElementId && (
-                <span>Selected: {(elements as MemorialElement[]).find(el => el.id === selectedElementId)?.type}</span>
+                <span>Selected: {(elements as MemorialElement[]).find((el: MemorialElement) => el.id === selectedElementId)?.type}</span>
               )}
             </div>
             <div className="flex items-center gap-2">

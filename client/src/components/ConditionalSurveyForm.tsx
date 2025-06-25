@@ -43,8 +43,8 @@ export default function ConditionalSurveyForm({
     [questions]
   );
 
-  // Determine which questions should be visible based on conditional logic
-  useEffect(() => {
+  // Memoize visible questions calculation to prevent unnecessary re-renders
+  const visibleQuestionIds = useMemo(() => {
     const visible: number[] = [];
     
     sortedQuestions.forEach(question => {
@@ -90,14 +90,13 @@ export default function ConditionalSurveyForm({
       }
     });
     
-    // Only update if the visible questions actually changed
-    setVisibleQuestions(prev => {
-      if (prev.length !== visible.length || !prev.every((id, index) => id === visible[index])) {
-        return visible;
-      }
-      return prev;
-    });
-  }, [formData]); // Remove sortedQuestions from dependencies to prevent infinite loop
+    return visible;
+  }, [formData, sortedQuestions]);
+
+  // Update visible questions when calculation changes
+  useEffect(() => {
+    setVisibleQuestions(visibleQuestionIds);
+  }, [visibleQuestionIds]);
 
   const handleInputChange = (questionId: number, value: any) => {
     setFormData(prev => ({
