@@ -72,7 +72,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
 
   const [editorState, undoRedoActions] = useUndoRedo(initialEditorState);
   const { elements, customizationSettings } = editorState;
-  const { set: pushState, undo, redo, canUndo, canRedo } = undoRedoActions;
+  const { pushState, undo, redo, canUndo, canRedo } = undoRedoActions;
 
   // Local state
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
 
   // Update functions that integrate with undo/redo
   const setElements = useCallback((newElements: MemorialElement[] | ((prev: MemorialElement[]) => MemorialElement[])) => {
-    const updatedElements = typeof newElements === 'function' ? newElements(elements as MemorialElement[]) : newElements;
+    const updatedElements = typeof newElements === 'function' ? newElements(elements) : newElements;
     pushState({ ...editorState, elements: updatedElements });
   }, [elements, editorState, pushState]);
 
@@ -120,27 +120,26 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
   };
 
   const addNewElement = useCallback((type: MemorialElement['type']) => {
-    const elementArray = elements as MemorialElement[];
     const newElement: MemorialElement = {
       id: `${type}-${Date.now()}`,
       type,
       content: getDefaultContent(type),
       position: { x: 100, y: 100 },
       size: getDefaultSize(type),
-      zIndex: Math.max(...elementArray.map(e => e.zIndex), 0) + 1,
+      zIndex: Math.max(...elements.map(e => e.zIndex), 0) + 1,
       isVisible: true,
       isLocked: false
     };
-    setElements(prev => [...(prev as MemorialElement[]), newElement]);
+    setElements(prev => [...prev, newElement]);
     setSelectedElementId(newElement.id);
   }, [elements, setElements]);
 
   const handleElementUpdate = useCallback((id: string, updates: Partial<MemorialElement>) => {
-    setElements(prev => (prev as MemorialElement[]).map(el => el.id === id ? { ...el, ...updates } : el));
+    setElements(prev => prev.map(el => el.id === id ? { ...el, ...updates } : el));
   }, [setElements]);
 
   const handleElementDelete = useCallback((id: string) => {
-    setElements(prev => (prev as MemorialElement[]).filter(el => el.id !== id));
+    setElements(prev => prev.filter(el => el.id !== id));
     if (selectedElementId === id) {
       setSelectedElementId(null);
     }
@@ -293,7 +292,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
               
               <TabsContent value="layers" className="space-y-2">
                 <div className="space-y-1">
-                  {(elements as MemorialElement[]).map(element => (
+                  {elements.map(element => (
                     <div
                       key={element.id}
                       className={`p-2 rounded cursor-pointer flex items-center gap-2 ${
@@ -338,7 +337,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
               backgroundColor: customizationSettings.background.color
             }}
           >
-            {(elements as MemorialElement[])
+            {elements
               .filter(el => el.isVisible)
               .sort((a, b) => a.zIndex - b.zIndex)
               .map((element) => (
@@ -380,7 +379,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
                 </div>
               ))}
               
-            {(elements as MemorialElement[]).length === 0 && (
+            {elements.length === 0 && (
               <div className="flex items-center justify-center h-full text-gray-500">
                 <div className="text-center">
                   <Plus className="w-12 h-12 mx-auto mb-4 text-gray-300" />
@@ -397,9 +396,9 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
         <div className="border-t bg-gray-50 px-4 py-2">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <div className="flex items-center gap-4">
-              <span>{(elements as MemorialElement[]).length} elements</span>
+              <span>{elements.length} elements</span>
               {selectedElementId && (
-                <span>Selected: {(elements as MemorialElement[]).find(el => el.id === selectedElementId)?.type}</span>
+                <span>Selected: {elements.find(el => el.id === selectedElementId)?.type}</span>
               )}
             </div>
             <div className="flex items-center gap-2">
