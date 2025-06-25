@@ -1,210 +1,80 @@
-import React, { useState } from "react";
-import { Switch, Route, useLocation } from "wouter";
+import React, { Suspense } from "react";
+import { Router, Route } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
-import { Skull } from "lucide-react";
 import Home from "./pages/home";
-import Dashboard from "./pages/dashboard-new";
 import Login from "./pages/login";
 import Register from "./pages/register";
-import ObituaryForm from "./pages/obituary-form";
-import GeneratedObituaries from "./pages/generated-obituaries";
-import QuestionManagement from "./pages/question-management";
-import SurveyManagement from "./pages/survey-management";
-import SurveyEditor from "./pages/survey-editor";
-import FinalSpaces from "./pages/final-spaces";
+import Dashboard from "./pages/dashboard-new";
+import CreateObituary from "./pages/create-obituary";
+import ViewObituary from "./pages/view-obituary";
+import EditObituary from "./pages/edit-obituary";
+import GeneratedObituary from "./pages/generated-obituary";
+import CollaborateObituary from "./pages/collaborate-obituary";
+import SurveyForm from "./pages/survey-form";
 import CreateFinalSpace from "./pages/create-final-space";
-import Collaborate from "./pages/collaborate";
-import NotFound from "./pages/not-found";
-import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";
-import ViewEvaluation from "./pages/view-evaluation";
-import MemorialPage from "./pages/memorial-page";
 import EditFinalSpace from "./pages/edit-final-space";
+import MemorialPage from "./pages/memorial-page";
+import UserEvaluation from "./pages/user-evaluation";
+import GlobalHeader from "./components/GlobalHeader";
 
-const queryClient = new QueryClient();
-
-interface User {
-  id: number;
-  username: string;
-  userType: string;
-}
-
-function GlobalHeader() {
-  const [location] = useLocation();
-
-  // Get current user from URL params (existing functionality)
-  const urlParams = new URLSearchParams(window.location.search);
-  const userTypeParam = urlParams.get('userType');
-
-  const currentUser = (() => {
-    if (userTypeParam === 'admin') {
-      return { id: 2, username: 'John Admin', userType: 'admin' };
-    } else if (userTypeParam === 'employee') {
-      return { id: 3, username: 'Mike Johnson', userType: 'employee' };
-    } else if (userTypeParam === 'individual') {
-      return { id: 4, username: 'Sarah Wilson', userType: 'individual' };
-    } else {
-      return { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
-    }
-  })();
-
-  // Check if user is authenticated (but don't require it for testing)
-  const { data: authenticatedUser } = useQuery({
-    queryKey: ['/auth/user'],
-    queryFn: async () => {
-      const response = await fetch('/auth/user');
-      if (!response.ok) throw new Error('Not authenticated');
-      return response.json();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
     },
-    retry: false,
-  });
-
-  const handleUserChange = (userType: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('userType', userType);
-    window.location.href = url.toString();
-  };
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/auth/logout', { method: 'POST' });
-      window.location.href = '/';
-    } catch (error) {
-      // Logout failed
-    }
-  };
-
-  const isDashboard = location === '/dashboard' || location.startsWith('/dashboard?');
-
-  return (
-    <header className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <Link href="/">
-            <div className="flex items-center cursor-pointer">
-              <Skull className="h-8 w-8 text-gray-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">DeathMatters</h1>
-            </div>
-          </Link>
-          <div className="flex items-center space-x-4">
-            {/* User Type Switching (Testing) */}
-            <div className="relative">
-              <select 
-                value={currentUser.userType}
-                onChange={(e) => handleUserChange(e.target.value)}
-                className="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="admin">Admin - John Admin</option>
-                <option value="funeral_home">Funeral Home - Jane Smith</option>
-                <option value="employee">Employee - Mike Johnson</option>
-                <option value="individual">Individual - Sarah Wilson</option>
-              </select>
-            </div>
-
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-700">
-                  {currentUser.username.charAt(0)}
-                </span>
-              </div>
-              <span className="ml-2 text-sm font-medium text-gray-700">
-                {currentUser.username}
-              </span>
-            </div>
-
-            {/* Auth Buttons */}
-            {authenticatedUser ? (
-              <>
-                {!isDashboard && (
-                  <Link href="/dashboard">
-                    <Button variant="outline">Dashboard</Button>
-                  </Link>
-                )}
-                <Button variant="outline" onClick={handleLogout}>
-                  Sign out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="outline">Log In</Button>
-                </Link>
-                <Link href="/register">
-                  <Button>Sign Up</Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
-      <Route path="/obituary/new" component={ObituaryForm} />
-      <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
-      <Route path="/obituary/:id/edit" component={ObituaryForm} />
-      <Route path="/admin/questions" component={QuestionManagement} />
-      <Route path="/admin/surveys" component={SurveyManagement} />
-      <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />
-      <Route path="/final-spaces" component={FinalSpaces} />
-      <Route path="/final-spaces/create" component={CreateFinalSpace} />
-      <Route path="/final-spaces/:id/edit" component={EditFinalSpace} />
-      <Route path="/obituary/new" component={ObituaryForm} />
-      <Route path="/obituary/:id/edit" component={ObituaryForm} />
-      <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
-      <Route path="/admin/surveys" component={SurveyManagement} />
-      <Route path="/admin/surveys/new" component={SurveyEditor} />
-      <Route path="/admin/surveys/:id" component={SurveyEditor} />
-      <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />
-      <Route path="/memorial/:slug" component={MemorialPage} />
-      <Route path="/collaborate/:uuid" component={Collaborate} />
-      <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />
-      <Route path="/view-evaluation/:id" component={ViewEvaluation} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+  },
+});
 
 function App() {
-  const [currentUser, setCurrentUser] = useState<User>(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const userTypeParam = urlParams.get('userType');
-
-    if (userTypeParam === 'admin') {
-      return { id: 2, username: 'John Admin', userType: 'admin' };
-    } else if (userTypeParam === 'employee') {
-      return { id: 3, username: 'Mike Johnson', userType: 'employee' };
-    } else if (userTypeParam === 'individual') {
-      return { id: 4, username: 'Sarah Wilson', userType: 'individual' };
-    } else {
-      return { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
-    }
-  });
-
-  const handleUserChange = (userType: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('userType', userType);
-    window.location.href = url.toString();
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="min-h-screen bg-gray-50">
+          {/* Skip to main content link - appears on focus */}
+          <a 
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded focus:shadow-lg"
+          >
+            Skip to main content
+          </a>
+          
           <GlobalHeader />
-          <Router />
+          
+          <main id="main-content" role="main" className="flex-1">
+            <Suspense fallback={
+              <div role="status" aria-live="polite" className="flex items-center justify-center min-h-64">
+                <span className="sr-only">Loading content...</span>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              </div>
+            }>
+              <Router>
+                <Route path="/" component={Home} />
+                <Route path="/login" component={Login} />
+                <Route path="/register" component={Register} />
+                <Route path="/dashboard" component={Dashboard} />
+                <Route path="/obituary/create" component={CreateObituary} />
+                <Route path="/obituary/:id" component={ViewObituary} />
+                <Route path="/obituary/:id/edit" component={EditObituary} />
+                <Route path="/obituary/:id/generated" component={GeneratedObituary} />
+                <Route path="/obituary/:id/collaborate/:uuid" component={CollaborateObituary} />
+                <Route path="/surveys/:id" component={SurveyForm} />
+                <Route path="/final-spaces/create" component={CreateFinalSpace} />
+                <Route path="/edit-final-space/:id" component={EditFinalSpace} />
+                <Route path="/memorial/:slug" component={MemorialPage} />
+                <Route path="/user-evaluation/:userId" component={UserEvaluation} />
+                <Route>
+                  <section role="alert" className="text-center py-16">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">404 - Page Not Found</h1>
+                    <p className="text-gray-600">The page you are looking for does not exist.</p>
+                  </section>
+                </Route>
+              </Router>
+            </Suspense>
+          </main>
+          
           <Toaster />
         </div>
       </TooltipProvider>

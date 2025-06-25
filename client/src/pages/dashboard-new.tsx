@@ -137,7 +137,7 @@ export default function Dashboard() {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg border-r border-gray-200">
+      <nav className="w-64 bg-white shadow-lg border-r border-gray-200" role="navigation" aria-label="Dashboard navigation">
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">DeathMatters</h2>
