@@ -403,6 +403,27 @@ export const insertObituarySchema = createInsertSchema(obituaries).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  fullName: z.string().min(1, "Full name is required").max(200, "Name too long"),
+  age: z.number().min(0, "Age cannot be negative").max(150, "Age must be realistic").optional(),
+  dateOfBirth: z.string().optional().refine((date) => {
+    if (!date) return true;
+    const birthDate = new Date(date);
+    return birthDate <= new Date();
+  }, "Birth date cannot be in the future"),
+  dateOfDeath: z.string().optional().refine((date) => {
+    if (!date) return true;
+    const deathDate = new Date(date);
+    return deathDate <= new Date();
+  }, "Death date cannot be in the future"),
+}).refine((data) => {
+  if (data.dateOfBirth && data.dateOfDeath) {
+    return new Date(data.dateOfBirth) <= new Date(data.dateOfDeath);
+  }
+  return true;
+}, {
+  message: "Death date must be after birth date",
+  path: ["dateOfDeath"]
 });
 
 export const insertGeneratedObituarySchema = createInsertSchema(generatedObituaries).omit({
@@ -436,6 +457,28 @@ export const insertFinalSpaceSchema = createInsertSchema(finalSpaces).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  personName: z.string().min(1, "Person name is required").max(200, "Name too long"),
+  dateOfBirth: z.string().optional().refine((date) => {
+    if (!date) return true;
+    const birthDate = new Date(date);
+    return birthDate <= new Date();
+  }, "Birth date cannot be in the future"),
+  dateOfDeath: z.string().optional().refine((date) => {
+    if (!date) return true;
+    const deathDate = new Date(date);
+    return deathDate <= new Date();
+  }, "Death date cannot be in the future"),
+  description: z.string().max(5000, "Description too long").optional(),
+  musicPlaylist: z.string().url("Invalid playlist URL").optional().or(z.literal("")),
+}).refine((data) => {
+  if (data.dateOfBirth && data.dateOfDeath) {
+    return new Date(data.dateOfBirth) <= new Date(data.dateOfDeath);
+  }
+  return true;
+}, {
+  message: "Death date must be after birth date",
+  path: ["dateOfDeath"]
 });
 
 export const insertFinalSpaceCommentSchema = createInsertSchema(finalSpaceComments).omit({
