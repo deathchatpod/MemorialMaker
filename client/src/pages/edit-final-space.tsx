@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Heart, ArrowLeft, Save, Palette, Settings, FileText, Image as ImageIcon } from "lucide-react";
 import SimpleMemorialEditor from "@/components/SimpleMemorialEditor";
+import MediaManager from "@/components/MediaManager";
 import CollaborationManager from "@/components/CollaborationManager";
 
 const editFinalSpaceSchema = z.object({
@@ -351,23 +352,13 @@ export default function EditFinalSpace() {
       </TabsContent>
 
       <TabsContent value="media">
-        <Card>
-          <CardHeader>
-            <CardTitle>Media & Content Management</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="p-8 bg-gray-50 rounded-lg border text-center">
-              <ImageIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Media Gallery</h3>
-              <p className="text-gray-600 mb-4">
-                Upload and manage photos, videos, and audio files for the memorial.
-              </p>
-              <p className="text-sm text-gray-500">
-                Media management interface coming soon. Currently managed during memorial creation.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <MediaManager 
+          memorial={finalSpace}
+          onMediaUpdate={(updates) => {
+            // Update the memorial data with media changes
+            setFinalSpace(prev => ({ ...prev, ...updates }));
+          }}
+        />
       </TabsContent>
 
       <TabsContent value="design">

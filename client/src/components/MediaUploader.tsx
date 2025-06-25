@@ -25,12 +25,20 @@ interface MediaUploaderProps {
     youtubeLinks: MediaFile[];
     primaryMedia: MediaFile | null;
   }) => void;
+  initialImages?: MediaFile[];
+  initialAudioFiles?: MediaFile[];
+  initialYoutubeLinks?: MediaFile[];
 }
 
-export default function MediaUploader({ onMediaChange }: MediaUploaderProps) {
-  const [images, setImages] = useState<MediaFile[]>([]);
-  const [audioFiles, setAudioFiles] = useState<MediaFile[]>([]);
-  const [youtubeLinks, setYoutubeLinks] = useState<MediaFile[]>([]);
+export default function MediaUploader({ 
+  onMediaChange, 
+  initialImages = [], 
+  initialAudioFiles = [], 
+  initialYoutubeLinks = [] 
+}: MediaUploaderProps) {
+  const [images, setImages] = useState<MediaFile[]>(initialImages);
+  const [audioFiles, setAudioFiles] = useState<MediaFile[]>(initialAudioFiles);
+  const [youtubeLinks, setYoutubeLinks] = useState<MediaFile[]>(initialYoutubeLinks);
   const [primaryMedia, setPrimaryMedia] = useState<MediaFile | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const { toast } = useToast();
