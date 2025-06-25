@@ -136,29 +136,25 @@ export default function FinalSpaces() {
                       </Button>
                     )}
                     
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        console.log('Navigating to memorial:', space.slug);
-                        window.location.href = `/memorial/${space.slug}`;
-                      }}
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      View
-                    </Button>
+                    <Link href={`/memorial/${space.slug}`}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View Memorial
+                      </Button>
+                    </Link>
                     
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        console.log('Navigating to edit:', space.id);
-                        window.location.href = `/final-spaces/edit/${space.id}?userType=${currentUserType}&userId=${currentUserId}`;
-                      }}
-                    >
-                      <Edit className="h-3 w-3 mr-1" />
-                      Edit
-                    </Button>
+                    <Link href={`/final-spaces/edit/${space.id}?userType=${currentUserType}&userId=${currentUserId}`}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                    </Link>
                   </div>
                   
                   <Button
