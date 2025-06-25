@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
+// import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +19,8 @@ import {
   Tablet,
   Move,
   RotateCcw,
-  Copy
+  Copy,
+  Image as ImageIcon
 } from "lucide-react";
 
 interface SimpleMemorialEditorProps {
@@ -276,13 +277,16 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                   <div className="grid grid-cols-2 gap-4">
                     {memorial.images?.slice(0, 4).map((img: any, idx: number) => (
                       <div key={idx} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                        <img 
-                          src={img.url || `/uploads/memorial-media/images/${img.filename}`}
-                          alt={img.title || 'Memorial photo'}
-                          className="w-full h-full object-cover"
-                        />
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <ImageIcon className="w-8 h-8" />
+                        </div>
                       </div>
-                    ))}
+                    )) || (
+                      <div className="col-span-2 text-center py-8 text-gray-500">
+                        <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Media gallery placeholder</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -360,17 +364,19 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
               
               <div>
                 <Label>Element Spacing</Label>
-                <Slider
-                  value={[currentSettings.spacing === 'tight' ? 1 : currentSettings.spacing === 'normal' ? 2 : 3]}
-                  onValueChange={([value]) => {
-                    const spacing = value === 1 ? 'tight' : value === 2 ? 'normal' : 'loose';
-                    setCurrentSettings(prev => ({ ...prev, spacing }));
-                  }}
-                  max={3}
-                  min={1}
-                  step={1}
-                  className="w-full"
-                />
+                <Select 
+                  value={currentSettings.spacing} 
+                  onValueChange={(value) => setCurrentSettings(prev => ({ ...prev, spacing: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="tight">Tight</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="loose">Loose</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </TabsContent>
 
@@ -395,15 +401,17 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
               
               <div>
                 <Label>Font Size</Label>
-                <Slider
-                  value={[currentSettings.fontSize]}
-                  onValueChange={([value]) => setCurrentSettings(prev => ({ ...prev, fontSize: value }))}
-                  max={24}
-                  min={12}
-                  step={1}
-                  className="w-full"
-                />
-                <span className="text-sm text-gray-500">{currentSettings.fontSize}px</span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="range"
+                    min="12"
+                    max="24"
+                    value={currentSettings.fontSize}
+                    onChange={(e) => setCurrentSettings(prev => ({ ...prev, fontSize: parseInt(e.target.value) }))}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-gray-500 w-12">{currentSettings.fontSize}px</span>
+                </div>
               </div>
             </TabsContent>
 
@@ -426,15 +434,17 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
               
               <div>
                 <Label>Border Radius</Label>
-                <Slider
-                  value={[currentSettings.borderRadius]}
-                  onValueChange={([value]) => setCurrentSettings(prev => ({ ...prev, borderRadius: value }))}
-                  max={20}
-                  min={0}
-                  step={1}
-                  className="w-full"
-                />
-                <span className="text-sm text-gray-500">{currentSettings.borderRadius}px</span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="range"
+                    min="0"
+                    max="20"
+                    value={currentSettings.borderRadius}
+                    onChange={(e) => setCurrentSettings(prev => ({ ...prev, borderRadius: parseInt(e.target.value) }))}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-gray-500 w-12">{currentSettings.borderRadius}px</span>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
