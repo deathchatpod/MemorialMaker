@@ -274,7 +274,6 @@ export default function Dashboard() {
                       {
                         icon: <Eye className="w-4 h-4" />,
                         onClick: (row) => {
-                          console.log("Navigating to obituary:", row.id);
                           setLocation(`/obituary/${row.id}/generated`);
                         },
                         title: "View"
@@ -282,7 +281,6 @@ export default function Dashboard() {
                       {
                         icon: <Edit className="w-4 h-4" />,
                         onClick: (row) => {
-                          console.log("Editing obituary:", row.id);
                           setLocation(`/obituary/${row.id}/edit`);
                         },
                         title: "Edit"
@@ -426,7 +424,6 @@ export default function Dashboard() {
                       {
                         icon: <Eye className="w-4 h-4" />,
                         onClick: (row) => {
-                          console.log("Viewing memorial:", row.slug || row.id);
                           setLocation(`/memorial/${row.slug || row.id}`);
                         },
                         title: "View"
@@ -434,7 +431,6 @@ export default function Dashboard() {
                       {
                         icon: <Edit className="w-4 h-4" />,
                         onClick: (row) => {
-                          console.log("Editing memorial:", row.id);
                           setLocation(`/final-spaces/${row.id}/edit`);
                         },
                         title: "Edit"

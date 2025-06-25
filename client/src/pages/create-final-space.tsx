@@ -147,10 +147,7 @@ export default function CreateFinalSpace() {
         status: 'published'
       };
 
-      console.log('Sending final data to API:', finalData);
-      
       const createdSpace = await createFinalSpace.mutateAsync(finalData);
-      console.log('Successfully created space:', createdSpace);
 
       // Add collaborators if any were added during creation
       if (collaborators.length > 0) {
@@ -172,7 +169,7 @@ export default function CreateFinalSpace() {
               });
               
               if (!response.ok) {
-                console.error('Failed to add collaborator:', collaborator.email);
+                // Failed to add collaborator
               }
             })
           );
@@ -182,7 +179,7 @@ export default function CreateFinalSpace() {
             description: `Memorial space created successfully with ${collaborators.length} collaborator invitation(s) sent`
           });
         } catch (error) {
-          console.error('Error adding collaborators:', error);
+          // Error adding collaborators
           toast({
             title: "Partial Success",
             description: "Memorial created but some collaborator invitations failed to send"
@@ -198,10 +195,10 @@ export default function CreateFinalSpace() {
       // Redirect to the created memorial page
       setLocation(`/memorial/${createdSpace.slug}`);
     } catch (error) {
-      console.error('Error creating final space:', error);
+      // Error creating memorial space
       toast({
         title: "Error",
-        description: error.message || "Failed to create memorial space",
+        description: (error as Error).message || "Failed to create memorial space",
         variant: "destructive"
       });
     }
@@ -506,18 +503,10 @@ export default function CreateFinalSpace() {
                   disabled={createFinalSpace.isPending} 
                   className="min-w-32"
                   onClick={(e) => {
-                    console.log('Create button clicked');
-                    console.log('Form valid:', form.formState.isValid);
-                    console.log('Form errors:', form.formState.errors);
-                    console.log('Form values:', form.getValues());
-                    
                     // Trigger validation manually
                     form.trigger().then((isValid) => {
-                      console.log('Manual validation result:', isValid);
                       if (isValid) {
-                        console.log('Validation passed, proceeding with submission');
-                      } else {
-                        console.log('Validation failed, errors:', form.formState.errors);
+                        // Validation passed, proceed with submission
                       }
                     });
                   }}

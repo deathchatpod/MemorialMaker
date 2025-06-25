@@ -60,14 +60,10 @@ export default function Home() {
 
   // Find "Home Page" survey
   const homePageSurvey = surveys.find(survey => survey.name === "Home Page");
-  console.log("Home Page Survey:", homePageSurvey);
-  console.log("All surveys:", surveys);
-
   // Get questions for the home page survey
   const questions = homePageSurvey 
     ? allQuestions.filter(q => q.surveyId === homePageSurvey.id)
     : [];
-  console.log("Filtered questions for survey", homePageSurvey?.id, ":", questions);
 
   const submitSurveyMutation = useMutation({
     mutationFn: async (formData: Record<string, any>) => {

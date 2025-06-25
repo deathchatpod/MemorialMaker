@@ -74,7 +74,7 @@ function GlobalHeader() {
       await fetch('/auth/logout', { method: 'POST' });
       window.location.href = '/';
     } catch (error) {
-      console.error('Logout failed:', error);
+      // Logout failed
     }
   };
 
