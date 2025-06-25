@@ -97,8 +97,16 @@ export function PreNeedEvaluationTab() {
   };
 
   const getUserDisplayName = (evaluation: PreNeedEvaluation) => {
-    // This would ideally fetch user names, but for now we'll use type + id
-    return `${evaluation.completedByType} ${evaluation.completedById}`;
+    // Map user types to proper display names
+    const typeMapping = {
+      'admin': 'Admin User',
+      'funeral_home': 'Funeral Home',
+      'employee': 'Employee',
+      'individual': 'Individual'
+    };
+    
+    const displayType = typeMapping[evaluation.completedByType as keyof typeof typeMapping] || evaluation.completedByType;
+    return `${displayType} #${evaluation.completedById}`;
   };
 
   if (isLoading) {
