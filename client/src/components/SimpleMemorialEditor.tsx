@@ -203,6 +203,34 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                   minHeight: `${element.size.height}px`
                 }}
                 onClick={() => setSelectedElement(element.id)}
+                onMouseDown={(e) => {
+                  // Enable drag functionality
+                  const startY = e.clientY;
+                  const startX = e.clientX;
+                  const startPos = element.position;
+                  
+                  const handleMouseMove = (moveEvent: MouseEvent) => {
+                    const deltaX = moveEvent.clientX - startX;
+                    const deltaY = moveEvent.clientY - startY;
+                    
+                    updateElement(element.id, {
+                      position: {
+                        x: Math.max(0, Math.min(80, startPos.x + (deltaX / 10))),
+                        y: Math.max(0, startPos.y + deltaY)
+                      }
+                    });
+                  };
+                  
+                  const handleMouseUp = () => {
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                  };
+                  
+                  if (selectedElement === element.id) {
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', handleMouseUp);
+                  }
+                }}
               >
                 {/* Element Controls */}
                 {selectedElement === element.id && (
@@ -210,7 +238,20 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                     <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-white hover:bg-blue-700">
                       <Move className="w-3 h-3" />
                     </Button>
-                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-white hover:bg-blue-700">
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="h-6 w-6 p-0 text-white hover:bg-blue-700"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newElement = {
+                          ...element,
+                          id: `${element.id}_copy_${Date.now()}`,
+                          position: { x: element.position.x + 5, y: element.position.y + 20 }
+                        };
+                        setElements(prev => [...prev, newElement]);
+                      }}
+                    >
                       <Copy className="w-3 h-3" />
                     </Button>
                   </div>
@@ -283,13 +324,22 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                   >
                     <div className="text-center">
                       <div 
-                        className="w-8 h-8 rounded mx-auto mb-1"
-                        style={{ backgroundColor: theme.bg, border: '1px solid #e5e7eb' }}
+                        className="w-8 h-8 rounded mx-auto mb-1 border"
+                        style={{ 
+                          backgroundColor: theme.bg, 
+                          borderColor: theme.accent,
+                          borderWidth: currentSettings.theme === key ? '2px' : '1px'
+                        }}
                       />
                       <span className="text-xs">{theme.name}</span>
                     </div>
                   </Button>
                 ))}
+              </div>
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  Click elements in the preview to select and move them. Use the customization panel to adjust colors, fonts, and layout.
+                </p>
               </div>
             </TabsContent>
 
