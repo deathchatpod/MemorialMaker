@@ -141,11 +141,7 @@ export default function CreateFinalSpace() {
           </CardHeader>
           <CardContent>
             <form 
-              onSubmit={(e) => {
-                console.log('Form submit triggered');
-                e.preventDefault();
-                form.handleSubmit(onSubmit)(e);
-              }} 
+              onSubmit={form.handleSubmit(onSubmit)} 
               className="space-y-6"
             >
               {/* Obituary Selection */}
@@ -319,9 +315,16 @@ export default function CreateFinalSpace() {
                     console.log('Form valid:', form.formState.isValid);
                     console.log('Form errors:', form.formState.errors);
                     console.log('Form values:', form.getValues());
-                    if (!form.formState.isValid) {
-                      e.preventDefault();
-                    }
+                    
+                    // Trigger validation manually
+                    form.trigger().then((isValid) => {
+                      console.log('Manual validation result:', isValid);
+                      if (isValid) {
+                        console.log('Validation passed, proceeding with submission');
+                      } else {
+                        console.log('Validation failed, errors:', form.formState.errors);
+                      }
+                    });
                   }}
                 >
                   {createFinalSpace.isPending ? "Creating..." : "Create Memorial Space"}

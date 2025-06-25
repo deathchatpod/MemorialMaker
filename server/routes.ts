@@ -989,7 +989,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         funeralHomeId: data.funeralHomeId || null,
         createdById: data.createdById || 1,
         createdByType: data.createdByType || 'funeral_home',
-        obituaryId: data.obituaryId ? parseInt(data.obituaryId) : null,
+        obituaryId: data.obituaryId || null,
         slug,
         personName: data.personName,
         dateOfBirth: data.dateOfBirth || null,
