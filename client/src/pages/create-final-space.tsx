@@ -9,27 +9,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertFinalSpaceSchema } from "@shared/schema";
+// Remove insertFinalSpaceSchema import since we're using custom form schema
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Heart } from "lucide-react";
 import MediaUploader from "@/components/MediaUploader";
 
-const createFinalSpaceSchema = insertFinalSpaceSchema.extend({
+const createFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
   dateOfBirth: z.string().optional(),
   dateOfDeath: z.string().optional(),
   description: z.string().optional(),
-  obituaryId: z.number().optional(),
-  socialMediaLinks: z.array(z.string()).optional(),
-  musicPlaylist: z.string().optional(),
+  obituaryId: z.coerce.number().optional(),
+  socialMediaLinks: z.array(z.string()).default([]),
+  musicPlaylist: z.string().default(""),
   isPublic: z.boolean().default(true),
   allowComments: z.boolean().default(true),
-  images: z.array(z.any()).optional(),
-  audioFiles: z.array(z.any()).optional(),
-  youtubeLinks: z.array(z.any()).optional(),
-  primaryMediaType: z.string().optional(),
-  primaryMediaId: z.string().optional()
+  userId: z.number().optional()
 });
 
 type CreateFinalSpaceForm = z.infer<typeof createFinalSpaceSchema>;
