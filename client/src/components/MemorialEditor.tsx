@@ -15,6 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import ResizableElement from "./ResizableElement";
 import CustomizationPanel from "./CustomizationPanel";
+import TypographyControls from "./TypographyControls";
+import BackgroundCustomizer from "./BackgroundCustomizer";
+import BorderShadowControls from "./BorderShadowControls";
+import PhotoFilters from "./PhotoFilters";
 import MediaGallery from "./MediaGallery";
 import ObituaryIntegration from "./ObituaryIntegration";
 import { GridSystem, GridOverlay } from "./GridSystem";
@@ -32,7 +36,8 @@ import {
   Monitor,
   Tablet,
   Layers,
-  Move
+  Move,
+  Palette
 } from "lucide-react";
 
 interface MemorialElement {
@@ -102,6 +107,69 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
   const [snapToGrid, setSnapToGrid] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   const [positioningMode, setPositioningMode] = useState<'free' | 'grid' | 'snap'>('snap');
+  
+  // Phase 4 Visual customization state
+  const [typographySettings, setTypographySettings] = useState({
+    fontFamily: 'system-ui',
+    fontSize: 16,
+    fontWeight: '400',
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    textAlign: 'left',
+    lineHeight: 1.5,
+    letterSpacing: 0,
+    color: '#000000',
+    textShadow: 'none'
+  });
+  
+  const [backgroundSettings, setBackgroundSettings] = useState({
+    type: 'solid' as const,
+    solidColor: '#ffffff',
+    gradientType: 'linear' as const,
+    gradientDirection: 180,
+    gradientColors: ['#ffffff', '#f1f5f9'],
+    gradientStops: [0, 100],
+    imageUrl: '',
+    imageSize: 'cover' as const,
+    imagePosition: 'center' as const,
+    opacity: 1,
+    overlayColor: '#000000',
+    overlayOpacity: 0
+  });
+  
+  const [borderShadowSettings, setBorderShadowSettings] = useState({
+    borderWidth: 0,
+    borderStyle: 'none' as const,
+    borderColor: '#000000',
+    borderRadius: 0,
+    shadowType: 'none' as const,
+    shadowColor: '#000000',
+    shadowBlur: 0,
+    shadowSpread: 0,
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    shadowOpacity: 0.25,
+    multipleShadows: false,
+    shadowLayers: []
+  });
+  
+  const [photoFilterSettings, setPhotoFilterSettings] = useState({
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    hue: 0,
+    blur: 0,
+    sepia: 0,
+    grayscale: 0,
+    invert: 0,
+    opacity: 100,
+    tint: '#ffffff',
+    tintIntensity: 0,
+    vintage: 0,
+    vignette: 0,
+    noise: 0,
+    blendMode: 'normal' as const
+  });
   
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -249,28 +317,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
     setSelectedElementId(newElement.id);
   }, [elements]);
 
-  const handleElementUpdate = useCallback((elementId: string, updates: any) => {
-    setElements(prev => prev.map(el => 
-      el.id === elementId ? { ...el, ...updates } : el
-    ));
-  }, []);
-
-  const handleElementDelete = useCallback((elementId: string) => {
-    setElements(prev => prev.filter(el => el.id !== elementId));
-    setSelectedElementId(null);
-  }, []);
-
-  const handleElementDuplicate = useCallback((elementId: string) => {
-    const element = elements.find(el => el.id === elementId);
-    if (element) {
-      const newElement = {
-        ...element,
-        id: `${element.id}-copy-${Date.now()}`,
-        position: { x: element.position.x + 20, y: element.position.y + 20 }
-      };
-      setElements(prev => [...prev, newElement]);
-    }
-  }, [elements]);
+  // Remove duplicate functions - using the ones defined earlier
 
   const addNewElement = (type: MemorialElement['type']) => {
     const newElement: MemorialElement = {
