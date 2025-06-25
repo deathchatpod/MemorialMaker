@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Heart, ExternalLink, Clock, Users, MessageSquare } from "lucide-react";
 import { Link } from "wouter";
+import { Eye, Edit, Users, Calendar, Filter, Search, Heart } from "lucide-react";
 
 interface CollaborationObituary {
   id: number;
@@ -24,15 +26,71 @@ interface MyCollaborationsProps {
   userId: number;
 }
 
-export default function MyCollaborations({ userType, userId }: MyCollaborationsProps) {
-  const { data: collaborations = [], isLoading } = useQuery<CollaborationObituary[]>({
-    queryKey: ["/api/my-collaborations", userId],
-    queryFn: async () => {
-      const response = await fetch(`/api/my-collaborations?userId=${userId}`);
-      if (!response.ok) throw new Error('Failed to fetch collaborations');
-      return response.json();
-    },
+export default function MyCollaborations() {
+  // Get URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const userTypeParam = urlParams.get('userType') || 'admin';
+  const userIdParam = parseInt(urlParams.get('userId') || '1');
+  
+  // Get user email based on type - in real app, this would come from auth context
+  const getUserEmail = () => {
+    switch (userTypeParam) {
+      case 'admin': return 'admin@deathmatters.com';
+      case 'funeral_home': return 'funeral@deathmatters.com';
+      case 'employee': return 'employee@deathmatters.com';
+      case 'individual': return 'individual@deathmatters.com';
+      default: return 'admin@deathmatters.com';
+    }
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const { data: collaborations = [], isLoading, error } = useQuery({
+    queryKey: ['/api/my-collaborations', { 
+      userEmail: getUserEmail(),
+      userId: userIdParam,
+      userType: userTypeParam 
+    }]
   });
+
+  // Filter collaborations based on search and filters
+  const filteredCollaborations = collaborations.filter((collab: any) => {
+    const matchesSearch = collab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         collab.collaboratorEmail.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = typeFilter === "all" || collab.type.toLowerCase() === typeFilter.toLowerCase();
+    const matchesStatus = statusFilter === "all" || collab.status.toLowerCase() === statusFilter.toLowerCase();
+    
+    return matchesSearch && matchesType && matchesStatus;
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'accepted':
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'completed':
+        return 'bg-blue-100 text-blue-800';
+      case 'declined':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTypeColor = (type: string) => {
+    switch (type.toLowerCase()) {
+      case 'obituary':
+        return 'bg-purple-100 text-purple-800';
+      case 'finalspace':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   if (isLoading) {
     return (
