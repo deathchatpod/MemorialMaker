@@ -1,13 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Eye, Edit, Users, Heart } from "lucide-react";
 import { Link } from "wouter";
-import { Eye, Edit, Users, Calendar, Filter, Search, Heart } from "lucide-react";
+import DataTable, { createBadgeRenderer, formatDate, createActionButtons } from "@/components/DataTable";
 
 interface CollaborationObituary {
   id: number;
@@ -43,26 +38,12 @@ export default function MyCollaborations() {
     }
   };
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
-
   const { data: collaborations = [], isLoading, error } = useQuery({
     queryKey: ['/api/my-collaborations', { 
       userEmail: getUserEmail(),
       userId: userIdParam,
       userType: userTypeParam 
     }]
-  });
-
-  // Filter collaborations based on search and filters
-  const filteredCollaborations = collaborations.filter((collab: any) => {
-    const matchesSearch = collab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         collab.collaboratorEmail.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === "all" || collab.type.toLowerCase() === typeFilter.toLowerCase();
-    const matchesStatus = statusFilter === "all" || collab.status.toLowerCase() === statusFilter.toLowerCase();
-    
-    return matchesSearch && matchesType && matchesStatus;
   });
 
   const getStatusColor = (status: string) => {
