@@ -107,10 +107,12 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
   const { toast } = useToast();
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
   );
 
   // Initialize elements from memorial data
@@ -171,17 +173,81 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
     setElements(initialElements);
   }, [memorial]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  const handleElementUpdate = useCallback((id: string, updates: Partial<MemorialElement>) => {
+    setElements(prev => prev.map(el => el.id === id ? { ...el, ...updates } : el));
+  }, []);
 
-    if (active.id !== over?.id) {
-      setElements((items) => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over?.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+  const handleElementDelete = useCallback((id: string) => {
+    setElements(prev => prev.filter(el => el.id !== id));
+    if (selectedElementId === id) {
+      setSelectedElementId(null);
     }
-  };
+  }, [selectedElementId]);
+
+  const handleElementDuplicate = useCallback((id: string) => {
+    const element = elements.find(el => el.id === id);
+    if (element) {
+      const newElement: MemorialElement = {
+        ...element,
+        id: `${element.type}-${Date.now()}`,
+        position: { x: element.position.x + 20, y: element.position.y + 20 },
+        zIndex: Math.max(...elements.map(e => e.zIndex)) + 1
+      };
+      setElements(prev => [...prev, newElement]);
+    }
+  }, [elements]);
+
+  const handleLayerChange = useCallback((id: string, direction: 'up' | 'down' | 'top' | 'bottom') => {
+    setElements(prev => {
+      const element = prev.find(el => el.id === id);
+      if (!element) return prev;
+
+      const allZIndexes = prev.map(e => e.zIndex).sort((a, b) => a - b);
+      let newZIndex = element.zIndex;
+
+      switch (direction) {
+        case 'up':
+          const nextUp = allZIndexes.find(z => z > element.zIndex);
+          if (nextUp !== undefined) {
+            newZIndex = nextUp + 1;
+          }
+          break;
+        case 'down':
+          const nextDown = [...allZIndexes].reverse().find(z => z < element.zIndex);
+          if (nextDown !== undefined) {
+            newZIndex = Math.max(1, nextDown - 1);
+          }
+          break;
+        case 'top':
+          newZIndex = Math.max(...allZIndexes) + 1;
+          break;
+        case 'bottom':
+          newZIndex = 1;
+          // Shift all other elements up
+          return prev.map(el => ({
+            ...el,
+            zIndex: el.id === id ? 1 : (el.zIndex >= 1 ? el.zIndex + 1 : el.zIndex)
+          }));
+      }
+
+      return prev.map(el => el.id === id ? { ...el, zIndex: newZIndex } : el);
+    });
+  }, []);
+
+  const addNewElement = useCallback((type: MemorialElement['type']) => {
+    const newElement: MemorialElement = {
+      id: `${type}-${Date.now()}`,
+      type,
+      content: type === 'text' ? { text: 'New text element' } : {},
+      position: { x: 100, y: 100 },
+      size: { width: 300, height: 150 },
+      isLocked: false,
+      isVisible: true,
+      zIndex: Math.max(...elements.map(e => e.zIndex), 0) + 1
+    };
+    setElements(prev => [...prev, newElement]);
+    setSelectedElementId(newElement.id);
+  }, [elements]);
 
   const handleElementUpdate = useCallback((elementId: string, updates: any) => {
     setElements(prev => prev.map(el => 
@@ -343,6 +409,31 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
     overflow: 'hidden'
   };
 
+  const renderElementContent = useCallback((element: MemorialElement) => {
+    if (!element.isVisible) return null;
+
+    switch (element.type) {
+      case 'text':
+        return (
+          <div className="p-4 h-full overflow-auto">
+            <p className="text-gray-800">{element.content?.text || 'Text element'}</p>
+          </div>
+        );
+      case 'image':
+        return (
+          <div className="h-full bg-gray-100 flex items-center justify-center">
+            <ImageIcon className="w-8 h-8 text-gray-400" />
+          </div>
+        );
+      case 'obituary':
+        return <ObituaryIntegration obituaryId={element.content?.obituaryId} />;
+      case 'media':
+        return <MediaGallery media={element.content} />;
+      default:
+        return <div className="h-full bg-gray-100" />;
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Editor Toolbar */}
@@ -410,44 +501,34 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
           </div>
         </div>
 
-        {/* Element Addition Toolbar */}
+        {/* Status Bar */}
         {previewMode === 'edit' && (
           <div className="border-t bg-gray-50 px-4 py-2">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addNewElement('text')}
-              >
-                <Type className="w-4 h-4 mr-2" />
-                Add Text
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addNewElement('image')}
-              >
-                <ImageIcon className="w-4 h-4 mr-2" />
-                Add Image
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => addNewElement('media')}
-              >
-                <Grid className="w-4 h-4 mr-2" />
-                Add Media Gallery
-              </Button>
-              {memorial.obituaryId && (
+            <div className="flex items-center justify-between text-sm text-gray-600">
+              <div className="flex items-center gap-4">
+                <span>{elements.length} elements</span>
+                {selectedElementId && (
+                  <span>Selected: {elements.find(el => el.id === selectedElementId)?.type}</span>
+                )}
+                <span>Grid: {gridSize}px {snapToGrid ? '(snap)' : '(free)'}</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => addNewElement('obituary')}
+                  onClick={() => {
+                    const updates = {
+                      customStyles: customizationSettings,
+                      elements: elements
+                    };
+                    onSave(updates);
+                    toast({ title: "Memorial saved successfully" });
+                  }}
                 >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Add Obituary
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Changes
                 </Button>
-              )}
+              </div>
             </div>
           </div>
         )}
@@ -459,61 +540,80 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
         <div className="flex-1 p-8">
           <div
             style={{
-              ...canvasStyle,
               width: devicePreview !== 'desktop' ? `${deviceSizes[devicePreview].width}px` : '100%',
               height: devicePreview !== 'desktop' ? `${deviceSizes[devicePreview].height}px` : 'auto',
               minHeight: devicePreview !== 'desktop' ? `${deviceSizes[devicePreview].height}px` : '800px',
+              position: 'relative',
+              backgroundColor: customizationSettings.background?.color || '#ffffff'
             }}
-            className="bg-white shadow-lg"
+            className="bg-white shadow-lg memorial-canvas overflow-hidden"
             onClick={() => setSelectedElementId(null)}
             ref={canvasRef}
           >
+            {/* Grid Overlay */}
+            {gridEnabled && showGrid && previewMode === 'edit' && (
+              <GridOverlay
+                size={gridSize}
+                opacity={gridOpacity}
+                show={showGrid}
+                canvasWidth={devicePreview !== 'desktop' ? deviceSizes[devicePreview].width : 1200}
+                canvasHeight={devicePreview !== 'desktop' ? deviceSizes[devicePreview].height : 800}
+              />
+            )}
+
             {previewMode === 'edit' ? (
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
               >
-                <SortableContext
-                  items={elements.map(el => el.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {elements.map((element) => (
-                    <DraggableElement
+                {elements
+                  .filter(el => el.isVisible)
+                  .sort((a, b) => a.zIndex - b.zIndex)
+                  .map((element) => (
+                    <ResizableElement
                       key={element.id}
                       id={element.id}
                       type={element.type}
                       content={element.content}
                       position={element.position}
                       size={element.size}
+                      zIndex={element.zIndex}
                       isSelected={selectedElementId === element.id}
                       isLocked={element.isLocked}
+                      gridSize={gridSize}
+                      snapToGrid={snapToGrid && positioningMode !== 'free'}
                       onSelect={() => setSelectedElementId(element.id)}
                       onUpdate={(updates) => handleElementUpdate(element.id, updates)}
                       onDelete={() => handleElementDelete(element.id)}
                       onDuplicate={() => handleElementDuplicate(element.id)}
-                      customizationSettings={customizationSettings}
+                      onLayerChange={(direction) => handleLayerChange(element.id, direction)}
                     >
                       {renderElementContent(element)}
-                    </DraggableElement>
+                    </ResizableElement>
                   ))}
-                </SortableContext>
               </DndContext>
             ) : (
               // Preview Mode - Render without drag controls
-              <div className="p-8 space-y-6">
-                {elements.map((element) => (
-                  <div
-                    key={element.id}
-                    style={{
-                      width: `${element.size.width}px`,
-                      height: `${element.size.height}px`,
-                    }}
-                    className="overflow-hidden"
-                  >
-                    {renderElementContent(element)}
-                  </div>
-                ))}
+              <div className="relative w-full h-full">
+                {elements
+                  .filter(el => el.isVisible)
+                  .sort((a, b) => a.zIndex - b.zIndex)
+                  .map((element) => (
+                    <div
+                      key={element.id}
+                      style={{
+                        position: 'absolute',
+                        left: `${element.position.x}px`,
+                        top: `${element.position.y}px`,
+                        width: `${element.size.width}px`,
+                        height: `${element.size.height}px`,
+                        zIndex: element.zIndex
+                      }}
+                      className="overflow-hidden bg-white rounded shadow-sm"
+                    >
+                      {renderElementContent(element)}
+                    </div>
+                  ))}
               </div>
             )}
           </div>
