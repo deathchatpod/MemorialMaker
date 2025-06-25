@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { 
   Settings, 
   Eye, 
@@ -20,7 +21,13 @@ import {
   Move,
   RotateCcw,
   Copy,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Undo,
+  Redo,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward
 } from "lucide-react";
 
 interface SimpleMemorialEditorProps {
@@ -32,45 +39,86 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
   const { toast } = useToast();
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [currentSettings, setCurrentSettings] = useState({
-    theme: memorial.theme || 'classic',
-    backgroundColor: memorial.customStyles?.backgroundColor || '#f9fafb',
-    textColor: memorial.customStyles?.textColor || '#1f2937',
-    fontFamily: memorial.customStyles?.fontFamily || 'Inter',
-    fontSize: memorial.customStyles?.fontSize || 16,
-    spacing: memorial.customStyles?.spacing || 'normal',
-    borderRadius: memorial.customStyles?.borderRadius || 8,
-    shadowIntensity: memorial.customStyles?.shadowIntensity || 2
-  });
-
-  const [elements, setElements] = useState([
-    {
-      id: 'header',
-      type: 'text',
-      content: memorial.personName,
-      position: { x: 0, y: 0 },
-      size: { width: 100, height: 80 },
-      isLocked: false
+  
+  // Initial state for undo/redo
+  const initialState = {
+    settings: {
+      theme: memorial.theme || 'classic',
+      backgroundColor: memorial.customStyles?.backgroundColor || '#f9fafb',
+      textColor: memorial.customStyles?.textColor || '#1f2937',
+      fontFamily: memorial.customStyles?.fontFamily || 'Inter',
+      fontSize: memorial.customStyles?.fontSize || 16,
+      spacing: memorial.customStyles?.spacing || 'normal',
+      borderRadius: memorial.customStyles?.borderRadius || 8,
+      shadowIntensity: memorial.customStyles?.shadowIntensity || 2
     },
-    {
-      id: 'description',
-      type: 'text', 
-      content: memorial.description || '',
-      position: { x: 0, y: 100 },
-      size: { width: 100, height: 120 },
-      isLocked: false
-    },
-    {
-      id: 'media',
-      type: 'media',
-      content: memorial.images || [],
-      position: { x: 0, y: 240 },
-      size: { width: 100, height: 200 },
-      isLocked: false
+    elements: [
+      {
+        id: 'header',
+        type: 'text',
+        content: memorial.personName,
+        position: { x: 0, y: 0 },
+        size: { width: 100, height: 80 },
+        isLocked: false
+      },
+      {
+        id: 'description',
+        type: 'text', 
+        content: memorial.description || '',
+        position: { x: 0, y: 100 },
+        size: { width: 100, height: 120 },
+        isLocked: false
+      },
+      {
+        id: 'media',
+        type: 'media',
+        content: memorial.images || [],
+        position: { x: 0, y: 240 },
+        size: { width: 100, height: 200 },
+        isLocked: false
+      }
+    ],
+    slideshow: {
+      isEnabled: false,
+      currentSlide: 0,
+      autoPlay: false,
+      duration: 3000,
+      transition: 'fade'
     }
-  ]);
+  };
+
+  // Undo/Redo state management
+  const [editorState, undoRedoActions] = useUndoRedo(initialState);
+  
+  // Extract current state
+  const currentSettings = editorState.settings;
+  const elements = editorState.elements;
+  const slideshowState = editorState.slideshow;
 
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Helper functions to update state with undo/redo tracking
+  const updateSettings = useCallback((newSettings: any) => {
+    undoRedoActions.set({
+      ...editorState,
+      settings: { ...editorState.settings, ...newSettings }
+    });
+  }, [editorState, undoRedoActions]);
+
+  const updateSlideshow = useCallback((slideshowUpdates: any) => {
+    undoRedoActions.set({
+      ...editorState,
+      slideshow: { ...editorState.slideshow, ...slideshowUpdates }
+    });
+  }, [editorState, undoRedoActions]);
+
+  const updateElements = useCallback((newElements: any) => {
+    undoRedoActions.set({
+      ...editorState,
+      elements: newElements
+    });
+  }, [editorState, undoRedoActions]);
 
   const themes = {
     classic: { name: 'Classic', bg: '#f9fafb', text: '#1f2937', accent: '#3b82f6' },
@@ -366,7 +414,7 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                 <Label>Element Spacing</Label>
                 <Select 
                   value={currentSettings.spacing} 
-                  onValueChange={(value) => setCurrentSettings(prev => ({ ...prev, spacing: value }))}
+                  onValueChange={(value) => updateSettings({ spacing: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -385,7 +433,7 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                 <Label>Font Family</Label>
                 <Select 
                   value={currentSettings.fontFamily} 
-                  onValueChange={(value) => setCurrentSettings(prev => ({ ...prev, fontFamily: value }))}
+                  onValueChange={(value) => updateSettings({ fontFamily: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -407,7 +455,7 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                     min="12"
                     max="24"
                     value={currentSettings.fontSize}
-                    onChange={(e) => setCurrentSettings(prev => ({ ...prev, fontSize: parseInt(e.target.value) }))}
+                    onChange={(e) => updateSettings({ fontSize: parseInt(e.target.value) })}
                     className="flex-1"
                   />
                   <span className="text-sm text-gray-500 w-12">{currentSettings.fontSize}px</span>
@@ -426,7 +474,7 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                   <Input
                     type="color"
                     value={currentSettings.backgroundColor}
-                    onChange={(e) => setCurrentSettings(prev => ({ ...prev, backgroundColor: e.target.value }))}
+                    onChange={(e) => updateSettings({ backgroundColor: e.target.value })}
                     className="w-16 h-8 p-1"
                   />
                 </div>
