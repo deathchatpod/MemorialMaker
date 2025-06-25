@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Eye, Edit, Users, Heart } from "lucide-react";
-import { Link } from "wouter";
+import { Badge } from "@/components/ui/badge";
 import DataTable, { createBadgeRenderer, formatDate, createActionButtons } from "@/components/DataTable";
 
 interface CollaborationObituary {
@@ -73,112 +73,92 @@ export default function MyCollaborations() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Collaborations</h1>
-        <p className="text-gray-600 mt-1">
-          Obituaries you have been invited to collaborate on
-        </p>
-      </div>
-
-      {filteredCollaborations.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No Collaborations Yet
-            </h3>
-            <p className="text-gray-600 mb-4">
-              You haven't been invited to collaborate on any obituaries yet. 
-              When someone invites you to help with an obituary, it will appear here.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>My Collaborations ({collaborations.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Obituary</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Collaborators</TableHead>
-                  <TableHead>My Feedback</TableHead>
-                  <TableHead>Last Activity</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {collaborations.map((collaboration) => (
-                  <TableRow key={collaboration.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{collaboration.fullName}</div>
-                        <div className="text-sm text-gray-500">
-                          Created {new Date(collaboration.dateCreated).toLocaleDateString()}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        className={
-                          collaboration.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-blue-100 text-blue-800'
-                        }
-                      >
-                        {collaboration.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Users className="w-4 h-4 mr-1" />
-                        {collaboration.collaboratorCount}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <MessageSquare className="w-4 h-4 mr-1" />
-                        {collaboration.feedbackCount || 0} items
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {new Date(collaboration.lastActivity).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Link href={collaboration.collaborationUrl}>
-                        <Button size="sm" className="flex items-center gap-2">
-                          <ExternalLink className="w-4 h-4" />
-                          Continue
-                        </Button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+    <DataTable
+      title="My Collaborations"
+      data={collaborations}
+      columns={[
+        {
+          key: "name",
+          title: "Name",
+          sortable: true,
+          render: (value) => value || "Untitled"
+        },
+        {
+          key: "type",
+          title: "Type",
+          sortable: true,
+          filterable: true,
+          filterOptions: [
+            { value: "obituary", label: "Obituary" },
+            { value: "finalspace", label: "Memorial" }
+          ],
+          render: (value) => (
+            <Badge className={getTypeColor(value)}>
+              {value === 'FinalSpace' ? 'Memorial' : value}
+            </Badge>
+          )
+        },
+        {
+          key: "status",
+          title: "Status",
+          sortable: true,
+          filterable: true,
+          filterOptions: [
+            { value: "pending", label: "Pending" },
+            { value: "accepted", label: "Accepted" },
+            { value: "declined", label: "Declined" }
+          ],
+          render: createBadgeRenderer(getStatusColor)
+        },
+        {
+          key: "invitedBy",
+          title: "Invited By",
+          sortable: true,
+          render: (value) => value || "Unknown"
+        },
+        {
+          key: "createdAt",
+          title: "Date Invited",
+          sortable: true,
+          render: formatDate
+        },
+        {
+          key: "actions",
+          title: "Actions",
+          render: createActionButtons([
+            {
+              icon: <Eye className="w-4 h-4" />,
+              onClick: (row) => {
+                if (row.type === 'Obituary') {
+                  window.location.href = `/obituaries/${row.entityId}/generate`;
+                } else {
+                  window.location.href = `/final-spaces/${row.entityId}`;
+                }
+              },
+              title: "View"
+            },
+            {
+              icon: <Edit className="w-4 h-4" />,
+              onClick: (row) => {
+                if (row.type === 'Obituary') {
+                  window.location.href = `/obituaries/${row.entityId}/edit`;
+                } else {
+                  window.location.href = `/final-spaces/edit/${row.entityId}?userType=${userTypeParam}&userId=${userIdParam}`;
+                }
+              },
+              title: "Edit"
+            }
+          ])
+        }
+      ]}
+      searchPlaceholder="Search by name or email..."
+      emptyState={{
+        title: "No collaborations found",
+        description: "You haven't been invited to collaborate on any obituaries or memorials yet.",
+        icon: <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+      }}
+      isLoading={isLoading}
+    />
   );
 }

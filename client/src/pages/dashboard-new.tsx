@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
 import PromptTemplates from "./prompt-templates";
@@ -171,11 +172,313 @@ export default function Dashboard() {
             </h1>
 
             {/* Render specific components based on active section */}
-            {activeSection === 'obituaries' && <ObituariesList key="obituaries" userType={currentUser.userType} userId={currentUser.id} />}
-            {activeSection === 'collaborations' && <MyCollaborations key="collaborations" userType={currentUser.userType} userId={currentUser.id} />}
-            {activeSection === 'finalspaces' && <FinalSpacesList key="finalspaces" userType={currentUser.userType} userId={currentUser.id} />}
-            {activeSection === 'surveys' && <SurveysList key="surveys" />}
-            {activeSection === 'pre-need' && <PreNeedEvaluationTab key="pre-need" userType={currentUser.userType} userId={currentUser.id} />}
+            {activeSection === 'obituaries' && (
+              <DataTable
+                title="Obituaries"
+                data={obituaries}
+                columns={[
+                  {
+                    key: "deceasedName",
+                    title: "Deceased Name",
+                    sortable: true,
+                    render: (value) => value || "Untitled"
+                  },
+                  {
+                    key: "createdAt",
+                    title: "Date Created",
+                    sortable: true,
+                    render: (value) => (
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {formatDate(value)}
+                      </div>
+                    )
+                  },
+                  {
+                    key: "status",
+                    title: "Status",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "draft", label: "Draft" },
+                      { value: "completed", label: "Completed" },
+                      { value: "published", label: "Published" }
+                    ],
+                    render: createBadgeRenderer(getStatusColor)
+                  },
+                  {
+                    key: "createdByType",
+                    title: "Created By",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "admin", label: "Admin" },
+                      { value: "funeral_home", label: "Funeral Home" },
+                      { value: "employee", label: "Employee" },
+                      { value: "individual", label: "Individual" }
+                    ],
+                    render: (value) => value || "Unknown"
+                  },
+                  {
+                    key: "actions",
+                    title: "Actions",
+                    render: createActionButtons([
+                      {
+                        icon: <Eye className="w-4 h-4" />,
+                        onClick: (row) => window.location.href = `/obituaries/${row.id}/generate?userType=${userTypeParam}&userId=${userIdParam}`,
+                        title: "View"
+                      },
+                      {
+                        icon: <Edit className="w-4 h-4" />,
+                        onClick: (row) => window.location.href = `/obituaries/${row.id}/edit?userType=${userTypeParam}&userId=${userIdParam}`,
+                        title: "Edit"
+                      }
+                    ])
+                  }
+                ]}
+                searchPlaceholder="Search by deceased name..."
+                createButton={{
+                  label: "Create Obituary",
+                  onClick: () => window.location.href = `/obituaries/create?userType=${userTypeParam}&userId=${userIdParam}`
+                }}
+                emptyState={{
+                  title: "No obituaries found",
+                  description: "Start by creating your first obituary",
+                  icon: <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                }}
+                isLoading={isObituariesLoading}
+              />
+            )}
+            
+            {activeSection === 'collaborations' && <MyCollaborations key="collaborations" />}
+            
+            {activeSection === 'finalspaces' && (
+              <DataTable
+                title="FinalSpaces"
+                data={finalSpaces}
+                columns={[
+                  {
+                    key: "personName",
+                    title: "Person Name",
+                    sortable: true,
+                    render: (value) => value || "Untitled"
+                  },
+                  {
+                    key: "createdAt",
+                    title: "Date Created",
+                    sortable: true,
+                    render: (value) => (
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {formatDate(value)}
+                      </div>
+                    )
+                  },
+                  {
+                    key: "status",
+                    title: "Status",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "draft", label: "Draft" },
+                      { value: "published", label: "Published" },
+                      { value: "private", label: "Private" }
+                    ],
+                    render: createBadgeRenderer(getStatusColor)
+                  },
+                  {
+                    key: "isPublic",
+                    title: "Visibility",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "true", label: "Public" },
+                      { value: "false", label: "Private" }
+                    ],
+                    render: (value) => (
+                      <Badge className={value ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                        {value ? 'Public' : 'Private'}
+                      </Badge>
+                    )
+                  },
+                  {
+                    key: "actions",
+                    title: "Actions",
+                    render: createActionButtons([
+                      {
+                        icon: <Eye className="w-4 h-4" />,
+                        onClick: (row) => window.location.href = `/final-spaces/${row.id}`,
+                        title: "View"
+                      },
+                      {
+                        icon: <Edit className="w-4 h-4" />,
+                        onClick: (row) => window.location.href = `/final-spaces/edit/${row.id}?userType=${userTypeParam}&userId=${userIdParam}`,
+                        title: "Edit"
+                      }
+                    ])
+                  }
+                ]}
+                searchPlaceholder="Search by person name..."
+                createButton={{
+                  label: "Create Memorial",
+                  onClick: () => window.location.href = `/final-spaces/create?userType=${userTypeParam}&userId=${userIdParam}`
+                }}
+                emptyState={{
+                  title: "No memorials found",
+                  description: "Start by creating your first memorial space",
+                  icon: <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                }}
+                isLoading={isFinalSpacesLoading}
+              />
+            )}
+            
+            {activeSection === 'surveys' && (
+              <DataTable
+                title="Platform Surveys"
+                data={surveys}
+                columns={[
+                  {
+                    key: "name",
+                    title: "Survey Name",
+                    sortable: true,
+                    render: (value) => value || "Untitled"
+                  },
+                  {
+                    key: "createdAt",
+                    title: "Date Created",
+                    sortable: true,
+                    render: (value) => (
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {formatDate(value)}
+                      </div>
+                    )
+                  },
+                  {
+                    key: "status",
+                    title: "Status",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "active", label: "Active" },
+                      { value: "inactive", label: "Inactive" },
+                      { value: "draft", label: "Draft" }
+                    ],
+                    render: (value) => (
+                      <Badge className={value === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                        {value || 'inactive'}
+                      </Badge>
+                    )
+                  },
+                  {
+                    key: "version",
+                    title: "Version",
+                    sortable: true,
+                    render: (value) => value || "1"
+                  },
+                  {
+                    key: "actions",
+                    title: "Actions",
+                    render: createActionButtons([
+                      {
+                        icon: <Edit className="w-4 h-4" />,
+                        onClick: (row) => window.location.href = `/surveys/${row.id}/edit?userType=${userTypeParam}&userId=${userIdParam}`,
+                        title: "Edit"
+                      }
+                    ])
+                  }
+                ]}
+                searchPlaceholder="Search by survey name..."
+                createButton={{
+                  label: "Create Survey",
+                  onClick: () => window.location.href = `/surveys/create?userType=${userTypeParam}&userId=${userIdParam}`
+                }}
+                emptyState={{
+                  title: "No surveys found",
+                  description: "Start by creating your first survey",
+                  icon: <ClipboardList className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                }}
+                isLoading={isSurveysLoading}
+              />
+            )}
+            
+            {activeSection === 'pre-need' && (
+              <DataTable
+                title="Pre Need Evaluations"
+                data={evaluations}
+                columns={[
+                  {
+                    key: "respondent",
+                    title: "Respondent",
+                    sortable: true,
+                    render: (value, row) => row.responses?.who_is_this_for || "Unknown"
+                  },
+                  {
+                    key: "submittedAt",
+                    title: "Date Completed",
+                    sortable: true,
+                    render: (value) => (
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {formatDate(value)}
+                      </div>
+                    )
+                  },
+                  {
+                    key: "responseType",
+                    title: "Response Type",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "evaluation", label: "Evaluation" },
+                      { value: "survey", label: "Survey" },
+                      { value: "assessment", label: "Assessment" }
+                    ],
+                    render: (value) => (
+                      <Badge className="bg-blue-100 text-blue-800">
+                        {value || 'evaluation'}
+                      </Badge>
+                    )
+                  },
+                  {
+                    key: "completedByType",
+                    title: "Completed By",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "admin", label: "Admin" },
+                      { value: "funeral_home", label: "Funeral Home" },
+                      { value: "employee", label: "Employee" },
+                      { value: "individual", label: "Individual" }
+                    ],
+                    render: (value) => value || "Unknown"
+                  },
+                  {
+                    key: "actions",
+                    title: "Actions",
+                    render: createActionButtons([
+                      {
+                        icon: <Eye className="w-4 h-4" />,
+                        onClick: (row) => window.location.href = `/evaluations/${row.id}/view?userType=${userTypeParam}&userId=${userIdParam}`,
+                        title: "View"
+                      }
+                    ])
+                  }
+                ]}
+                searchPlaceholder="Search by respondent..."
+                createButton={{
+                  label: "Take Pre Need Evaluation",
+                  onClick: () => window.location.href = `/evaluations/take?userType=${userTypeParam}&userId=${userIdParam}`
+                }}
+                emptyState={{
+                  title: "No evaluations found",
+                  description: "Start by taking your first pre need evaluation",
+                  icon: <BarChart3 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                }}
+                isLoading={isEvaluationsLoading}
+              />
+            )}
+            
             {activeSection === 'team-management' && <TeamManagement key="team-management" />}
             {activeSection === 'account' && <AccountInformation />}
             {activeSection === 'prompts' && <PromptTemplates />}
