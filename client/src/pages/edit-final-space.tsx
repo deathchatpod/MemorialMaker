@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, ArrowLeft, Save } from "lucide-react";
+import { Heart, ArrowLeft, Save, Palette, Settings } from "lucide-react";
 
 const editFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
