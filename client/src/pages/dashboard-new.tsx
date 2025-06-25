@@ -273,12 +273,12 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Eye className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/obituaries/${row.id}/generate`,
+                        onClick: (row) => setLocation(`/obituaries/${row.id}/generate`),
                         title: "View"
                       },
                       {
                         icon: <Edit className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/obituaries/${row.id}/edit`,
+                        onClick: (row) => setLocation(`/obituaries/${row.id}/edit`),
                         title: "Edit"
                       }
                     ])
@@ -287,7 +287,7 @@ export default function Dashboard() {
                 searchPlaceholder="Search by deceased name..."
                 createButton={{
                   label: "Create Obituary",
-                  onClick: () => window.location.href = `/obituaries/create?userType=${userTypeParam}&userId=${userIdParam}`
+                  onClick: () => setLocation(`/obituaries/create?userType=${userTypeParam}&userId=${userIdParam}`)
                 }}
                 emptyState={{
                   title: "No obituaries found",
@@ -419,12 +419,12 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Eye className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/final-spaces/${row.id}`,
+                        onClick: (row) => setLocation(`/memorial/${row.slug || row.id}`),
                         title: "View"
                       },
                       {
                         icon: <Edit className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/final-spaces/edit/${row.id}`,
+                        onClick: (row) => setLocation(`/final-spaces/edit/${row.id}`),
                         title: "Edit"
                       }
                     ])
@@ -433,7 +433,7 @@ export default function Dashboard() {
                 searchPlaceholder="Search by person name..."
                 createButton={{
                   label: "Create Memorial",
-                  onClick: () => window.location.href = `/final-spaces/create?userType=${userTypeParam}&userId=${userIdParam}`
+                  onClick: () => setLocation(`/final-spaces/create?userType=${userTypeParam}&userId=${userIdParam}`)
                 }}
                 emptyState={{
                   title: "No memorials found",
@@ -571,7 +571,7 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Eye className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/evaluations/${row.id}/view`,
+                        onClick: (row) => setLocation(`/view-evaluation/${row.id}`),
                         title: "View"
                       }
                     ])
@@ -580,7 +580,7 @@ export default function Dashboard() {
                 searchPlaceholder="Search by respondent..."
                 createButton={{
                   label: "Take Pre Need Evaluation",
-                  onClick: () => window.location.href = `/evaluations/take?userType=${userTypeParam}&userId=${userIdParam}`
+                  onClick: () => setLocation(`/take-pre-need-evaluation?userType=${userTypeParam}&userId=${userIdParam}`)
                 }}
                 emptyState={{
                   title: "No evaluations found",
