@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Share2, Music, MessageCircle, Trash2, ExternalLink, Calendar, Globe, ArrowLeft } from "lucide-react";
+import { Heart, Share2, Music, MessageCircle, Trash2, ExternalLink, Calendar, Globe, ArrowLeft, Edit, Eye } from "lucide-react";
 import { format } from "date-fns";
 
 export default function FinalSpaces() {
@@ -44,6 +44,10 @@ export default function FinalSpaces() {
       description: "Memorial link copied to clipboard"
     });
   };
+
+  // Get current user variables for routing
+  const currentUserType = userTypeParam;
+  const currentUserId = userIdParam;
 
   if (isLoading) {
     return (
@@ -120,6 +124,7 @@ export default function FinalSpaces() {
                       <Share2 className="h-3 w-3 mr-1" />
                       Share
                     </Button>
+                    
                     {space.musicPlaylist && (
                       <Button
                         size="sm"
@@ -130,13 +135,24 @@ export default function FinalSpaces() {
                         Music
                       </Button>
                     )}
+                    
                     <Link href={`/memorial/${space.slug}`}>
                       <Button
                         size="sm"
                         variant="outline"
                       >
-                        <ExternalLink className="h-3 w-3 mr-1" />
+                        <Eye className="h-3 w-3 mr-1" />
                         View
+                      </Button>
+                    </Link>
+                    
+                    <Link href={`/final-spaces/edit/${space.id}?userType=${currentUserType}&userId=${currentUserId}`}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
                       </Button>
                     </Link>
                   </div>
