@@ -130,14 +130,15 @@ export default function FinalSpaces() {
                         Music
                       </Button>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => window.open(`/memorial/${space.slug}`, '_blank')}
-                    >
-                      <ExternalLink className="h-3 w-3 mr-1" />
-                      View
-                    </Button>
+                    <Link href={`/memorial/${space.slug}`}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        View
+                      </Button>
+                    </Link>
                   </div>
                   
                   <Button
