@@ -28,13 +28,24 @@ export default function Dashboard() {
   const userTypeParam = urlParams.get('userType') || 'admin';
   const userIdParam = parseInt(urlParams.get('userId') || '1');
 
-  // Data fetching queries
+  // Data fetching queries with explicit user context
   const { data: obituaries = [], isLoading: isObituariesLoading } = useQuery({
     queryKey: ['/api/obituaries', userTypeParam, userIdParam],
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/obituaries?userId=${userIdParam}&userType=${userTypeParam}`);
+      return res.json();
+    }
   });
 
   const { data: finalSpaces = [], isLoading: isFinalSpacesLoading } = useQuery({
     queryKey: ['/api/final-spaces', userTypeParam, userIdParam],
+    queryFn: async () => {
+      console.log(`Dashboard: Fetching FinalSpaces for ${userTypeParam} user ${userIdParam}`);
+      const res = await apiRequest('GET', `/api/final-spaces?userId=${userIdParam}&userType=${userTypeParam}`);
+      const data = await res.json();
+      console.log('Dashboard: FinalSpaces API response:', data);
+      return data;
+    }
   });
 
   const { data: surveys = [], isLoading: isSurveysLoading } = useQuery({
@@ -43,6 +54,10 @@ export default function Dashboard() {
 
   const { data: evaluations = [], isLoading: isEvaluationsLoading } = useQuery({
     queryKey: ['/api/survey-responses', { responseType: 'evaluation' }],
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/survey-responses?responseType=evaluation&userId=${userIdParam}&userType=${userTypeParam}`);
+      return res.json();
+    }
   });
 
   // Status color helper
@@ -69,7 +84,7 @@ export default function Dashboard() {
     } else if (userTypeParam === 'individual') {
       return { id: 3, username: 'Sarah Wilson', userType: 'individual' };
     } else if (userTypeParam === 'funeral_home') {
-      return { id: 4, username: 'Jane Smith', userType: 'funeral_home' };
+      return { id: 2, username: 'Jane Smith', userType: 'funeral_home' }; // Fixed: funeral home ID is 2
     } else {
       return { id: 1, username: 'John Admin', userType: 'admin' };
     }
