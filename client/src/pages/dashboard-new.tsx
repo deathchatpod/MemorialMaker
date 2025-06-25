@@ -273,12 +273,18 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Eye className="w-4 h-4" />,
-                        onClick: (row) => setLocation(`/obituaries/${row.id}/generate`),
+                        onClick: (row) => {
+                          console.log("Navigating to obituary:", row.id);
+                          setLocation(`/obituary/${row.id}/generated`);
+                        },
                         title: "View"
                       },
                       {
                         icon: <Edit className="w-4 h-4" />,
-                        onClick: (row) => setLocation(`/obituaries/${row.id}/edit`),
+                        onClick: (row) => {
+                          console.log("Editing obituary:", row.id);
+                          setLocation(`/obituary/${row.id}/edit`);
+                        },
                         title: "Edit"
                       }
                     ])
@@ -287,7 +293,7 @@ export default function Dashboard() {
                 searchPlaceholder="Search by deceased name..."
                 createButton={{
                   label: "Create Obituary",
-                  onClick: () => setLocation(`/obituaries/create?userType=${userTypeParam}&userId=${userIdParam}`)
+                  onClick: () => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)
                 }}
                 emptyState={{
                   title: "No obituaries found",
@@ -419,12 +425,18 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Eye className="w-4 h-4" />,
-                        onClick: (row) => setLocation(`/memorial/${row.slug || row.id}`),
+                        onClick: (row) => {
+                          console.log("Viewing memorial:", row.slug || row.id);
+                          setLocation(`/memorial/${row.slug || row.id}`);
+                        },
                         title: "View"
                       },
                       {
                         icon: <Edit className="w-4 h-4" />,
-                        onClick: (row) => setLocation(`/final-spaces/edit/${row.id}`),
+                        onClick: (row) => {
+                          console.log("Editing memorial:", row.id);
+                          setLocation(`/final-spaces/${row.id}/edit`);
+                        },
                         title: "Edit"
                       }
                     ])

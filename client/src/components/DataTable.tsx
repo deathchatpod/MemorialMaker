@@ -298,7 +298,12 @@ export const createActionButtons = (actions: Array<{
         key={index}
         size="sm"
         variant={action.variant || "outline"}
-        onClick={() => action.onClick(row)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("Button clicked for row:", row);
+          action.onClick(row);
+        }}
         title={action.title}
       >
         {action.icon}
