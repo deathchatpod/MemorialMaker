@@ -63,12 +63,16 @@ export default function ObituariesList({ userType, userId }: ObituariesListProps
             {userType === 'individual' && 'Obituaries you have access to'}
           </p>
         </div>
-        <Link href="/obituary/new">
-          <Button className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Create New Obituary
-          </Button>
-        </Link>
+        <Button 
+          className="flex items-center gap-2"
+          onClick={() => {
+            localStorage.setItem('dashboard-active-tab', 'obituaries');
+            window.location.href = '/obituary/new';
+          }}
+        >
+          <Plus className="w-4 h-4" />
+          Create New Obituary
+        </Button>
       </div>
 
       {obituaries.length === 0 ? (
@@ -81,12 +85,15 @@ export default function ObituariesList({ userType, userId }: ObituariesListProps
             <p className="text-gray-600 mb-4">
               Create your first obituary to get started with AI-powered content generation.
             </p>
-            <Link href="/obituary/new">
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Create First Obituary
-              </Button>
-            </Link>
+            <Button
+              onClick={() => {
+                localStorage.setItem('dashboard-active-tab', 'obituaries');
+                window.location.href = '/obituary/new';
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create First Obituary
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -129,16 +136,28 @@ export default function ObituariesList({ userType, userId }: ObituariesListProps
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Link href={`/obituary/${obituary.id}/generated`}>
-                          <Button size="sm" variant="outline">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </Link>
-                        <Link href={`/obituary/${obituary.id}/edit`}>
-                          <Button size="sm" variant="outline">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        </Link>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            console.log('Navigating to obituary:', obituary.id);
+                            localStorage.setItem('dashboard-active-tab', 'obituaries');
+                            window.location.href = `/obituary/${obituary.id}/generated`;
+                          }}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            console.log('Navigating to edit obituary:', obituary.id);
+                            localStorage.setItem('dashboard-active-tab', 'obituaries');
+                            window.location.href = `/obituary/${obituary.id}/edit`;
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>

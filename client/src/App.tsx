@@ -154,6 +154,7 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/obituary/new" component={ObituaryForm} />
       <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
+      <Route path="/obituary/:id/edit" component={ObituaryForm} />
       <Route path="/admin/questions" component={QuestionManagement} />
       <Route path="/admin/surveys" component={SurveyManagement} />
       <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />

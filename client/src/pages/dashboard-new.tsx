@@ -72,7 +72,17 @@ export default function Dashboard() {
     { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' }
   ];
 
-  const [activeSection, setActiveSection] = useState('obituaries');
+  // Restore tab state from localStorage
+  const [activeSection, setActiveSection] = useState(() => {
+    const savedTab = localStorage.getItem('dashboard-active-tab');
+    return savedTab || 'obituaries';
+  });
+
+  // Save tab state when it changes
+  const handleSectionChange = (section: string) => {
+    setActiveSection(section);
+    localStorage.setItem('dashboard-active-tab', section);
+  };
 
   console.log(`User: ${currentUser.userType}, Menu items: ${menuItems.map(i => i.label).join(', ')}`);
 
@@ -97,7 +107,7 @@ export default function Dashboard() {
             {menuItems.map((item) => (
               <li key={item.id}>
                 <button
-                  onClick={() => setActiveSection(item.id)}
+                  onClick={() => handleSectionChange(item.id)}
                   className={cn(
                     "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                     activeSection === item.id
@@ -117,7 +127,7 @@ export default function Dashboard() {
           <p className="text-xs font-medium text-gray-500 mb-2 px-3">Account</p>
           
           <button
-            onClick={() => setActiveSection('team-management')}
+            onClick={() => handleSectionChange('team-management')}
             className={cn(
               "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors mb-2",
               activeSection === 'team-management'
@@ -130,7 +140,7 @@ export default function Dashboard() {
           </button>
           
           <button
-            onClick={() => setActiveSection('account')}
+            onClick={() => handleSectionChange('account')}
             className={cn(
               "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
               activeSection === 'account'
@@ -162,12 +172,12 @@ export default function Dashboard() {
             </h1>
 
             {/* Render specific components based on active section */}
-            {activeSection === 'obituaries' && <ObituariesList userType={currentUser.userType} userId={currentUser.id} />}
-            {activeSection === 'collaborations' && <MyCollaborations userType={currentUser.userType} userId={currentUser.id} />}
-            {activeSection === 'finalspaces' && <FinalSpacesList userType={currentUser.userType} userId={currentUser.id} />}
-            {activeSection === 'surveys' && <SurveysList />}
-            {activeSection === 'pre-need' && <PreNeedEvaluationSection userType={currentUser.userType} userId={currentUser.id} />}
-            {activeSection === 'team-management' && <TeamManagement />}
+            {activeSection === 'obituaries' && <ObituariesList key="obituaries" userType={currentUser.userType} userId={currentUser.id} />}
+            {activeSection === 'collaborations' && <MyCollaborations key="collaborations" userType={currentUser.userType} userId={currentUser.id} />}
+            {activeSection === 'finalspaces' && <FinalSpacesList key="finalspaces" userType={currentUser.userType} userId={currentUser.id} />}
+            {activeSection === 'surveys' && <SurveysList key="surveys" />}
+            {activeSection === 'pre-need' && <PreNeedEvaluationTab key="pre-need" userType={currentUser.userType} userId={currentUser.id} />}
+            {activeSection === 'team-management' && <TeamManagement key="team-management" />}
             {activeSection === 'account' && <AccountInformation />}
             {activeSection === 'prompts' && <PromptTemplates />}
             
