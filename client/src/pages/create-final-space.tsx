@@ -140,7 +140,14 @@ export default function CreateFinalSpace() {
             <CardTitle>Memorial Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form 
+              onSubmit={(e) => {
+                console.log('Form submit triggered');
+                e.preventDefault();
+                form.handleSubmit(onSubmit)(e);
+              }} 
+              className="space-y-6"
+            >
               {/* Obituary Selection */}
               <div>
                 <Label htmlFor="obituaryId">Link to Obituary (Optional)</Label>
@@ -303,7 +310,20 @@ export default function CreateFinalSpace() {
                     Cancel
                   </Button>
                 </Link>
-                <Button type="submit" disabled={createFinalSpace.isPending} className="min-w-32">
+                <Button 
+                  type="submit" 
+                  disabled={createFinalSpace.isPending} 
+                  className="min-w-32"
+                  onClick={(e) => {
+                    console.log('Create button clicked');
+                    console.log('Form valid:', form.formState.isValid);
+                    console.log('Form errors:', form.formState.errors);
+                    console.log('Form values:', form.getValues());
+                    if (!form.formState.isValid) {
+                      e.preventDefault();
+                    }
+                  }}
+                >
                   {createFinalSpace.isPending ? "Creating..." : "Create Memorial Space"}
                 </Button>
               </div>

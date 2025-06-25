@@ -1021,6 +1021,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/final-spaces/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const finalSpace = await storage.getFinalSpace(id);
+      
+      if (!finalSpace) {
+        return res.status(404).json({ message: "Final space not found" });
+      }
+      
+      res.json(finalSpace);
+    } catch (error) {
+      console.error('Error fetching final space:', error);
+      res.status(500).json({ message: "Failed to fetch final space" });
+    }
+  });
+
+  app.put("/api/final-spaces/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      
+      console.log('Updating final space:', id, updates);
+      
+      const updatedSpace = await storage.updateFinalSpace(id, updates);
+      res.json(updatedSpace);
+    } catch (error) {
+      console.error('Error updating final space:', error);
+      res.status(500).json({ message: "Failed to update final space" });
+    }
+  });
+
   // User Type routes
   app.get("/api/user-types", async (req, res) => {
     try {
