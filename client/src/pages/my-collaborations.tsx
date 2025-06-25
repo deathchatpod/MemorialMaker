@@ -55,7 +55,7 @@ export default function MyCollaborations({ userType, userId }: MyCollaborationsP
         </p>
       </div>
 
-      {collaborations.length === 0 ? (
+      {filteredCollaborations.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
             <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />

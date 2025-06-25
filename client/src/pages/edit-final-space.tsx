@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { Heart, ArrowLeft, Save, Palette, Settings, FileText, Image as ImageIcon } from "lucide-react";
 import SimpleMemorialEditor from "@/components/SimpleMemorialEditor";
+import CollaborationManager from "@/components/CollaborationManager";
 
 const editFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),

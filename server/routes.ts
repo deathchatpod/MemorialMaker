@@ -1106,6 +1106,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Final Space Collaboration endpoints
+  app.get("/api/final-spaces/:id/collaborators", async (req, res) => {
+    try {
+      const finalSpaceId = parseInt(req.params.id);
+      const collaborators = await storage.getFinalSpaceCollaborators(finalSpaceId);
+      res.json(collaborators);
+    } catch (error) {
+      console.error("Error fetching final space collaborators:", error);
+      res.status(500).json({ error: "Failed to fetch collaborators" });
+    }
+  });
+
+  app.post("/api/final-spaces/:id/collaborators", async (req, res) => {
+    try {
+      const finalSpaceId = parseInt(req.params.id);
+      const collaborator = await storage.createFinalSpaceCollaborator({
+        ...req.body,
+        finalSpaceId
+      });
+      res.status(201).json(collaborator);
+    } catch (error) {
+      console.error("Error adding final space collaborator:", error);
+      res.status(500).json({ error: "Failed to add collaborator" });
+    }
+  });
+
+  app.delete("/api/final-spaces/collaborators/:id", async (req, res) => {
+    try {
+      const collaboratorId = parseInt(req.params.id);
+      await storage.deleteFinalSpaceCollaborator(collaboratorId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing final space collaborator:", error);
+      res.status(500).json({ error: "Failed to remove collaborator" });
+    }
+  });
+
+  // Final Space Collaboration Session endpoints
+  app.get("/api/final-space-collaboration/:uuid", async (req, res) => {
+    try {
+      const { uuid } = req.params;
+      const session = await storage.getFinalSpaceCollaborationSession(uuid);
+      
+      if (!session) {
+        return res.status(404).json({ error: "Collaboration session not found" });
+      }
+
+      // Update last accessed
+      await storage.updateFinalSpaceCollaborationSession(uuid, {
+        lastAccessedAt: new Date()
+      });
+
+      res.json(session);
+    } catch (error) {
+      console.error("Error fetching final space collaboration session:", error);
+      res.status(500).json({ error: "Failed to fetch collaboration session" });
+    }
+  });
+
+  app.post("/api/final-space-collaboration", async (req, res) => {
+    try {
+      const session = await storage.createFinalSpaceCollaborationSession(req.body);
+      res.status(201).json(session);
+    } catch (error) {
+      console.error("Error creating final space collaboration session:", error);
+      res.status(500).json({ error: "Failed to create collaboration session" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
