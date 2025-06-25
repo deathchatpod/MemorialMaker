@@ -23,7 +23,7 @@ interface User {
 
 export default function Dashboard() {
   const [location, setLocation] = useLocation();
-  
+
   // Get URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const userTypeParam = urlParams.get('userType') || 'admin';
@@ -74,7 +74,7 @@ export default function Dashboard() {
         return 'bg-gray-100 text-gray-800';
     }
   };
-  
+
   const [currentUser, setCurrentUser] = useState<User>(() => {
     if (userTypeParam === 'admin') {
       return { id: 1, username: 'John Admin', userType: 'admin' };
@@ -93,7 +93,7 @@ export default function Dashboard() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const newUserType = urlParams.get('userType');
-    
+
     let newUser: User;
     if (newUserType === 'admin') {
       newUser = { id: 1, username: 'John Admin', userType: 'admin' };
@@ -106,7 +106,7 @@ export default function Dashboard() {
     } else {
       newUser = { id: 1, username: 'John Admin', userType: 'admin' };
     }
-    
+
     setCurrentUser(newUser);
   }, [location]);
 
@@ -173,7 +173,7 @@ export default function Dashboard() {
           {/* Account Section - Available to all users */}
           <div className="my-4 h-px bg-gray-200"></div>
           <p className="text-xs font-medium text-gray-500 mb-2 px-3">Account</p>
-          
+
           <button
             onClick={() => handleSectionChange('team-management')}
             className={cn(
@@ -186,7 +186,7 @@ export default function Dashboard() {
             <i className="fas fa-users w-5 h-5 mr-3"></i>
             <span>Team Management</span>
           </button>
-          
+
           <button
             onClick={() => handleSectionChange('account')}
             className={cn(
@@ -273,12 +273,12 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Eye className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/obituaries/${row.id}/generate?userType=${userTypeParam}&userId=${userIdParam}`,
+                        onClick: (row) => window.location.href = `/obituaries/${row.id}/generate`,
                         title: "View"
                       },
                       {
                         icon: <Edit className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/obituaries/${row.id}/edit?userType=${userTypeParam}&userId=${userIdParam}`,
+                        onClick: (row) => window.location.href = `/obituaries/${row.id}/edit`,
                         title: "Edit"
                       }
                     ])
@@ -297,9 +297,73 @@ export default function Dashboard() {
                 isLoading={isObituariesLoading}
               />
             )}
-            
-            {activeSection === 'collaborations' && <MyCollaborations key="collaborations" />}
-            
+
+            {activeSection === 'collaborations' && (
+              <DataTable
+                title="Collaborations"
+                data={[]} // Replace with actual collaborations data
+                columns={[
+                  {
+                    key: 'obituaryTitle',
+                    title: 'Obituary',
+                    sortable: true,
+                    render: (collab) => collab.obituary?.fullName || 'Unknown',
+                  },
+                  {
+                    key: 'role',
+                    title: 'Role',
+                    sortable: true,
+                    render: (collab) => collab.role || 'Collaborator',
+                  },
+                  {
+                    key: 'status',
+                    title: 'Status',
+                    sortable: true,
+                    render: (collab) => (
+                      <Badge variant={collab.status === 'active' ? 'default' : 'secondary'}>
+                        {collab.status || 'pending'}
+                      </Badge>
+                    ),
+                  },
+                  {
+                    key: 'createdAt',
+                    title: 'Invited',
+                    sortable: true,
+                    render: (collab) => formatDate(collab.createdAt || new Date()),
+                  },
+                  {
+                    key: 'actions',
+                    title: 'Actions',
+                    render: (collab) => (
+                      <div className="flex gap-2">
+                        {collab.collaborationUuid && (
+                          <Link href={`/collaborate/${collab.collaborationUuid}`}>
+                            <Button size="sm" variant="outline">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                        )}
+                        {collab.obituary?.id && (
+                          <Link href={`/obituary/${collab.obituary.id}/generated`}>
+                            <Button size="sm" variant="outline">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </Link>
+                        )}
+                      </div>
+                    ),
+                  },
+                ]}
+                searchPlaceholder="Search by obituary name..."
+                emptyState={{
+                  title: 'No collaborations found',
+                  description: 'You have not been invited to collaborate on any obituaries yet.',
+                  icon: <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />,
+                }}
+                isLoading={false}
+              />
+            )}
+
             {activeSection === 'finalspaces' && (
               <DataTable
                   title="FinalSpaces"
@@ -360,7 +424,7 @@ export default function Dashboard() {
                       },
                       {
                         icon: <Edit className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/final-spaces/edit/${row.id}?userType=${userTypeParam}&userId=${userIdParam}`,
+                        onClick: (row) => window.location.href = `/final-spaces/edit/${row.id}`,
                         title: "Edit"
                       }
                     ])
@@ -379,7 +443,7 @@ export default function Dashboard() {
                 isLoading={isFinalSpacesLoading}
                 />
             )}
-            
+
             {activeSection === 'surveys' && (
               <DataTable
                 title="Platform Surveys"
@@ -430,7 +494,7 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Edit className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/surveys/${row.id}/edit?userType=${userTypeParam}&userId=${userIdParam}`,
+                        onClick: (row) => window.location.href = `/surveys/${row.id}/edit`,
                         title: "Edit"
                       }
                     ])
@@ -449,7 +513,7 @@ export default function Dashboard() {
                 isLoading={isSurveysLoading}
               />
             )}
-            
+
             {activeSection === 'pre-need' && (
               <DataTable
                 title="Pre Need Evaluations"
@@ -507,7 +571,7 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Eye className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/evaluations/${row.id}/view?userType=${userTypeParam}&userId=${userIdParam}`,
+                        onClick: (row) => window.location.href = `/evaluations/${row.id}/view`,
                         title: "View"
                       }
                     ])
@@ -526,11 +590,11 @@ export default function Dashboard() {
                 isLoading={isEvaluationsLoading}
               />
             )}
-            
+
             {activeSection === 'team-management' && <TeamManagement key="team-management" />}
             {activeSection === 'account' && <AccountInformation />}
             {activeSection === 'prompts' && <PromptTemplates />}
-            
+
             {/* Default placeholder for other sections */}
             {!['obituaries', 'collaborations', 'finalspaces', 'surveys', 'pre-need', 'team-management', 'account', 'prompts'].includes(activeSection) && (
               <Card>
@@ -624,7 +688,7 @@ function MyCollaborationsTab({ userType, userId }: { userType: string; userId: n
 function PreNeedEvaluationSection({ userType, userId }: { userType: string; userId: number }) {
   // Get funeral home ID based on user type
   const funeralHomeId = userType === 'funeral_home' ? userId : userType === 'employee' ? 1 : undefined;
-  
+
   return (
     <div className="space-y-6">
       <PreNeedEvaluationTab />

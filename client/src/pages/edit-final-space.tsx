@@ -36,9 +36,9 @@ export default function EditFinalSpace() {
   const [activeTab, setActiveTab] = useState("basic");
 
   // Get URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const userTypeParam = urlParams.get('userType') || 'admin';
-  const userIdParam = parseInt(urlParams.get('userId') || '1');
+  // Get current user from global state/context if needed
+  const userTypeParam = 'admin'; // Default for testing
+  const userIdParam = 1; // Default for testing
 
   console.log('Edit Final Space - Route params:', { id, userTypeParam, userIdParam });
 

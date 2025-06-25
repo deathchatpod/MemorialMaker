@@ -146,7 +146,7 @@ export default function FinalSpaces() {
                       </Button>
                     </Link>
                     
-                    <Link href={`/final-spaces/${space.id}/edit?userType=${currentUserType}&userId=${currentUserId}`}>
+                    <Link href={`/final-spaces/${space.id}/edit`}>
                       <Button
                         size="sm"
                         variant="outline"

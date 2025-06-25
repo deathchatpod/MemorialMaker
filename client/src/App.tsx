@@ -161,11 +161,17 @@ function Router() {
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
       <Route path="/final-spaces/:id/edit" component={EditFinalSpace} />
+      <Route path="/obituary/new" component={ObituaryForm} />
+      <Route path="/obituary/:id/edit" component={ObituaryForm} />
+      <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
+      <Route path="/admin/surveys" component={SurveyManagement} />
+      <Route path="/admin/surveys/new" component={SurveyEditor} />
+      <Route path="/admin/surveys/:id" component={SurveyEditor} />
+      <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />
       <Route path="/memorial/:slug" component={MemorialPage} />
       <Route path="/collaborate/:uuid" component={Collaborate} />
       <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />
-      <Route path="/view-evaluation/:id" component={ViewEvaluation} />
-      <Route path="/memorial/:slug" component={MemorialPage} />
+      <Route path="/view-evaluation/:id" component={ViewEvaluation} /></Route>
       <Route component={NotFound} />
     </Switch>
   );
