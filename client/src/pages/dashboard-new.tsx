@@ -13,6 +13,7 @@ import PromptTemplates from "./prompt-templates";
 import MyCollaborations from "./my-collaborations";
 import { PreNeedEvaluationTab } from "@/components/pre-need-evaluation-tab";
 import DataTable, { createBadgeRenderer, formatDate, createActionButtons } from "@/components/DataTable";
+import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: number;
@@ -40,17 +41,9 @@ export default function Dashboard() {
   const { data: finalSpaces = [], isLoading: isFinalSpacesLoading, error: finalSpacesError } = useQuery({
     queryKey: ['/api/final-spaces', userTypeParam, userIdParam],
     queryFn: async () => {
-      console.log(`Dashboard: Fetching FinalSpaces for ${userTypeParam} user ${userIdParam}`);
-      try {
-        const res = await apiRequest('GET', `/api/final-spaces?userId=${userIdParam}&userType=${userTypeParam}`);
-        const data = await res.json();
-        console.log('Dashboard: FinalSpaces API response:', data);
-        console.log('Dashboard: FinalSpaces count:', data.length);
-        return data;
-      } catch (error) {
-        console.error('Dashboard: FinalSpaces API error:', error);
-        throw error;
-      }
+      const res = await apiRequest('GET', `/api/final-spaces?userId=${userIdParam}&userType=${userTypeParam}`);
+      const data = await res.json();
+      return data;
     }
   });
 
@@ -308,16 +301,7 @@ export default function Dashboard() {
             {activeSection === 'collaborations' && <MyCollaborations key="collaborations" />}
             
             {activeSection === 'finalspaces' && (
-              <>
-                {finalSpacesError && (
-                  <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-red-700">Error loading FinalSpaces: {finalSpacesError.message}</p>
-                  </div>
-                )}
-                <div className="mb-4 p-2 bg-gray-100 rounded text-sm">
-                  Debug: finalSpaces.length = {finalSpaces.length}, loading = {isFinalSpacesLoading.toString()}
-                </div>
-                <DataTable
+              <DataTable
                   title="FinalSpaces"
                   data={finalSpaces}
                   columns={[
@@ -394,7 +378,6 @@ export default function Dashboard() {
                 }}
                 isLoading={isFinalSpacesLoading}
                 />
-              </>
             )}
             
             {activeSection === 'surveys' && (
