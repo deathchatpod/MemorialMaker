@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-// import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
+import SlideshowCreator from "./SlideshowCreator";
 import { 
   Settings, 
   Eye, 
@@ -30,12 +30,18 @@ import {
   SkipForward
 } from "lucide-react";
 
+import SimpleMemorialEditorFixed from "./SimpleMemorialEditorFixed";
+
 interface SimpleMemorialEditorProps {
   memorial: any;
   onSave: (updates: any) => void;
 }
 
 export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemorialEditorProps) {
+  return <SimpleMemorialEditorFixed memorial={memorial} onSave={onSave} />;
+}
+
+function SimpleMemorialEditor_OLD({ memorial, onSave }: SimpleMemorialEditorProps) {
   const { toast } = useToast();
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
@@ -128,19 +134,19 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
   };
 
   const updateElement = useCallback((elementId: string, updates: any) => {
-    setElements(prev => prev.map(el => 
+    const updatedElements = elements.map(el => 
       el.id === elementId ? { ...el, ...updates } : el
-    ));
-  }, []);
+    );
+    updateElements(updatedElements);
+  }, [elements, updateElements]);
 
   const handleThemeChange = (themeName: string) => {
     const theme = themes[themeName as keyof typeof themes];
-    setCurrentSettings(prev => ({
-      ...prev,
+    updateSettings({
       theme: themeName,
       backgroundColor: theme.bg,
       textColor: theme.text
-    }));
+    });
   };
 
   const getDeviceWidth = () => {
@@ -298,7 +304,7 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                           id: `${element.id}_copy_${Date.now()}`,
                           position: { x: element.position.x + 5, y: element.position.y + 20 }
                         };
-                        setElements(prev => [...prev, newElement]);
+                        updateElements([...elements, newElement]);
                       }}
                     >
                       <Copy className="w-3 h-3" />
@@ -488,7 +494,7 @@ export default function SimpleMemorialEditor({ memorial, onSave }: SimpleMemoria
                     min="0"
                     max="20"
                     value={currentSettings.borderRadius}
-                    onChange={(e) => setCurrentSettings(prev => ({ ...prev, borderRadius: parseInt(e.target.value) }))}
+                    onChange={(e) => updateSettings({ borderRadius: parseInt(e.target.value) })}
                     className="flex-1"
                   />
                   <span className="text-sm text-gray-500 w-12">{currentSettings.borderRadius}px</span>

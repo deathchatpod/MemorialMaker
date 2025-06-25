@@ -13,14 +13,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 import ResizableElement from "./ResizableElement";
 import CustomizationPanel from "./CustomizationPanel";
 import TypographyControls from "./TypographyControls";
-import BackgroundCustomizer from "./BackgroundCustomizer";
+// import BackgroundCustomizer from "./BackgroundCustomizer";
 import BorderShadowControls from "./BorderShadowControls";
 import PhotoFilters from "./PhotoFilters";
 import MediaGallery from "./MediaGallery";
 import ObituaryIntegration from "./ObituaryIntegration";
+import SlideshowCreator from "./SlideshowCreator";
 import { GridSystem, GridOverlay } from "./GridSystem";
 import { LayerManager } from "./LayerManager";
 import { 
@@ -37,7 +39,10 @@ import {
   Tablet,
   Layers,
   Move,
-  Palette
+  Palette,
+  Undo,
+  Redo,
+  Play
 } from "lucide-react";
 
 interface MemorialElement {
@@ -90,14 +95,39 @@ const deviceSizes = {
 };
 
 export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps) {
-  const [elements, setElements] = useState<MemorialElement[]>([]);
+  // Initial state for undo/redo
+  const initialEditorState = {
+    elements: [],
+    customizationSettings: memorial.customStyles || defaultCustomizationSettings,
+    slideshow: {
+      photos: memorial.images?.map((img: any, index: number) => ({
+        id: `photo_${index}`,
+        url: img.url || img,
+        caption: img.caption || `Photo ${index + 1}`
+      })) || [],
+      settings: {
+        autoPlay: false,
+        duration: 3000,
+        transition: 'fade' as const,
+        showCaptions: true,
+        loop: true
+      }
+    }
+  };
+
+  // Undo/Redo state management
+  const [editorState, undoRedoActions] = useUndoRedo(initialEditorState);
+  
+  // Extract current state
+  const elements = editorState.elements;
+  const customizationSettings = editorState.customizationSettings;
+  const slideshowState = editorState.slideshow;
+  
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
-  const [customizationSettings, setCustomizationSettings] = useState(
-    memorial.customStyles || defaultCustomizationSettings
-  );
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState<'edit' | 'preview'>('edit');
   const [devicePreview, setDevicePreview] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [showSlideshow, setShowSlideshow] = useState(false);
   const [activeTab, setActiveTab] = useState('elements');
   
   // Grid system state
