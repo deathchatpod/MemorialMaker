@@ -37,14 +37,20 @@ export default function Dashboard() {
     }
   });
 
-  const { data: finalSpaces = [], isLoading: isFinalSpacesLoading } = useQuery({
+  const { data: finalSpaces = [], isLoading: isFinalSpacesLoading, error: finalSpacesError } = useQuery({
     queryKey: ['/api/final-spaces', userTypeParam, userIdParam],
     queryFn: async () => {
       console.log(`Dashboard: Fetching FinalSpaces for ${userTypeParam} user ${userIdParam}`);
-      const res = await apiRequest('GET', `/api/final-spaces?userId=${userIdParam}&userType=${userTypeParam}`);
-      const data = await res.json();
-      console.log('Dashboard: FinalSpaces API response:', data);
-      return data;
+      try {
+        const res = await apiRequest('GET', `/api/final-spaces?userId=${userIdParam}&userType=${userTypeParam}`);
+        const data = await res.json();
+        console.log('Dashboard: FinalSpaces API response:', data);
+        console.log('Dashboard: FinalSpaces count:', data.length);
+        return data;
+      } catch (error) {
+        console.error('Dashboard: FinalSpaces API error:', error);
+        throw error;
+      }
     }
   });
 
@@ -302,11 +308,20 @@ export default function Dashboard() {
             {activeSection === 'collaborations' && <MyCollaborations key="collaborations" />}
             
             {activeSection === 'finalspaces' && (
-              <DataTable
-                title="FinalSpaces"
-                data={finalSpaces}
-                columns={[
-                  {
+              <>
+                {finalSpacesError && (
+                  <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-700">Error loading FinalSpaces: {finalSpacesError.message}</p>
+                  </div>
+                )}
+                <div className="mb-4 p-2 bg-gray-100 rounded text-sm">
+                  Debug: finalSpaces.length = {finalSpaces.length}, loading = {isFinalSpacesLoading.toString()}
+                </div>
+                <DataTable
+                  title="FinalSpaces"
+                  data={finalSpaces}
+                  columns={[
+                    {
                     key: "personName",
                     title: "Person Name",
                     sortable: true,
@@ -378,7 +393,8 @@ export default function Dashboard() {
                   icon: <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 }}
                 isLoading={isFinalSpacesLoading}
-              />
+                />
+              </>
             )}
             
             {activeSection === 'surveys' && (
