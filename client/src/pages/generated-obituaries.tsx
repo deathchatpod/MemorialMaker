@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import TextHighlighter from "@/components/text-highlighter";
 import ObituaryEditor from "@/components/obituary-editor";
-import CollaborationManager from "@/components/collaboration-manager";
+import CollaborationManager from "@/components/CollaborationManager";
 import VersionManager from "@/components/version-manager";
 import { RefreshCw } from "lucide-react";
 
