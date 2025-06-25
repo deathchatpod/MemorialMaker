@@ -373,7 +373,7 @@ export default function Dashboard() {
             {activeSection === 'finalspaces' && (
               <DataTable
                   title="FinalSpaces"
-                  data={finalSpaces}
+                  data={Array.isArray(finalSpaces) ? finalSpaces : []}
                   columns={[
                     {
                     key: "personName",
@@ -459,7 +459,7 @@ export default function Dashboard() {
             {activeSection === 'surveys' && (
               <DataTable
                 title="Platform Surveys"
-                data={surveys}
+                data={Array.isArray(surveys) ? surveys : []}
                 columns={[
                   {
                     key: "name",
@@ -657,7 +657,7 @@ function MyCollaborationsTab({ userType, userId }: { userType: string; userId: n
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {collaborations && collaborations.length > 0 ? (
+        {Array.isArray(collaborations) && collaborations.length > 0 ? (
           <div className="space-y-4">
             {collaborations.map((collab: any) => (
               <div key={collab.id} className="border rounded-lg p-4">
