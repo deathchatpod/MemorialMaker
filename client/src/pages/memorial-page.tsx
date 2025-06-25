@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useParams, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import MediaGallery from "@/components/MediaGallery";
+import ObituaryIntegration from "@/components/ObituaryIntegration";
 import { 
   Heart, 
   Calendar, 
@@ -19,7 +21,8 @@ import {
   Send,
   Eye,
   Edit,
-  ArrowLeft
+  ArrowLeft,
+  FileText
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -80,6 +83,31 @@ export default function MemorialPage() {
     },
     enabled: !!slug,
   });
+
+  // Fetch linked obituary if available
+  const { data: linkedObituary } = useQuery({
+    queryKey: ["/api/obituaries", memorial?.obituaryId],
+    queryFn: async () => {
+      if (!memorial?.obituaryId) return null;
+      const response = await fetch(`/api/obituaries/${memorial.obituaryId}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!memorial?.obituaryId,
+  });
+
+  // Responsive design state
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Fetch comments
   const { data: comments = [], isLoading: commentsLoading } = useQuery<Comment[]>({
@@ -170,28 +198,32 @@ export default function MemorialPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{
+    <div className={`min-h-screen ${isMobile ? 'px-2 py-4' : 'px-4 py-8'}`} style={{
       backgroundColor: memorial.customStyles?.backgroundColor || '#f9fafb',
       backgroundImage: memorial.backgroundImage ? `url(${memorial.backgroundImage})` : undefined,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }}>
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className={`container mx-auto ${isMobile ? 'max-w-full px-2' : 'max-w-4xl px-6'}`}>
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-between items-start mb-4">
-            <Link href="/dashboard">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-            </Link>
+        <div className={`${isMobile ? 'text-center mb-6' : 'text-center mb-8'}`}>
+          <div className={`${isMobile ? 'flex flex-col gap-4 mb-4' : 'flex justify-between items-start mb-4'}`}>
+            {!isMobile && (
+              <Link href="/dashboard">
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+            )}
             
-            <div className="text-center flex-1">
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">{memorial.personName}</h1>
+            <div className={`${isMobile ? 'order-1' : 'text-center flex-1'}`}>
+              <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-gray-900 mb-2`}>
+                {memorial.personName}
+              </h1>
             </div>
             
-            <div className="flex gap-2">
+            <div className={`${isMobile ? 'flex flex-wrap justify-center gap-2 order-2' : 'flex gap-2'}`}>
               {/* Show edit button if user has permission */}
               {(currentUserType === 'admin' || 
                 (currentUserType === 'funeral_home' && memorial.funeralHomeId === currentUserId) ||
@@ -212,6 +244,15 @@ export default function MemorialPage() {
                 {memorial.viewCount || 0} views
               </Badge>
             </div>
+            
+            {isMobile && (
+              <Link href="/dashboard" className="order-3">
+                <Button variant="outline" size="sm" className="w-full">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+            )}
           </div>
           
           {(memorial.dateOfBirth || memorial.dateOfDeath) && (
@@ -250,6 +291,17 @@ export default function MemorialPage() {
           </Card>
         )}
 
+        {/* Obituary Integration */}
+        {linkedObituary && (
+          <div className="mb-8">
+            <ObituaryIntegration 
+              obituary={linkedObituary}
+              showFullContent={false}
+              className="border-l-4 border-l-blue-500"
+            />
+          </div>
+        )}
+
         {/* Description */}
         {memorial.description && (
           <Card className="mb-8">
@@ -263,61 +315,42 @@ export default function MemorialPage() {
 
         {/* Media Gallery */}
         {(memorial.images?.length > 0 || memorial.audioFiles?.length > 0 || memorial.youtubeLinks?.length > 0) && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5" />
-                Memories & Media
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Images */}
-              {memorial.images?.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                  {memorial.images.map((image: any, index: number) => (
-                    <div key={index} className="aspect-square">
-                      <img
-                        src={`/uploads/memorial-media/images/${image.filename}`}
-                        alt={`Memory ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Audio Files */}
-              {memorial.audioFiles?.length > 0 && (
-                <div className="space-y-3 mb-6">
-                  {memorial.audioFiles.map((audio: any, index: number) => (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Play className="w-5 h-5 text-gray-600" />
-                      <span className="flex-1">{audio.title || `Audio ${index + 1}`}</span>
-                      <audio controls className="max-w-xs">
-                        <source src={`/uploads/memorial-media/audio/${audio.filename}`} />
-                      </audio>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* YouTube Videos */}
-              {memorial.youtubeLinks?.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {memorial.youtubeLinks.map((video: any, index: number) => (
-                    <div key={index} className="aspect-video">
-                      <iframe
-                        src={`https://www.youtube.com/embed/${video.videoId}`}
-                        title={video.title || `Video ${index + 1}`}
-                        className="w-full h-full rounded-lg"
-                        allowFullScreen
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+              <ImageIcon className="w-6 h-6" />
+              Memories & Media
+            </h2>
+            <MediaGallery 
+              media={[
+                ...(memorial.images?.map((img: any) => ({
+                  id: img.id || img.filename,
+                  type: 'image' as const,
+                  url: img.url || `/uploads/memorial-media/images/${img.filename}`,
+                  filename: img.filename,
+                  title: img.title,
+                  isPrimary: memorial.primaryMediaType === 'image' && memorial.primaryMediaId === img.id
+                })) || []),
+                ...(memorial.audioFiles?.map((audio: any) => ({
+                  id: audio.id || audio.filename,
+                  type: 'audio' as const,
+                  url: audio.url || `/uploads/memorial-media/audio/${audio.filename}`,
+                  filename: audio.filename,
+                  title: audio.title,
+                  isPrimary: memorial.primaryMediaType === 'audio' && memorial.primaryMediaId === audio.id
+                })) || []),
+                ...(memorial.youtubeLinks?.map((video: any) => ({
+                  id: video.id || video.videoId,
+                  type: 'youtube' as const,
+                  url: video.videoId || video.url,
+                  title: video.title,
+                  isPrimary: memorial.primaryMediaType === 'youtube' && memorial.primaryMediaId === video.id
+                })) || [])
+              ]}
+              showControls={true}
+              primaryMediaFirst={true}
+              className="w-full"
+            />
+          </div>
         )}
 
         {/* Comments/Guestbook */}
@@ -331,9 +364,9 @@ export default function MemorialPage() {
             </CardHeader>
             <CardContent>
               {/* Comment Form */}
-              <form onSubmit={handleCommentSubmit} className="mb-8 p-4 bg-gray-50 rounded-lg">
+              <form onSubmit={handleCommentSubmit} className={`mb-8 p-4 bg-gray-50 rounded-lg`}>
                 <h4 className="font-medium mb-4">Share a memory or message</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className={`${isMobile ? 'grid grid-cols-1 gap-4 mb-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'}`}>
                   <Input
                     placeholder="Your name *"
                     value={newComment.authorName}
@@ -352,10 +385,10 @@ export default function MemorialPage() {
                   value={newComment.content}
                   onChange={(e) => setNewComment(prev => ({ ...prev, content: e.target.value }))}
                   className="mb-4"
-                  rows={4}
+                  rows={isMobile ? 3 : 4}
                   required
                 />
-                <Button type="submit" disabled={submitComment.isPending}>
+                <Button type="submit" disabled={submitComment.isPending} className={isMobile ? 'w-full' : ''}>
                   <Send className="w-4 h-4 mr-2" />
                   {submitComment.isPending ? "Submitting..." : "Share Memory"}
                 </Button>
@@ -368,30 +401,32 @@ export default function MemorialPage() {
                   <p className="text-muted-foreground">Loading messages...</p>
                 </div>
               ) : comments.length > 0 ? (
-                <div className="space-y-6">
+                <div className={`${isMobile ? 'space-y-4' : 'space-y-6'}`}>
                   {comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-4">
-                      <Avatar>
+                    <div key={comment.id} className={`${isMobile ? 'flex gap-3' : 'flex gap-4'}`}>
+                      <Avatar className={isMobile ? 'w-8 h-8' : 'w-10 h-10'}>
                         <AvatarFallback>
                           {comment.authorName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium">{comment.authorName}</span>
-                          <span className="text-sm text-gray-500">
-                            {format(new Date(comment.createdAt), 'MMM d, yyyy')}
+                      <div className="flex-1 min-w-0">
+                        <div className={`${isMobile ? 'flex flex-col gap-1 mb-2' : 'flex items-center gap-2 mb-2'}`}>
+                          <span className="font-medium truncate">{comment.authorName}</span>
+                          <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-500`}>
+                            {format(new Date(comment.createdAt), isMobile ? 'MMM d' : 'MMM d, yyyy')}
                           </span>
                         </div>
-                        <p className="text-gray-700 leading-relaxed">{comment.content}</p>
+                        <p className={`text-gray-700 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
+                          {comment.content}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No messages yet. Be the first to share a memory.</p>
+                  <MessageCircle className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 opacity-50`} />
+                  <p className={isMobile ? 'text-sm' : ''}>No messages yet. Be the first to share a memory.</p>
                 </div>
               )}
             </CardContent>

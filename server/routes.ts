@@ -927,6 +927,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Individual obituary endpoint for memorial integration
+  app.get("/api/obituaries/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const obituary = await storage.getObituary(id);
+      
+      if (!obituary) {
+        return res.status(404).json({ message: "Obituary not found" });
+      }
+      
+      res.json(obituary);
+    } catch (error) {
+      console.error('Error fetching obituary:', error);
+      res.status(500).json({ message: "Failed to fetch obituary" });
+    }
+  });
+
   // Memorial comments endpoints
   app.get("/api/memorial/:slug/comments", async (req, res) => {
     try {
