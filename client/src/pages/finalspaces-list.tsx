@@ -123,7 +123,7 @@ export default function FinalSpacesList({ userType, userId }: FinalSpacesListPro
                     <TableCell>{space.commentsCount}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Link href={`/final-spaces/${space.slug}`}>
+                        <Link href={`/memorial/${space.slug}`}>
                           <Button size="sm" variant="outline">
                             <Eye className="w-4 h-4" />
                           </Button>

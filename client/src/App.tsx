@@ -35,11 +35,11 @@ interface User {
 
 function GlobalHeader() {
   const [location] = useLocation();
-  
+
   // Get current user from URL params (existing functionality)
   const urlParams = new URLSearchParams(window.location.search);
   const userTypeParam = urlParams.get('userType');
-  
+
   const currentUser = (() => {
     if (userTypeParam === 'admin') {
       return { id: 2, username: 'John Admin', userType: 'admin' };
@@ -115,7 +115,7 @@ function GlobalHeader() {
                 {currentUser.username}
               </span>
             </div>
-            
+
             {/* Auth Buttons */}
             {authenticatedUser ? (
               <>
@@ -159,7 +159,8 @@ function Router() {
       <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
-      <Route path="/final-spaces/edit/:id" component={EditFinalSpace} />
+      <Route path="/final-spaces/:id/edit" component={EditFinalSpace} />
+      <Route path="/memorial/:slug" component={MemorialPage} />
       <Route path="/collaborate/:uuid" component={Collaborate} />
       <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />
       <Route path="/view-evaluation/:id" component={ViewEvaluation} />
@@ -173,7 +174,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User>(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const userTypeParam = urlParams.get('userType');
-    
+
     if (userTypeParam === 'admin') {
       return { id: 2, username: 'John Admin', userType: 'admin' };
     } else if (userTypeParam === 'employee') {
