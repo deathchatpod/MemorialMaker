@@ -3,16 +3,15 @@ import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { Users, MessageSquare } from "lucide-react";
+import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList } from "lucide-react";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
 import PromptTemplates from "./prompt-templates";
-import ObituariesList from "./obituaries-list";
-import FinalSpacesList from "./finalspaces-list";
-import SurveysList from "./surveys-list";
 import MyCollaborations from "./my-collaborations";
 import { PreNeedEvaluationTab } from "@/components/pre-need-evaluation-tab";
+import DataTable, { createBadgeRenderer, formatDate, createActionButtons } from "@/components/DataTable";
 
 interface User {
   id: number;
