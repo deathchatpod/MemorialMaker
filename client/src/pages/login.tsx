@@ -59,10 +59,10 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        <div className="text-center mb-8">
+        <header className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">DeathMatters</h1>
           <p className="text-gray-600 mt-2">AI-Powered Obituary Platform</p>
-        </div>
+        </header>
 
         <Card>
           <CardHeader className="space-y-1">
@@ -73,15 +73,15 @@ export default function Login() {
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
+              <Alert variant="destructive" role="alert">
+                <AlertCircle className="h-4 w-4" aria-hidden="true" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4" noValidate>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email address *</Label>
                 <Input
                   id="email"
                   name="email"
@@ -90,11 +90,13 @@ export default function Login() {
                   value={formData.email}
                   onChange={handleInputChange}
                   required
+                  aria-describedby={error ? "login-error" : undefined}
+                  autoComplete="email"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password *</Label>
                 <Input
                   id="password"
                   name="password"
@@ -103,6 +105,8 @@ export default function Login() {
                   value={formData.password}
                   onChange={handleInputChange}
                   required
+                  aria-describedby={error ? "login-error" : undefined}
+                  autoComplete="current-password"
                 />
               </div>
 
@@ -110,8 +114,16 @@ export default function Login() {
                 type="submit" 
                 className="w-full" 
                 disabled={isLoading}
+                aria-describedby={isLoading ? "signing-in-status" : undefined}
               >
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                {isLoading ? (
+                  <>
+                    <span className="sr-only" id="signing-in-status">Signing you in, please wait</span>
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign in'
+                )}
               </Button>
             </form>
 

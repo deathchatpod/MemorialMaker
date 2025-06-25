@@ -98,6 +98,10 @@
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(60, 9.1%, 97.8%);
   --ring: hsl(20, 14.3%, 4.1%);
+
+  /* Focus styles */
+  --focus-ring: hsl(207, 90%, 54%);
+  --focus-ring-offset: hsl(0, 0%, 100%);
   --radius: 0.5rem;
   --sidebar-background: hsl(0, 0%, 98%);
   --sidebar-foreground: hsl(20, 14.3%, 4.1%);
