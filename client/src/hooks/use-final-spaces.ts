@@ -36,13 +36,28 @@ export function useFinalSpaceBySlug(slug: string) {
 
 export function useCreateFinalSpace() {
   return useMutation({
-    mutationFn: async (data: InsertFinalSpace): Promise<FinalSpace> => {
-      const res = await apiRequest('POST', '/api/final-spaces', data);
-      return res.json();
+    mutationFn: async (data: any) => {
+      console.log('Creating final space with data:', data);
+      
+      const response = await fetch('/api/final-spaces', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('API Error:', errorData);
+        throw new Error(`Failed to create final space: ${errorData}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/final-spaces'] });
-    }
+    },
   });
 }
 
