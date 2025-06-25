@@ -410,6 +410,17 @@ export const insertFinalSpaceImageSchema = createInsertSchema(finalSpaceImages).
   createdAt: true,
 });
 
+export const insertFinalSpaceCollaboratorSchema = createInsertSchema(finalSpaceCollaborators).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertFinalSpaceCollaborationSessionSchema = createInsertSchema(finalSpaceCollaborationSessions).omit({
+  id: true,
+  createdAt: true,
+  lastAccessedAt: true,
+});
+
 export const insertObituaryCollaboratorSchema = createInsertSchema(obituaryCollaborators).omit({
   id: true,
   createdAt: true,

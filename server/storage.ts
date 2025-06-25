@@ -107,6 +107,16 @@ export interface IStorage {
   createFinalSpaceImage(image: InsertFinalSpaceImage): Promise<FinalSpaceImage>;
   deleteFinalSpaceImage(id: number): Promise<void>;
   
+  // Final Space Collaborators
+  getFinalSpaceCollaborators(finalSpaceId: number): Promise<FinalSpaceCollaborator[]>;
+  createFinalSpaceCollaborator(collaborator: InsertFinalSpaceCollaborator): Promise<FinalSpaceCollaborator>;
+  deleteFinalSpaceCollaborator(id: number): Promise<void>;
+  
+  // Final Space Collaboration Sessions
+  getFinalSpaceCollaborationSession(uuid: string): Promise<FinalSpaceCollaborationSession | undefined>;
+  createFinalSpaceCollaborationSession(session: InsertFinalSpaceCollaborationSession): Promise<FinalSpaceCollaborationSession>;
+  updateFinalSpaceCollaborationSession(uuid: string, updates: Partial<FinalSpaceCollaborationSession>): Promise<FinalSpaceCollaborationSession>;
+  
   // Obituary Collaborators
   getObituaryCollaborators(obituaryId: number): Promise<ObituaryCollaborator[]>;
   createObituaryCollaborator(collaborator: InsertObituaryCollaborator): Promise<ObituaryCollaborator>;
@@ -525,6 +535,46 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFinalSpaceImage(id: number): Promise<void> {
     await db.delete(finalSpaceImages).where(eq(finalSpaceImages.id, id));
+  }
+  
+  // Final Space Collaborators
+  async getFinalSpaceCollaborators(finalSpaceId: number): Promise<FinalSpaceCollaborator[]> {
+    return await db.select().from(finalSpaceCollaborators).where(eq(finalSpaceCollaborators.finalSpaceId, finalSpaceId));
+  }
+
+  async createFinalSpaceCollaborator(insertCollaborator: InsertFinalSpaceCollaborator): Promise<FinalSpaceCollaborator> {
+    const [collaborator] = await db
+      .insert(finalSpaceCollaborators)
+      .values(insertCollaborator)
+      .returning();
+    return collaborator;
+  }
+
+  async deleteFinalSpaceCollaborator(id: number): Promise<void> {
+    await db.delete(finalSpaceCollaborators).where(eq(finalSpaceCollaborators.id, id));
+  }
+  
+  // Final Space Collaboration Sessions
+  async getFinalSpaceCollaborationSession(uuid: string): Promise<FinalSpaceCollaborationSession | undefined> {
+    const [session] = await db.select().from(finalSpaceCollaborationSessions).where(eq(finalSpaceCollaborationSessions.uuid, uuid));
+    return session;
+  }
+
+  async createFinalSpaceCollaborationSession(insertSession: InsertFinalSpaceCollaborationSession): Promise<FinalSpaceCollaborationSession> {
+    const [session] = await db
+      .insert(finalSpaceCollaborationSessions)
+      .values(insertSession)
+      .returning();
+    return session;
+  }
+
+  async updateFinalSpaceCollaborationSession(uuid: string, updates: Partial<FinalSpaceCollaborationSession>): Promise<FinalSpaceCollaborationSession> {
+    const [session] = await db
+      .update(finalSpaceCollaborationSessions)
+      .set(updates)
+      .where(eq(finalSpaceCollaborationSessions.uuid, uuid))
+      .returning();
+    return session;
   }
 
   // Obituary Collaborators
