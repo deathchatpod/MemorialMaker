@@ -118,6 +118,20 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
   // Undo/Redo state management
   const [editorState, undoRedoActions] = useUndoRedo(initialEditorState);
   
+  // Extract state and actions
+  const { elements, customizationSettings, slideshow } = editorState;
+  const { pushState } = undoRedoActions;
+  
+  // State setters that integrate with undo/redo
+  const setElements = useCallback((newElements: MemorialElement[] | ((prev: MemorialElement[]) => MemorialElement[])) => {
+    const updatedElements = typeof newElements === 'function' ? newElements(elements) : newElements;
+    pushState({ ...editorState, elements: updatedElements });
+  }, [elements, editorState, pushState]);
+  
+  const setCustomizationSettings = useCallback((newSettings: any) => {
+    pushState({ ...editorState, customizationSettings: newSettings });
+  }, [editorState, pushState]);
+  
   // Extract current state
   const elements = editorState.elements;
   const customizationSettings = editorState.customizationSettings;
