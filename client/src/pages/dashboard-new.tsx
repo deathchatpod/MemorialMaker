@@ -23,9 +23,43 @@ interface User {
 export default function Dashboard() {
   const [location, setLocation] = useLocation();
   
-  // Get user type from URL
+  // Get URL parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const userTypeParam = urlParams.get('userType');
+  const userTypeParam = urlParams.get('userType') || 'admin';
+  const userIdParam = parseInt(urlParams.get('userId') || '1');
+
+  // Data fetching queries
+  const { data: obituaries = [], isLoading: isObituariesLoading } = useQuery({
+    queryKey: ['/api/obituaries', userTypeParam, userIdParam],
+  });
+
+  const { data: finalSpaces = [], isLoading: isFinalSpacesLoading } = useQuery({
+    queryKey: ['/api/final-spaces', userTypeParam, userIdParam],
+  });
+
+  const { data: surveys = [], isLoading: isSurveysLoading } = useQuery({
+    queryKey: ['/api/surveys'],
+  });
+
+  const { data: evaluations = [], isLoading: isEvaluationsLoading } = useQuery({
+    queryKey: ['/api/survey-responses', { responseType: 'evaluation' }],
+  });
+
+  // Status color helper
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+      case 'published':
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'draft':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'private':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
   
   const [currentUser, setCurrentUser] = useState<User>(() => {
     if (userTypeParam === 'admin') {

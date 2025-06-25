@@ -884,8 +884,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Final Spaces endpoints
   app.get("/api/final-spaces", async (req, res) => {
     try {
-      const userType = req.query.userType as string;
-      const userId = parseInt(req.query.userId as string);
+      const userType = req.query.userType as string || 'admin';
+      const userIdParam = req.query.userId as string;
+      const userId = userIdParam ? parseInt(userIdParam) : 1;
+      
+      // Validate userId
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
       
       let finalSpaces;
       if (userType === 'admin') {
