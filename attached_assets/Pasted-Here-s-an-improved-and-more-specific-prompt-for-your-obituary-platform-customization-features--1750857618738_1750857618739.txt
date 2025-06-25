@@ -1,0 +1,85 @@
+Here's an improved and more specific prompt for your obituary platform customization features:
+
+---
+
+**Final Spaces Memorial Page Customization Requirements**
+
+I'm building a comprehensive obituary platform on Replit using Next.js and want to provide users with extensive visual customization options for their memorial pages. Here are the specific customization features I need:
+
+**Layout & Element Management:**
+- Drag-and-drop interface for rearranging all page elements (photos, text blocks, obituary content, tribute sections, etc.)
+- Resizable elements with corner/edge handles - users should be able to resize photos, text boxes, and content blocks
+- Grid-based or free-form positioning options
+- Element layering controls (bring to front/send to back)
+- Alignment tools (left, center, right, justify for text elements)
+- Spacing controls between elements (padding/margins)
+
+**Typography Customization:**
+- Font family selection for different text types (headings, body text, dates, quotes, captions)
+- Font size controls with slider or dropdown options
+- Font weight options (light, regular, bold, extra bold)
+- Text color picker for all text elements
+- Text styling options (italic, underline, strikethrough)
+- Line height and letter spacing adjustments
+- Text shadow effects
+
+**Visual Design Controls:**
+- Background customization: solid colors, gradients, patterns, or uploaded images
+- Color palette selector with pre-designed memorial-appropriate color schemes
+- Opacity/transparency controls for background elements
+- Border options for photos and text blocks (style, width, color, rounded corners)
+- Shadow effects for elements (drop shadows, inner shadows)
+
+**Obituary Integration Features:**
+- If a linked obituary exists, make it a draggable/resizable element that displays:
+  - Featured photo from the obituary
+  - Truncated text preview (first 2-3 sentences)
+  - "Read Full Obituary" link or expand option
+  - Birth/death dates prominently displayed
+- Option to style the obituary element differently from other page elements
+
+**Photo & Media Enhancements:**
+- Photo filters (sepia, black & white, vintage, soft focus)
+- Photo border and frame options
+- Slideshow/gallery creation from multiple photos
+- Image cropping and positioning within frames
+- Photo collage templates
+
+**Interactive Preview System:**
+- Real-time preview as users make changes
+- Mobile/tablet/desktop responsive preview modes
+- "Before/After" comparison toggle
+- Save draft functionality
+- Undo/redo capabilities
+
+**Additional Customization Suggestions:**
+- Memorial-specific design templates (elegant, modern, traditional, nature-themed, religious)
+- Icon library for memorial symbols (crosses, flowers, doves, hearts, stars)
+- Quote/scripture integration with special formatting
+- Guest book styling and positioning options
+- Memorial candle or flower animation effects
+- Music/audio integration with custom player styling
+- Timeline creation for life events with custom styling
+- Memorial donation button customization
+- Social sharing button styling and placement
+- Weather widget for memorial service dates/locations
+- Map integration for service locations with custom markers
+- Memorial video embedding with custom player controls
+- QR code generation for easy sharing (with styling options)
+- Print-friendly layout options
+- Anniversary date highlighting and special formatting
+- Custom CSS injection for advanced users
+
+**User Experience Considerations:**
+- Intuitive toolbar with categorized options
+- Keyboard shortcuts for common actions
+- Template library with one-click application
+- Save and share functionality
+- Export options (PDF, image, print-ready formats)
+- Collaborative editing if multiple family members need access
+
+The goal is to make memorial page creation both deeply customizable and user-friendly, allowing families to create truly personalized tributes that reflect their loved one's personality and their family's preferences.
+
+---
+
+This expanded prompt provides much more specific guidance on the types of customizations users should be able to make, includes memorial-specific features, and suggests additional functionality that would be valuable for an obituary platform.
