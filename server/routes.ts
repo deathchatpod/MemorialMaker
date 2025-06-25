@@ -8,6 +8,7 @@ import { generateObituariesWithClaude, generateObituariesWithChatGPT, generateRe
 import { processDocument, deleteDocument } from "./services/document";
 import { generateObituaryPDF } from "./services/pdf";
 import { NotificationService } from "./services/notifications";
+import notificationRoutes from "./routes/notifications";
 import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
