@@ -12,8 +12,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 // Remove insertFinalSpaceSchema import since we're using custom form schema
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft, Heart, UserPlus, Mail, Trash2 } from "lucide-react";
 import MediaUploader from "@/components/MediaUploader";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 const createFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
@@ -40,6 +42,12 @@ export default function CreateFinalSpace() {
     primaryMedia: null
   });
 
+  // Collaborators state
+  const [collaborators, setCollaborators] = useState([]);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteName, setInviteName] = useState("");
+
   // Get current user from URL params like other components
   const urlParams = new URLSearchParams(window.location.search);
   const userTypeParam = urlParams.get('userType') || 'funeral_home';
@@ -47,6 +55,53 @@ export default function CreateFinalSpace() {
 
   const { data: completedObituaries } = useCompletedObituaries(userIdParam, userTypeParam);
   const createFinalSpace = useCreateFinalSpace();
+
+  // Helper functions for collaborators
+  const addCollaborator = () => {
+    if (!inviteEmail.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (collaborators.some(c => c.email === inviteEmail)) {
+      toast({
+        title: "Error", 
+        description: "This email is already added",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newCollaborator = {
+      id: Date.now(),
+      email: inviteEmail,
+      name: inviteName || inviteEmail,
+      status: "pending",
+      isTemporary: true // Mark as temporary until memorial is created
+    };
+
+    setCollaborators([...collaborators, newCollaborator]);
+    setInviteEmail("");
+    setInviteName("");
+    setIsInviteOpen(false);
+    
+    toast({
+      title: "Collaborator Added",
+      description: `${newCollaborator.name} will be invited once the memorial is created`
+    });
+  };
+
+  const removeCollaborator = (id) => {
+    setCollaborators(collaborators.filter(c => c.id !== id));
+    toast({
+      title: "Collaborator Removed",
+      description: "Collaborator removed from list"
+    });
+  };
 
   const form = useForm<CreateFinalSpaceForm>({
     resolver: zodResolver(createFinalSpaceSchema),
@@ -96,11 +151,49 @@ export default function CreateFinalSpace() {
       
       const createdSpace = await createFinalSpace.mutateAsync(finalData);
       console.log('Successfully created space:', createdSpace);
-      
-      toast({
-        title: "Success",
-        description: "Memorial space created successfully"
-      });
+
+      // Add collaborators if any were added during creation
+      if (collaborators.length > 0) {
+        try {
+          await Promise.all(
+            collaborators.map(async (collaborator) => {
+              const response = await fetch(`/api/final-spaces/${createdSpace.id}/collaborators`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  collaboratorEmail: collaborator.email,
+                  collaboratorName: collaborator.name,
+                  invitedById: userIdParam,
+                  invitedByType: userTypeParam,
+                  status: 'pending'
+                }),
+              });
+              
+              if (!response.ok) {
+                console.error('Failed to add collaborator:', collaborator.email);
+              }
+            })
+          );
+          
+          toast({
+            title: "Success",
+            description: `Memorial space created successfully with ${collaborators.length} collaborator invitation(s) sent`
+          });
+        } catch (error) {
+          console.error('Error adding collaborators:', error);
+          toast({
+            title: "Partial Success",
+            description: "Memorial created but some collaborator invitations failed to send"
+          });
+        }
+      } else {
+        toast({
+          title: "Success",
+          description: "Memorial space created successfully"
+        });
+      }
       
       // Redirect to the created memorial page
       setLocation(`/memorial/${createdSpace.slug}`);
@@ -270,6 +363,106 @@ export default function CreateFinalSpace() {
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Media & Content</h3>
                 <MediaUploader onMediaChange={setMediaData} />
+              </div>
+
+              {/* Collaborators Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Collaborators</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Invite others to help manage and contribute to this memorial space
+                    </p>
+                  </div>
+                  <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Add Collaborator
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Invite Collaborator</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="collaborator-email">Email Address</Label>
+                          <Input
+                            id="collaborator-email"
+                            type="email"
+                            placeholder="Enter email address"
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="collaborator-name">Name (Optional)</Label>
+                          <Input
+                            id="collaborator-name"
+                            placeholder="Enter name"
+                            value={inviteName}
+                            onChange={(e) => setInviteName(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="outline" onClick={() => setIsInviteOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={addCollaborator}>
+                            <Mail className="w-4 h-4 mr-2" />
+                            Add Collaborator
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {/* Collaborators List */}
+                {collaborators.length > 0 && (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="space-y-3">
+                        {collaborators.map((collaborator) => (
+                          <div key={collaborator.id} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Mail className="w-4 h-4 text-blue-600" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{collaborator.name}</p>
+                                <p className="text-sm text-muted-foreground">{collaborator.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-yellow-600 border-yellow-200">
+                                Will be invited
+                              </Badge>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeCollaborator(collaborator.id)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {collaborators.length === 0 && (
+                  <div className="text-center p-6 border-2 border-dashed border-gray-200 rounded-lg">
+                    <UserPlus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      No collaborators added yet. Add collaborators to help manage this memorial space.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Privacy Settings */}
