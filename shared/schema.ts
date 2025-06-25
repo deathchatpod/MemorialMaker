@@ -166,7 +166,7 @@ export const promptTemplates = pgTable("prompt_templates", {
 // Final Spaces (linked to funeral home)
 export const finalSpaces = pgTable("final_spaces", {
   id: serial("id").primaryKey(),
-  funeralHomeId: integer("funeral_home_id").notNull().references(() => funeralHomes.id),
+  funeralHomeId: integer("funeral_home_id").references(() => funeralHomes.id),
   createdById: integer("created_by_id").notNull(), // Can be funeral home or employee ID
   createdByType: varchar("created_by_type", { length: 20 }).notNull(), // 'funeral_home' or 'employee'
   obituaryId: integer("obituary_id").references(() => obituaries.id),
@@ -184,6 +184,13 @@ export const finalSpaces = pgTable("final_spaces", {
   primaryMediaId: varchar("primary_media_id", { length: 100 }), // ID/filename of primary media
   isPublic: boolean("is_public").notNull().default(true),
   allowComments: boolean("allow_comments").notNull().default(true),
+  // New fields for enhanced functionality
+  pageLayout: jsonb("page_layout"), // Store drag-and-drop layout and styling
+  theme: varchar("theme", { length: 100 }).default("classic"), // Theme selection
+  backgroundImage: varchar("background_image", { length: 500 }), // Background image URL
+  customStyles: jsonb("custom_styles"), // Additional styling options
+  status: varchar("status", { length: 50 }).default("draft"), // draft, published, private
+  viewCount: integer("view_count").default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

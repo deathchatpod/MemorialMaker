@@ -884,10 +884,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Final Spaces endpoints
   app.get("/api/final-spaces", async (req, res) => {
     try {
-      const finalSpaces = await storage.getAllFinalSpaces();
+      const userType = req.query.userType as string;
+      const userId = parseInt(req.query.userId as string);
+      
+      let finalSpaces;
+      if (userType === 'admin') {
+        finalSpaces = await storage.getAllFinalSpaces();
+      } else if (userType === 'funeral_home') {
+        finalSpaces = await storage.getFinalSpacesByFuneralHome(userId);
+      } else if (userType === 'employee') {
+        finalSpaces = await storage.getFinalSpacesByCreator(userId, 'employee');
+      } else {
+        finalSpaces = await storage.getFinalSpacesByCreator(userId, 'individual');
+      }
+      
       res.json(finalSpaces);
     } catch (error) {
+      console.error('Error fetching final spaces:', error);
       res.status(500).json({ message: "Failed to fetch final spaces" });
+    }
+  });
+
+  // Memorial page viewer endpoint
+  app.get("/api/memorial/:slug", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const memorial = await storage.getFinalSpaceBySlug(slug);
+      
+      if (!memorial) {
+        return res.status(404).json({ message: "Memorial not found" });
+      }
+
+      // Increment view count
+      await storage.updateFinalSpace(memorial.id, { 
+        viewCount: (memorial.viewCount || 0) + 1 
+      });
+
+      res.json(memorial);
+    } catch (error) {
+      console.error('Error fetching memorial:', error);
+      res.status(500).json({ message: "Failed to fetch memorial" });
+    }
+  });
+
+  // Memorial comments endpoints
+  app.get("/api/memorial/:slug/comments", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const memorial = await storage.getFinalSpaceBySlug(slug);
+      
+      if (!memorial) {
+        return res.status(404).json({ message: "Memorial not found" });
+      }
+
+      const comments = await storage.getFinalSpaceComments(memorial.id);
+      res.json(comments);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/memorial/:slug/comments", async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const { authorName, authorEmail, content } = req.body;
+      
+      const memorial = await storage.getFinalSpaceBySlug(slug);
+      if (!memorial) {
+        return res.status(404).json({ message: "Memorial not found" });
+      }
+
+      if (!memorial.allowComments) {
+        return res.status(403).json({ message: "Comments not allowed on this memorial" });
+      }
+
+      const comment = await storage.createFinalSpaceComment({
+        finalSpaceId: memorial.id,
+        authorName,
+        authorEmail: authorEmail || null,
+        content,
+        isApproved: true // Auto-approve for now
+      });
+
+      res.status(201).json(comment);
+    } catch (error) {
+      console.error('Error creating comment:', error);
+      res.status(500).json({ message: "Failed to create comment" });
     }
   });
 
@@ -901,9 +984,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .replace(/(^-|-$)/g, '') + '-' + Date.now();
 
       const validatedData = insertFinalSpaceSchema.parse({
-        funeralHomeId: 1, // Default for testing
-        createdById: 1,
-        createdByType: 'funeral_home',
+        funeralHomeId: formData.funeralHomeId || null,
+        createdById: formData.createdById || 1,
+        createdByType: formData.createdByType || 'funeral_home',
         obituaryId: formData.obituaryId ? parseInt(formData.obituaryId) : undefined,
         slug,
         personName: formData.personName,
@@ -914,6 +997,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         musicPlaylist: formData.musicPlaylist,
         isPublic: formData.isPublic !== false,
         allowComments: formData.allowComments !== false,
+        images: formData.images || [],
+        audioFiles: formData.audioFiles || [],
+        youtubeLinks: formData.youtubeLinks || [],
+        primaryMediaType: formData.primaryMediaType,
+        primaryMediaId: formData.primaryMediaId,
+        status: 'published'
       });
 
       const finalSpace = await storage.createFinalSpace(validatedData);
