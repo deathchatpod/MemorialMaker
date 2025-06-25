@@ -7,20 +7,18 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import DraggableElement from "./DraggableElement";
+import ResizableElement from "./ResizableElement";
 import CustomizationPanel from "./CustomizationPanel";
 import MediaGallery from "./MediaGallery";
 import ObituaryIntegration from "./ObituaryIntegration";
+import { GridSystem, GridOverlay } from "./GridSystem";
+import { LayerManager } from "./LayerManager";
 import { 
   Settings, 
   Eye, 
@@ -32,7 +30,9 @@ import {
   FileText,
   Smartphone,
   Monitor,
-  Tablet
+  Tablet,
+  Layers,
+  Move
 } from "lucide-react";
 
 interface MemorialElement {
@@ -42,7 +42,9 @@ interface MemorialElement {
   position: { x: number; y: number };
   size: { width: number; height: number };
   isLocked: boolean;
+  isVisible: boolean;
   zIndex: number;
+  name?: string;
 }
 
 interface MemorialEditorProps {
@@ -91,6 +93,16 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState<'edit' | 'preview'>('edit');
   const [devicePreview, setDevicePreview] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [activeTab, setActiveTab] = useState('elements');
+  
+  // Grid system state
+  const [gridEnabled, setGridEnabled] = useState(true);
+  const [gridSize, setGridSize] = useState(20);
+  const [gridOpacity, setGridOpacity] = useState(0.3);
+  const [snapToGrid, setSnapToGrid] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
+  const [positioningMode, setPositioningMode] = useState<'free' | 'grid' | 'snap'>('snap');
+  
   const canvasRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -115,6 +127,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
         position: { x: 50, y: yOffset },
         size: { width: 600, height: 120 },
         isLocked: false,
+        isVisible: true,
         zIndex: 1
       });
       yOffset += 150;
@@ -129,7 +142,8 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
         position: { x: 50, y: yOffset },
         size: { width: 700, height: 300 },
         isLocked: false,
-        zIndex: 1
+        isVisible: true,
+        zIndex: 2
       });
       yOffset += 350;
     }
@@ -149,7 +163,8 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
         position: { x: 50, y: yOffset },
         size: { width: 800, height: 400 },
         isLocked: false,
-        zIndex: 1
+        isVisible: true,
+        zIndex: 3
       });
     }
 
