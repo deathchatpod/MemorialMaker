@@ -494,7 +494,7 @@ export default function Dashboard() {
                     render: createActionButtons([
                       {
                         icon: <Edit className="w-4 h-4" />,
-                        onClick: (row) => window.location.href = `/surveys/${row.id}/edit`,
+                        onClick: (row) => setLocation(`/admin/surveys/${row.id}/edit`),
                         title: "Edit"
                       }
                     ])
@@ -503,7 +503,7 @@ export default function Dashboard() {
                 searchPlaceholder="Search by survey name..."
                 createButton={{
                   label: "Create Survey",
-                  onClick: () => window.location.href = `/surveys/create?userType=${userTypeParam}&userId=${userIdParam}`
+                  onClick: () => setLocation(`/admin/surveys/create?userType=${userTypeParam}&userId=${userIdParam}`)
                 }}
                 emptyState={{
                   title: "No surveys found",
