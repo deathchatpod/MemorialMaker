@@ -228,12 +228,17 @@ export default function MemorialPage() {
               {(currentUserType === 'admin' || 
                 (currentUserType === 'funeral_home' && memorial.funeralHomeId === currentUserId) ||
                 (currentUserType === 'employee' && memorial.createdById === currentUserId && memorial.createdByType === 'employee')) && (
-                <Link href={`/final-spaces/edit/${memorial.id}?userType=${currentUserType}&userId=${currentUserId}`}>
-                  <Button variant="outline" size="sm">
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    console.log('Navigating to edit memorial:', memorial.id);
+                    window.location.href = `/final-spaces/edit/${memorial.id}?userType=${currentUserType}&userId=${currentUserId}`;
+                  }}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
               )}
               <Button variant="outline" size="sm" onClick={shareMemorial}>
                 <Share2 className="w-4 h-4 mr-2" />
