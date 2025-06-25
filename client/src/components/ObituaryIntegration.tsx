@@ -58,9 +58,9 @@ export default function ObituaryIntegration({
     );
   }
 
-  const truncatedContent = obituary.content.length > 200 
+  const truncatedContent = obituary.content && obituary.content.length > 200 
     ? obituary.content.substring(0, 200) + "..."
-    : obituary.content;
+    : obituary.content || "";
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!isResizable) return;
@@ -165,7 +165,7 @@ export default function ObituaryIntegration({
           </div>
           
           <div className="flex gap-2">
-            {!isExpanded && !showFullContent && obituary.content.length > 200 && (
+            {!isExpanded && !showFullContent && obituary.content && obituary.content.length > 200 && (
               <Button
                 variant="outline"
                 size="sm"
