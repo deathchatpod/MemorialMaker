@@ -107,34 +107,36 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
-        <div className="text-center mb-8">
-          <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h2>
+        <header className="text-center mb-8">
+          <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" aria-hidden="true" />
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h1>
           <p className="text-lg text-gray-600 mb-8">
             Creating meaningful tributes and lasting memories through AI-powered obituary generation.
           </p>
-        </div>
+        </header>
 
         {/* Display Survey */}
         {homePageSurvey && questions.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold text-gray-900">
-                {homePageSurvey.name}
-              </CardTitle>
-              {homePageSurvey.description && (
-                <p className="text-gray-600">{homePageSurvey.description}</p>
-              )}
-            </CardHeader>
-            <CardContent>
-              <ConditionalSurveyForm
-                questions={questions}
-                onSubmit={handleSurveySubmit}
-                isLoading={submitSurveyMutation.isPending}
-                userType={selectedUserType}
-              />
-            </CardContent>
-          </Card>
+          <section aria-labelledby="survey-heading">
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle id="survey-heading" className="text-xl font-semibold text-gray-900">
+                  {homePageSurvey.name}
+                </CardTitle>
+                {homePageSurvey.description && (
+                  <p className="text-gray-600">{homePageSurvey.description}</p>
+                )}
+              </CardHeader>
+              <CardContent>
+                <ConditionalSurveyForm
+                  questions={questions}
+                  onSubmit={handleSurveySubmit}
+                  isLoading={submitSurveyMutation.isPending}
+                  userType={selectedUserType}
+                />
+              </CardContent>
+            </Card>
+          </section>
         )}
 
         {/* Always show placeholder when no survey */}
