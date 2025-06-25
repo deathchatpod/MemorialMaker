@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Skull } from "lucide-react";
 import Home from "./pages/home";
-import Dashboard from "./pages/dashboard-new";
+import Dashboard from "./pages/dashboard-simple";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import ObituaryForm from "./pages/obituary-form";

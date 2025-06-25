@@ -17,13 +17,13 @@ export default function Home() {
   const urlParams = new URLSearchParams(window.location.search);
   const userTypeParam = urlParams.get('userType');
   const selectedUserType = (() => {
-    const typeMapping = {
+    const typeMapping: Record<string, string> = {
       'admin': 'Admin',
       'funeral_home': 'Funeral Home',
       'employee': 'Employee', 
       'individual': 'Individual'
     };
-    return typeMapping[userTypeParam] || 'Funeral Home';
+    return typeMapping[userTypeParam || 'funeral_home'] || 'Funeral Home';
   })();
 
 
