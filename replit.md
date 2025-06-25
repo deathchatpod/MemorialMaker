@@ -198,3 +198,4 @@ For testing purposes, use these credentials:
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+Dashboard tab persistence: Users should remain on their last visited tab when returning to dashboard.
