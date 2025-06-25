@@ -1014,7 +1014,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const finalSpace = await storage.createFinalSpace(validatedData);
       console.log('Created final space:', finalSpace);
       
-      res.json(finalSpace);
+      res.status(201).json(finalSpace);
     } catch (error) {
       console.error('Error creating final space:', error);
       res.status(400).json({ message: "Failed to create final space" });

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation, useParams } from "wouter";
+import { useLocation, useParams, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,9 @@ import {
   Image as ImageIcon,
   Play,
   Send,
-  Eye
+  Eye,
+  Edit,
+  ArrowLeft
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -56,6 +58,11 @@ export default function MemorialPage() {
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Get current user from URL params for edit permissions
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentUserType = urlParams.get('userType') || 'admin';
+  const currentUserId = parseInt(urlParams.get('userId') || '1');
   
   const [newComment, setNewComment] = useState({
     authorName: "",
@@ -172,9 +179,30 @@ export default function MemorialPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex justify-center items-center gap-4 mb-4">
-            <h1 className="text-4xl font-bold text-gray-900">{memorial.personName}</h1>
+          <div className="flex justify-between items-start mb-4">
+            <Link href="/dashboard">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            
+            <div className="text-center flex-1">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">{memorial.personName}</h1>
+            </div>
+            
             <div className="flex gap-2">
+              {/* Show edit button if user has permission */}
+              {(currentUserType === 'admin' || 
+                (currentUserType === 'funeral_home' && memorial.funeralHomeId === currentUserId) ||
+                (currentUserType === 'employee' && memorial.createdById === currentUserId && memorial.createdByType === 'employee')) && (
+                <Link href={`/final-spaces/edit/${memorial.id}?userType=${currentUserType}&userId=${currentUserId}`}>
+                  <Button variant="outline" size="sm">
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </Button>
+                </Link>
+              )}
               <Button variant="outline" size="sm" onClick={shareMemorial}>
                 <Share2 className="w-4 h-4 mr-2" />
                 Share

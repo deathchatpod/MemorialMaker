@@ -23,6 +23,7 @@ import NotFound from "./pages/not-found";
 import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";
 import ViewEvaluation from "./pages/view-evaluation";
 import MemorialPage from "./pages/memorial-page";
+import EditFinalSpace from "./pages/edit-final-space";
 
 const queryClient = new QueryClient();
 
@@ -158,6 +159,7 @@ function Router() {
       <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
+      <Route path="/final-spaces/edit/:id" component={EditFinalSpace} />
       <Route path="/collaborate/:uuid" component={Collaborate} />
       <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />
       <Route path="/view-evaluation/:id" component={ViewEvaluation} />

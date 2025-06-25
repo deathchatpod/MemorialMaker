@@ -94,12 +94,14 @@ export default function CreateFinalSpace() {
 
       console.log('Final data being sent:', finalData);
       
-      await createFinalSpace.mutateAsync(finalData);
+      const createdSpace = await createFinalSpace.mutateAsync(finalData);
       toast({
         title: "Success",
         description: "Memorial space created successfully"
       });
-      setLocation(`/dashboard?userType=${userTypeParam}&userId=${userIdParam}`);
+      
+      // Redirect to the created memorial page
+      setLocation(`/memorial/${createdSpace.slug}`);
     } catch (error) {
       console.error('Error creating final space:', error);
       toast({
