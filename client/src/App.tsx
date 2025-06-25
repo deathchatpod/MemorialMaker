@@ -78,7 +78,7 @@ function GlobalHeader() {
     }
   };
 
-  const isDashboard = location.startsWith('/dashboard') || location.startsWith('/admin') || location.startsWith('/obituary') || location.startsWith('/final-spaces');
+  const isDashboard = location === '/dashboard' || location.startsWith('/dashboard?');
 
   return (
     <header className="bg-white shadow-sm border-b">
