@@ -7,6 +7,7 @@ import { hashPassword } from "./auth";
 import { generateObituariesWithClaude, generateObituariesWithChatGPT, generateRevisedObituary } from "./services/ai";
 import { processDocument, deleteDocument } from "./services/document";
 import { generateObituaryPDF } from "./services/pdf";
+import { NotificationService } from "./services/notifications";
 import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -1128,10 +1129,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/final-spaces/:id/collaborators", async (req, res) => {
     try {
       const finalSpaceId = parseInt(req.params.id);
-      const collaborator = await storage.createFinalSpaceCollaborator({
-        ...req.body,
-        finalSpaceId
-      });
+      const collaboratorData = { ...req.body, finalSpaceId };
+      const collaborator = await storage.createFinalSpaceCollaborator(collaboratorData);
+      
+      // Send email invitation
+      try {
+        await NotificationService.sendFinalSpaceCollaborationInvite(
+          finalSpaceId,
+          collaboratorData.collaboratorEmail,
+          collaboratorData.collaboratorName || 'Collaborator',
+          'DeathMatters Team' // TODO: Get actual inviter name from session
+        );
+      } catch (emailError) {
+        console.error('Failed to send final space collaboration email:', emailError);
+        // Don't fail the request if email fails
+      }
+      
       res.status(201).json(collaborator);
     } catch (error) {
       console.error("Error adding final space collaborator:", error);
