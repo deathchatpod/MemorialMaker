@@ -171,7 +171,7 @@ function Router() {
       <Route path="/memorial/:slug" component={MemorialPage} />
       <Route path="/collaborate/:uuid" component={Collaborate} />
       <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />
-      <Route path="/view-evaluation/:id" component={ViewEvaluation} /></Route>
+      <Route path="/view-evaluation/:id" component={ViewEvaluation} />
       <Route component={NotFound} />
     </Switch>
   );
