@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, ArrowLeft, Save, Palette, Settings } from "lucide-react";
+import { Heart, ArrowLeft, Save, Palette, Settings, FileText, Image as ImageIcon } from "lucide-react";
+import SimpleMemorialEditor from "@/components/SimpleMemorialEditor";
 
 const editFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
@@ -30,6 +32,7 @@ export default function EditFinalSpace() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("basic");
 
   // Get URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -168,12 +171,29 @@ export default function EditFinalSpace() {
           </div>
         </div>
 
-        {/* Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Memorial Information</CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* Tabbed Interface */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="basic" className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              Basic Details
+            </TabsTrigger>
+            <TabsTrigger value="media" className="flex items-center gap-2">
+              <ImageIcon className="w-4 h-4" />
+              Media & Content
+            </TabsTrigger>
+            <TabsTrigger value="design" className="flex items-center gap-2">
+              <Palette className="w-4 h-4" />
+              Design & Layout
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="basic">
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Memorial Information</CardTitle>
+              </CardHeader>
+              <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Basic Information */}
@@ -330,38 +350,52 @@ export default function EditFinalSpace() {
             </Form>
           </CardContent>
         </Card>
+      </TabsContent>
 
-        {/* Advanced Design Preview */}
-        <Card className="mt-8">
+      <TabsContent value="media">
+        <Card>
+          <CardHeader>
+            <CardTitle>Media & Content Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="p-8 bg-gray-50 rounded-lg border text-center">
+              <ImageIcon className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Media Gallery</h3>
+              <p className="text-gray-600 mb-4">
+                Upload and manage photos, videos, and audio files for the memorial.
+              </p>
+              <p className="text-sm text-gray-500">
+                Media management interface coming soon. Currently managed during memorial creation.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="design">
+        <Card className="h-[800px]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="w-5 h-5" />
               Advanced Design Editor
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="p-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <div className="text-center">
-                <div className="mb-4">
-                  <Settings className="w-12 h-12 mx-auto text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Professional Design Tools</h3>
-                <p className="text-gray-600 mb-6">
-                  The advanced memorial editor with drag-and-drop functionality, resizable elements, 
-                  and comprehensive customization controls is currently being optimized for stability.
-                </p>
-                <p className="text-sm text-gray-500 mb-4">
-                  This will include: typography controls, color themes, layout customization, 
-                  element positioning, and responsive design preview modes.
-                </p>
-                <div className="flex items-center justify-center gap-2 text-sm text-blue-600">
-                  <Settings className="w-4 h-4" />
-                  <span>Coming Soon: Full Design Customization</span>
-                </div>
-              </div>
-            </div>
+          <CardContent className="p-0 h-full">
+            <SimpleMemorialEditor
+              memorial={finalSpace}
+              onSave={async (updates) => {
+                try {
+                  await updateFinalSpace.mutateAsync(updates);
+                } catch (error) {
+                  console.error('Failed to save design updates:', error);
+                  throw error;
+                }
+              }}
+            />
           </CardContent>
         </Card>
+      </TabsContent>
+    </Tabs>
       </div>
     </div>
   );
