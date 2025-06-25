@@ -213,6 +213,28 @@ export const finalSpaceImages = pgTable("final_space_images", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Final Space Collaborators
+export const finalSpaceCollaborators = pgTable("final_space_collaborators", {
+  id: serial("id").primaryKey(),
+  finalSpaceId: integer("final_space_id").references(() => finalSpaces.id).notNull(),
+  collaboratorEmail: varchar("collaborator_email", { length: 255 }).notNull(),
+  collaboratorName: varchar("collaborator_name", { length: 255 }),
+  invitedBy: integer("invited_by").notNull(),
+  invitedByType: varchar("invited_by_type", { length: 50 }).notNull(),
+  status: varchar("status", { length: 20 }).default("pending").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Final Space Collaboration Sessions
+export const finalSpaceCollaborationSessions = pgTable("final_space_collaboration_sessions", {
+  id: serial("id").primaryKey(),
+  uuid: varchar("uuid", { length: 255 }).unique().notNull(),
+  finalSpaceId: integer("final_space_id").references(() => finalSpaces.id).notNull(),
+  collaboratorEmail: varchar("collaborator_email", { length: 255 }).notNull(),
+  lastAccessedAt: timestamp("last_accessed_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // User Types
 export const userTypes = pgTable("user_types", {
   id: serial("id").primaryKey(),
@@ -291,6 +313,22 @@ export const finalSpacesRelations = relations(finalSpaces, ({ one, many }) => ({
     references: [obituaries.id],
   }),
   comments: many(finalSpaceComments),
+  collaborators: many(finalSpaceCollaborators),
+  collaborationSessions: many(finalSpaceCollaborationSessions),
+}));
+
+export const finalSpaceCollaboratorsRelations = relations(finalSpaceCollaborators, ({ one }) => ({
+  finalSpace: one(finalSpaces, {
+    fields: [finalSpaceCollaborators.finalSpaceId],
+    references: [finalSpaces.id],
+  }),
+}));
+
+export const finalSpaceCollaborationSessionsRelations = relations(finalSpaceCollaborationSessions, ({ one }) => ({
+  finalSpace: one(finalSpaces, {
+    fields: [finalSpaceCollaborationSessions.finalSpaceId],
+    references: [finalSpaces.id],
+  }),
 }));
 
 export const finalSpaceCommentsRelations = relations(finalSpaceComments, ({ one, many }) => ({

@@ -1,13 +1,14 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  obituaryCollaborators, collaborationSessions, userTypes, surveyResponses,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
   type TextFeedback, type InsertTextFeedback, type Survey, type InsertSurvey, type Question, type InsertQuestion, 
   type PromptTemplate, type InsertPromptTemplate, type FinalSpace, type InsertFinalSpace, 
   type FinalSpaceComment, type InsertFinalSpaceComment, type FinalSpaceImage, type InsertFinalSpaceImage,
+  type FinalSpaceCollaborator, type InsertFinalSpaceCollaborator, type FinalSpaceCollaborationSession, type InsertFinalSpaceCollaborationSession,
   type ObituaryCollaborator, type InsertObituaryCollaborator, type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse
 } from "@shared/schema";
@@ -135,6 +136,10 @@ export interface IStorage {
   getSurveyResponses(surveyId: number): Promise<SurveyResponse[]>;
   getSurveyResponsesByType(responseType: string, userId?: number, userType?: string, funeralHomeId?: number): Promise<SurveyResponse[]>;
   createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
+  
+  // Collaboration queries for unified table
+  getObituaryCollaborationsByEmail(email: string): Promise<any[]>;
+  getFinalSpaceCollaborationsByEmail(email: string): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -632,6 +637,41 @@ export class DatabaseStorage implements IStorage {
   async createSurveyResponse(insertResponse: InsertSurveyResponse): Promise<SurveyResponse> {
     const [response] = await db.insert(surveyResponses).values(insertResponse).returning();
     return response;
+  }
+  
+  // Collaboration queries for unified table
+  async getObituaryCollaborationsByEmail(email: string): Promise<any[]> {
+    return await db
+      .select({
+        id: obituaryCollaborators.id,
+        obituaryId: obituaryCollaborators.obituaryId,
+        obituaryTitle: obituaries.deceasedName,
+        collaboratorEmail: obituaryCollaborators.collaboratorEmail,
+        status: obituaryCollaborators.status,
+        invitedBy: obituaryCollaborators.invitedBy,
+        invitedByType: obituaryCollaborators.invitedByType,
+        createdAt: obituaryCollaborators.createdAt,
+      })
+      .from(obituaryCollaborators)
+      .leftJoin(obituaries, eq(obituaryCollaborators.obituaryId, obituaries.id))
+      .where(eq(obituaryCollaborators.collaboratorEmail, email));
+  }
+
+  async getFinalSpaceCollaborationsByEmail(email: string): Promise<any[]> {
+    return await db
+      .select({
+        id: finalSpaceCollaborators.id,
+        finalSpaceId: finalSpaceCollaborators.finalSpaceId,
+        finalSpaceName: finalSpaces.personName,
+        collaboratorEmail: finalSpaceCollaborators.collaboratorEmail,
+        status: finalSpaceCollaborators.status,
+        invitedBy: finalSpaceCollaborators.invitedBy,
+        invitedByType: finalSpaceCollaborators.invitedByType,
+        createdAt: finalSpaceCollaborators.createdAt,
+      })
+      .from(finalSpaceCollaborators)
+      .leftJoin(finalSpaces, eq(finalSpaceCollaborators.finalSpaceId, finalSpaces.id))
+      .where(eq(finalSpaceCollaborators.collaboratorEmail, email));
   }
 }
 
