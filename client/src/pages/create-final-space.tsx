@@ -121,7 +121,7 @@ export default function CreateFinalSpace() {
 
   const onSubmit = async (data: CreateFinalSpaceForm) => {
     try {
-      console.log('Form submission started with data:', data);
+      // Start form submission process
       
       // Prepare complete data for API submission
       const finalData = {

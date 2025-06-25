@@ -41,7 +41,7 @@ export default function EditFinalSpace() {
   const userTypeParam = 'admin'; // Default for testing
   const userIdParam = 1; // Default for testing
 
-  console.log('Edit Final Space - Route params:', { id, userTypeParam, userIdParam });
+  // Route parameters loaded
 
   // Fetch the final space data
   const { data: finalSpace, isLoading } = useQuery({
@@ -382,7 +382,7 @@ export default function EditFinalSpace() {
                 try {
                   await updateFinalSpace.mutateAsync(updates);
                 } catch (error) {
-                  console.error('Failed to save design updates:', error);
+                  // Error saving design updates
                   throw error;
                 }
               }}

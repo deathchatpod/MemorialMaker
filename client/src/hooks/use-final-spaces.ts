@@ -37,7 +37,7 @@ export function useFinalSpaceBySlug(slug: string) {
 export function useCreateFinalSpace() {
   return useMutation({
     mutationFn: async (data: any) => {
-      console.log('Creating final space with data:', data);
+      // Creating new memorial space
       
       const response = await fetch('/api/final-spaces', {
         method: 'POST',
@@ -49,7 +49,7 @@ export function useCreateFinalSpace() {
       
       if (!response.ok) {
         const errorData = await response.text();
-        console.error('API Error:', errorData);
+        // API error occurred
         throw new Error(`Failed to create final space: ${errorData}`);
       }
       

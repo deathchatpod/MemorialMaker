@@ -301,7 +301,7 @@ export const createActionButtons = (actions: Array<{
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.log("Button clicked for row:", row);
+          // Button action triggered
           action.onClick(row);
         }}
         title={action.title}

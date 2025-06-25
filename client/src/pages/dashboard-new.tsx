@@ -132,7 +132,7 @@ export default function Dashboard() {
     localStorage.setItem('dashboard-active-tab', section);
   };
 
-  console.log(`User: ${currentUser.userType}, Menu items: ${menuItems.map(i => i.label).join(', ')}`);
+  // Dashboard menu items loaded for user type
 
   return (
     <div className="flex h-screen bg-gray-50">
