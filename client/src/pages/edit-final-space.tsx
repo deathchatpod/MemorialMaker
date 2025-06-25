@@ -165,12 +165,7 @@ export default function EditFinalSpace() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href={`/memorial/${finalSpace.slug}`}>
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Memorial
-              </Button>
-            </Link>
+            {/* Navigation handled by global header */}
           </div>
         </div>
 
