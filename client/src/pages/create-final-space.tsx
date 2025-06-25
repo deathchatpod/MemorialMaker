@@ -64,37 +64,43 @@ export default function CreateFinalSpace() {
       musicPlaylist: "",
       isPublic: true,
       allowComments: true,
-      userId: userIdParam,
-      images: [],
-      audioFiles: [],
-      youtubeLinks: [],
-      primaryMediaType: "",
-      primaryMediaId: ""
+      userId: userIdParam
     }
   });
 
   const onSubmit = async (data: CreateFinalSpaceForm) => {
     try {
-      console.log('Submitting final space data:', data);
-      console.log('Media data:', mediaData);
+      console.log('Form submission started with data:', data);
       
-      // Prepare media data for submission
+      // Prepare complete data for API submission
       const finalData = {
-        ...data,
+        personName: data.personName,
+        dateOfBirth: data.dateOfBirth || null,
+        dateOfDeath: data.dateOfDeath || null,
+        description: data.description || null,
+        obituaryId: data.obituaryId || null,
+        socialMediaLinks: data.socialMediaLinks || [],
+        musicPlaylist: data.musicPlaylist || null,
+        isPublic: data.isPublic !== false,
+        allowComments: data.allowComments !== false,
+        // Server will handle these fields
         funeralHomeId: userTypeParam === 'funeral_home' ? userIdParam : null,
         createdById: userIdParam,
         createdByType: userTypeParam,
-        images: mediaData.images,
-        audioFiles: mediaData.audioFiles,
-        youtubeLinks: mediaData.youtubeLinks,
+        // Media data from component state
+        images: mediaData.images || [],
+        audioFiles: mediaData.audioFiles || [],
+        youtubeLinks: mediaData.youtubeLinks || [],
         primaryMediaType: mediaData.primaryMedia?.type || null,
         primaryMediaId: mediaData.primaryMedia?.id || null,
         status: 'published'
       };
 
-      console.log('Final data being sent:', finalData);
+      console.log('Sending final data to API:', finalData);
       
       const createdSpace = await createFinalSpace.mutateAsync(finalData);
+      console.log('Successfully created space:', createdSpace);
+      
       toast({
         title: "Success",
         description: "Memorial space created successfully"
@@ -106,7 +112,7 @@ export default function CreateFinalSpace() {
       console.error('Error creating final space:', error);
       toast({
         title: "Error",
-        description: "Failed to create memorial space",
+        description: error.message || "Failed to create memorial space",
         variant: "destructive"
       });
     }
