@@ -974,38 +974,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/final-spaces", upload.single('image'), async (req, res) => {
+  app.post("/api/final-spaces", async (req, res) => {
     try {
-      const formData = JSON.parse(req.body.formData);
+      console.log('Received final space creation request:', req.body);
+      
+      const data = req.body;
       
       // Generate slug from person name
-      const slug = formData.personName.toLowerCase()
+      const slug = data.personName.toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '') + '-' + Date.now();
 
-      const validatedData = insertFinalSpaceSchema.parse({
-        funeralHomeId: formData.funeralHomeId || null,
-        createdById: formData.createdById || 1,
-        createdByType: formData.createdByType || 'funeral_home',
-        obituaryId: formData.obituaryId ? parseInt(formData.obituaryId) : undefined,
+      const validatedData = {
+        funeralHomeId: data.funeralHomeId || null,
+        createdById: data.createdById || 1,
+        createdByType: data.createdByType || 'funeral_home',
+        obituaryId: data.obituaryId ? parseInt(data.obituaryId) : null,
         slug,
-        personName: formData.personName,
-        dateOfBirth: formData.dateOfBirth,
-        dateOfDeath: formData.dateOfDeath,
-        description: formData.description,
-        socialMediaLinks: formData.socialMediaLinks || [],
-        musicPlaylist: formData.musicPlaylist,
-        isPublic: formData.isPublic !== false,
-        allowComments: formData.allowComments !== false,
-        images: formData.images || [],
-        audioFiles: formData.audioFiles || [],
-        youtubeLinks: formData.youtubeLinks || [],
-        primaryMediaType: formData.primaryMediaType,
-        primaryMediaId: formData.primaryMediaId,
-        status: 'published'
-      });
+        personName: data.personName,
+        dateOfBirth: data.dateOfBirth || null,
+        dateOfDeath: data.dateOfDeath || null,
+        description: data.description || null,
+        socialMediaLinks: data.socialMediaLinks || null,
+        musicPlaylist: data.musicPlaylist || null,
+        isPublic: data.isPublic !== false,
+        allowComments: data.allowComments !== false,
+        images: data.images || [],
+        audioFiles: data.audioFiles || [],
+        youtubeLinks: data.youtubeLinks || [],
+        primaryMediaType: data.primaryMediaType || null,
+        primaryMediaId: data.primaryMediaId || null,
+        status: data.status || 'published',
+        theme: 'classic',
+        viewCount: 0
+      };
 
+      console.log('Creating final space with validated data:', validatedData);
+      
       const finalSpace = await storage.createFinalSpace(validatedData);
+      console.log('Created final space:', finalSpace);
+      
       res.json(finalSpace);
     } catch (error) {
       console.error('Error creating final space:', error);

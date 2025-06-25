@@ -75,16 +75,25 @@ export default function CreateFinalSpace() {
 
   const onSubmit = async (data: CreateFinalSpaceForm) => {
     try {
+      console.log('Submitting final space data:', data);
+      console.log('Media data:', mediaData);
+      
       // Prepare media data for submission
       const finalData = {
         ...data,
+        funeralHomeId: userTypeParam === 'funeral_home' ? userIdParam : null,
+        createdById: userIdParam,
+        createdByType: userTypeParam,
         images: mediaData.images,
         audioFiles: mediaData.audioFiles,
         youtubeLinks: mediaData.youtubeLinks,
         primaryMediaType: mediaData.primaryMedia?.type || null,
-        primaryMediaId: mediaData.primaryMedia?.id || null
+        primaryMediaId: mediaData.primaryMedia?.id || null,
+        status: 'published'
       };
 
+      console.log('Final data being sent:', finalData);
+      
       await createFinalSpace.mutateAsync(finalData);
       toast({
         title: "Success",
@@ -92,6 +101,7 @@ export default function CreateFinalSpace() {
       });
       setLocation(`/dashboard?userType=${userTypeParam}&userId=${userIdParam}`);
     } catch (error) {
+      console.error('Error creating final space:', error);
       toast({
         title: "Error",
         description: "Failed to create memorial space",
