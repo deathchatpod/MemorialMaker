@@ -22,12 +22,22 @@ export default function AccountInformation() {
     businessName: '',
     email: '',
     phone: '',
-    address: '',
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: '',
     website: '',
     contactEmail: '',
   });
 
-  const [additionalAddresses, setAdditionalAddresses] = useState<string[]>([]);
+  const [additionalAddresses, setAdditionalAddresses] = useState<Array<{
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  }>>([]);
   const [isAdditionalAddressesOpen, setIsAdditionalAddressesOpen] = useState(false);
   
   const [passwordData, setPasswordData] = useState({
@@ -55,7 +65,11 @@ export default function AccountInformation() {
       businessName: userData.businessName,
       email: userData.email,
       phone: userData.phone,
-      address: '',
+      street: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'United States',
       website: '',
       contactEmail: '',
     });
@@ -116,16 +130,22 @@ export default function AccountInformation() {
   };
 
   const addAdditionalAddress = () => {
-    setAdditionalAddresses([...additionalAddresses, '']);
+    setAdditionalAddresses([...additionalAddresses, {
+      street: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      country: 'United States'
+    }]);
   };
 
   const removeAdditionalAddress = (index: number) => {
     setAdditionalAddresses(additionalAddresses.filter((_, i) => i !== index));
   };
 
-  const updateAdditionalAddress = (index: number, value: string) => {
+  const updateAdditionalAddress = (index: number, field: string, value: string) => {
     const updated = [...additionalAddresses];
-    updated[index] = value;
+    updated[index] = { ...updated[index], [field]: value };
     setAdditionalAddresses(updated);
   };
 
@@ -248,16 +268,67 @@ export default function AccountInformation() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="address">Primary Address</Label>
-                <Textarea
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="123 Main St, City, State 12345"
-                  rows={3}
-                />
+              <div className="space-y-4">
+                <h3 className="font-medium text-gray-900">Primary Address</h3>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="street">Street Address</Label>
+                  <Input
+                    id="street"
+                    name="street"
+                    value={formData.street}
+                    onChange={handleInputChange}
+                    placeholder="123 Main Street"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      placeholder="New York"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State/Province</Label>
+                    <Input
+                      id="state"
+                      name="state"
+                      value={formData.state}
+                      onChange={handleInputChange}
+                      placeholder="NY"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode">ZIP/Postal Code</Label>
+                    <Input
+                      id="zipCode"
+                      name="zipCode"
+                      value={formData.zipCode}
+                      onChange={handleInputChange}
+                      placeholder="10001"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="country">Country</Label>
+                    <Input
+                      id="country"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      placeholder="United States"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Additional Addresses - Collapsible */}
@@ -277,23 +348,67 @@ export default function AccountInformation() {
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-3 mt-3">
                   {additionalAddresses.map((address, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Textarea
-                        value={address}
-                        onChange={(e) => updateAdditionalAddress(index, e.target.value)}
-                        placeholder={`Additional address ${index + 1}`}
-                        rows={2}
-                        className="flex-1"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeAdditionalAddress(index)}
-                        className="self-start"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium text-sm">Additional Address {index + 1}</h4>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeAdditionalAddress(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Street Address</Label>
+                        <Input
+                          value={address.street}
+                          onChange={(e) => updateAdditionalAddress(index, 'street', e.target.value)}
+                          placeholder="123 Main Street"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>City</Label>
+                          <Input
+                            value={address.city}
+                            onChange={(e) => updateAdditionalAddress(index, 'city', e.target.value)}
+                            placeholder="New York"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>State/Province</Label>
+                          <Input
+                            value={address.state}
+                            onChange={(e) => updateAdditionalAddress(index, 'state', e.target.value)}
+                            placeholder="NY"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>ZIP/Postal Code</Label>
+                          <Input
+                            value={address.zipCode}
+                            onChange={(e) => updateAdditionalAddress(index, 'zipCode', e.target.value)}
+                            placeholder="10001"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label>Country</Label>
+                          <Input
+                            value={address.country}
+                            onChange={(e) => updateAdditionalAddress(index, 'country', e.target.value)}
+                            placeholder="United States"
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                   <Button
