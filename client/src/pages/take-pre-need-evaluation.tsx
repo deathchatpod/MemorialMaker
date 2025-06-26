@@ -231,8 +231,8 @@ export default function TakePreNeedEvaluation() {
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Pre Need Evaluation</h1>
-        <p className="text-gray-600">
+        <h1 className="text-2xl font-bold text-foreground mb-2">Pre Need Evaluation</h1>
+        <p className="text-muted-foreground">
           Complete this comprehensive assessment to help us understand your funeral planning needs and preferences.
         </p>
       </div>

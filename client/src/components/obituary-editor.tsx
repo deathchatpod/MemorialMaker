@@ -176,7 +176,7 @@ export default function ObituaryEditor({ obituary, onSave, onClose, onDownload }
                   <span>{getCharacterCount()} characters</span>
                 </div>
                 {hasChanges && (
-                  <span className="text-amber-600 flex items-center">
+                  <span className="text-destructive flex items-center">
                     <i className="fas fa-circle text-xs mr-1"></i>
                     Unsaved changes
                   </span>

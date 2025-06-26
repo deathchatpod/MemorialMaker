@@ -137,7 +137,7 @@ export default function Dashboard() {
                             <tr key={obituary.id} className="hover:bg-gray-50">
                               <td className="border border-gray-300 px-4 py-2">{obituary.fullName || obituary.full_name || 'Untitled'}</td>
                               <td className="border border-gray-300 px-4 py-2">
-                                <Badge className={obituary.status === 'generated' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                <Badge className={obituary.status === 'generated' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}>
                                   {obituary.status}
                                 </Badge>
                               </td>
@@ -206,7 +206,7 @@ export default function Dashboard() {
                             <tr key={finalSpace.id} className="hover:bg-gray-50">
                               <td className="border border-gray-300 px-4 py-2">{finalSpace.personName || finalSpace.person_name || 'Untitled'}</td>
                               <td className="border border-gray-300 px-4 py-2">
-                                <Badge className={finalSpace.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                <Badge className={finalSpace.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}>
                                   {finalSpace.status}
                                 </Badge>
                               </td>
