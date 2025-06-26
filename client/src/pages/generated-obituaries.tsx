@@ -311,8 +311,8 @@ export default function GeneratedObituaries() {
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-gray-900">Generated Obituaries</h2>
-        <p className="text-gray-600 mt-1">
+        <h2 className="text-2xl font-semibold text-foreground">Generated Obituaries</h2>
+        <p className="text-muted-foreground mt-1">
           Review the AI-generated obituaries and select text you like or dislike for refinement
         </p>
       </div>
@@ -323,11 +323,11 @@ export default function GeneratedObituaries() {
       </div>
 
       {/* Generated Obituaries with Version Management */}
-      <Card>
+      <Card className="bg-card border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Generated Obituaries</CardTitle>
+              <CardTitle className="text-foreground">Generated Obituaries</CardTitle>
               <p className="text-muted-foreground">
                 Review the AI-generated obituaries and select text you like or dislike for refinement
               </p>

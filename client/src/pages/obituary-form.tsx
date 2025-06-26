@@ -801,7 +801,7 @@ export default function ObituaryForm() {
                             return (
                               <FormItem
                                 key={hobby.value}
-                                className="flex items-center p-2 border border-gray-300 rounded hover:bg-gray-50"
+                                className="flex items-center p-2 border border-border rounded hover:bg-muted"
                               >
                                 <FormControl>
                                   <Checkbox
@@ -814,7 +814,7 @@ export default function ObituaryForm() {
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="ml-2 text-sm text-gray-900 cursor-pointer">
+                                <FormLabel className="ml-2 text-sm text-foreground cursor-pointer">
                                   {hobby.label}
                                 </FormLabel>
                               </FormItem>
@@ -848,10 +848,10 @@ export default function ObituaryForm() {
           </Card>
 
           {/* Religion & Spirituality Section */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <i className="fas fa-praying-hands mr-2 text-primary"></i>
+              <CardTitle className="flex items-center text-foreground">
+                <i className="fas fa-praying-hands mr-2 text-muted-foreground"></i>
                 Religion & Spirituality (Optional)
               </CardTitle>
             </CardHeader>
@@ -1006,10 +1006,10 @@ export default function ObituaryForm() {
           </Card>
 
           {/* Photo Upload Section */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <i className="fas fa-camera mr-2 text-primary"></i>
+              <CardTitle className="flex items-center text-foreground">
+                <i className="fas fa-camera mr-2 text-muted-foreground"></i>
                 Photo Upload
               </CardTitle>
             </CardHeader>

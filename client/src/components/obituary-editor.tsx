@@ -120,8 +120,8 @@ export default function ObituaryEditor({ obituary, onSave, onClose, onDownload }
           <i className="fas fa-arrow-left mr-2"></i>
           Back to Generated Obituaries
         </Button>
-        <h2 className="text-2xl font-semibold text-gray-900">Edit Obituary</h2>
-        <p className="text-gray-600 mt-1">
+        <h2 className="text-2xl font-semibold text-foreground">Edit Obituary</h2>
+        <p className="text-muted-foreground mt-1">
           {obituary.aiProvider.charAt(0).toUpperCase() + obituary.aiProvider.slice(1)} AI - 
           {obituary.isRevision ? ' Revised Version' : ` Version ${obituary.version}`} - {obituary.tone}
         </p>
@@ -130,10 +130,10 @@ export default function ObituaryEditor({ obituary, onSave, onClose, onDownload }
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Editor */}
         <div className="lg:col-span-2">
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle>Obituary Content</CardTitle>
+                <CardTitle className="text-foreground">Obituary Content</CardTitle>
                 <div className="flex space-x-2">
                   <Button
                     size="sm"
