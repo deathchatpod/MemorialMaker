@@ -189,9 +189,9 @@ export default function ObituaryEditor({ obituary, onSave, onClose, onDownload }
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Actions */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle>Actions</CardTitle>
+              <CardTitle className="text-foreground">Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <Button 
@@ -234,13 +234,13 @@ export default function ObituaryEditor({ obituary, onSave, onClose, onDownload }
           </Card>
 
           {/* Writing Tips */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle>Writing Tips</CardTitle>
+              <CardTitle className="text-foreground">Writing Tips</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm text-gray-600">
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
               <div className="space-y-2">
-                <p className="font-medium text-gray-800">Structure Guidelines:</p>
+                <p className="font-medium text-foreground">Structure Guidelines:</p>
                 <ul className="space-y-1 list-disc list-inside">
                   <li>Start with announcement of passing</li>
                   <li>Include key biographical information</li>

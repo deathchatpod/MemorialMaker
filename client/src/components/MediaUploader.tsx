@@ -192,9 +192,9 @@ export default function MediaUploader({
     <div className="space-y-6">
       {/* Primary Media Selection */}
       {allMedia.length > 0 && (
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Star className="w-5 h-5" />
               Primary Media Selection
             </CardTitle>

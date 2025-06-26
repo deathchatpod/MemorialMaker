@@ -91,9 +91,9 @@ export function LayerManager({
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-card border-border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           <Layers className="h-5 w-5" />
           Layer Manager
           <Badge variant="secondary">{elements.length} elements</Badge>
