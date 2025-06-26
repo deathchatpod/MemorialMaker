@@ -221,10 +221,10 @@ export default function ObituaryForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           {/* Basic Information Section */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <i className="fas fa-user mr-2 text-primary"></i>
+              <CardTitle className="flex items-center text-foreground">
+                <i className="fas fa-user mr-2 text-muted-foreground"></i>
                 Basic Information
               </CardTitle>
             </CardHeader>
@@ -306,17 +306,17 @@ export default function ObituaryForm() {
           </Card>
 
           {/* Biography Section */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <i className="fas fa-book mr-2 text-primary"></i>
+              <CardTitle className="flex items-center text-foreground">
+                <i className="fas fa-book mr-2 text-muted-foreground"></i>
                 Biography & Life Story
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
               {/* Education */}
               <div>
-                <h4 className="text-md font-medium text-gray-800 mb-4">Education</h4>
+                <h4 className="text-md font-medium text-foreground mb-4">Education</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
@@ -379,7 +379,7 @@ export default function ObituaryForm() {
 
               {/* Career */}
               <div>
-                <h4 className="text-md font-medium text-gray-800 mb-4">Career & Occupation</h4>
+                <h4 className="text-md font-medium text-foreground mb-4">Career & Occupation</h4>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
@@ -449,17 +449,17 @@ export default function ObituaryForm() {
           </Card>
 
           {/* Family Information Section */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <i className="fas fa-users mr-2 text-primary"></i>
+              <CardTitle className="flex items-center text-foreground">
+                <i className="fas fa-users mr-2 text-muted-foreground"></i>
                 Family Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Spouse */}
               <div>
-                <h4 className="text-md font-medium text-gray-800 mb-4">Spouse</h4>
+                <h4 className="text-md font-medium text-foreground mb-4">Spouse</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField
                     control={form.control}
@@ -508,7 +508,7 @@ export default function ObituaryForm() {
 
               {/* Children */}
               <div>
-                <h4 className="text-md font-medium text-gray-800 mb-4">Children</h4>
+                <h4 className="text-md font-medium text-foreground mb-4">Children</h4>
                 <div className="space-y-4">
                   {childrenEntries.map((child, index) => (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
@@ -614,10 +614,10 @@ export default function ObituaryForm() {
           </Card>
 
           {/* Characteristics & Preferences Section */}
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center">
-                <i className="fas fa-heart mr-2 text-primary"></i>
+              <CardTitle className="flex items-center text-foreground">
+                <i className="fas fa-heart mr-2 text-muted-foreground"></i>
                 Characteristics & Preferences
               </CardTitle>
             </CardHeader>
@@ -635,49 +635,49 @@ export default function ObituaryForm() {
                         value={field.value}
                         className="grid grid-cols-1 md:grid-cols-3 gap-4"
                       >
-                        <div className="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center p-3 border border-border rounded-lg hover:bg-muted">
                           <RadioGroupItem value="traditional" id="traditional" />
                           <div className="ml-3">
-                            <label htmlFor="traditional" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            <label htmlFor="traditional" className="text-sm font-medium text-foreground cursor-pointer">
                               Traditional / Formal
                             </label>
-                            <div className="text-xs text-gray-500">Classic, respectful approach</div>
+                            <div className="text-xs text-muted-foreground">Classic, respectful approach</div>
                           </div>
                         </div>
-                        <div className="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center p-3 border border-border rounded-lg hover:bg-muted">
                           <RadioGroupItem value="celebratory" id="celebratory" />
                           <div className="ml-3">
-                            <label htmlFor="celebratory" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            <label htmlFor="celebratory" className="text-sm font-medium text-foreground cursor-pointer">
                               Celebratory / Uplifting
                             </label>
-                            <div className="text-xs text-gray-500">Focus on joy and life celebration</div>
+                            <div className="text-xs text-muted-foreground">Focus on joy and life celebration</div>
                           </div>
                         </div>
-                        <div className="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center p-3 border border-border rounded-lg hover:bg-muted">
                           <RadioGroupItem value="poetic" id="poetic" />
                           <div className="ml-3">
-                            <label htmlFor="poetic" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            <label htmlFor="poetic" className="text-sm font-medium text-foreground cursor-pointer">
                               Poetic / Reflective
                             </label>
-                            <div className="text-xs text-gray-500">Thoughtful and meaningful</div>
+                            <div className="text-xs text-muted-foreground">Thoughtful and meaningful</div>
                           </div>
                         </div>
-                        <div className="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center p-3 border border-border rounded-lg hover:bg-muted">
                           <RadioGroupItem value="lighthearted" id="lighthearted" />
                           <div className="ml-3">
-                            <label htmlFor="lighthearted" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            <label htmlFor="lighthearted" className="text-sm font-medium text-foreground cursor-pointer">
                               Lighthearted / Humorous
                             </label>
-                            <div className="text-xs text-gray-500">Warm and uplifting with gentle humor</div>
+                            <div className="text-xs text-muted-foreground">Warm and uplifting with gentle humor</div>
                           </div>
                         </div>
-                        <div className="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center p-3 border border-border rounded-lg hover:bg-muted">
                           <RadioGroupItem value="personal" id="personal" />
                           <div className="ml-3">
-                            <label htmlFor="personal" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            <label htmlFor="personal" className="text-sm font-medium text-foreground cursor-pointer">
                               Personal / Story Driven
                             </label>
-                            <div className="text-xs text-gray-500">Rich in personal stories and anecdotes</div>
+                            <div className="text-xs text-muted-foreground">Rich in personal stories and anecdotes</div>
                           </div>
                         </div>
                       </RadioGroup>
