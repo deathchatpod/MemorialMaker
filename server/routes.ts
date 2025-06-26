@@ -736,11 +736,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (userType === 'individual') {
         // For individuals, get collaborations where they are invited
+        const userEmail = (req.user as any)?.email;
+        if (!userEmail) {
+          return res.status(401).json({ message: "User email not found" });
+        }
+        
         const allCollaborators = await db.select()
           .from(obituaryCollaborators)
-          .where(eq(obituaryCollaborators.email, 
-            req.user?.email || ''
-          ));
+          .where(eq(obituaryCollaborators.email, userEmail));
         
         // Get collaboration sessions and obituary details
         for (const collab of allCollaborators) {
