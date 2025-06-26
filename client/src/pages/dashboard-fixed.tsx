@@ -372,7 +372,6 @@ export default function Dashboard() {
           {/* Platform Surveys Section */}
           {activeSection === 'surveys' && (
             <DataTable
-              title="Platform Surveys"
               data={Array.isArray(surveys) ? surveys : []}
               columns={[
                 {
