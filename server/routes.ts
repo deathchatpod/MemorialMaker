@@ -19,6 +19,7 @@ import nodemailer from "nodemailer";
 import { db } from "./db";
 import { eq, and, or, ilike, gte, lte, desc, sql } from "drizzle-orm";
 import { obituaries, finalSpaces } from "@shared/schema";
+import { apiRateLimit, searchRateLimit, securityHeaders, sanitizeInput, validateFileUpload } from "./middleware/security";
 
 // Configure multer for file uploads
 const storage_multer = multer.diskStorage({
@@ -1200,6 +1201,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating final space collaboration session:", error);
       res.status(500).json({ error: "Failed to create collaboration session" });
+    }
+  });
+
+  // Search API endpoint with rate limiting
+  app.get('/api/search', searchRateLimit, async (req, res) => {
+    try {
+      const { q: query, type, dateFrom, dateTo, funeralHomeId } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ error: 'Search query is required' });
+      }
+
+      const searchQuery = `%${query}%`;
+      const results = {
+        obituaries: [],
+        memorials: [],
+        total: 0
+      };
+
+      // Search obituaries
+      if (!type || type === 'obituaries' || type === 'all') {
+        const obituaryResults = await db
+          .select({
+            id: obituaries.id,
+            type: sql<string>`'obituary'`,
+            title: obituaries.fullName,
+            createdAt: obituaries.createdAt,
+            funeralHomeId: obituaries.funeralHomeId,
+            status: obituaries.status
+          })
+          .from(obituaries)
+          .where(ilike(obituaries.fullName, searchQuery))
+          .orderBy(desc(obituaries.createdAt));
+        
+        results.obituaries = obituaryResults;
+      }
+
+      // Search memorials
+      if (!type || type === 'memorials' || type === 'all') {
+        const memorialResults = await db
+          .select({
+            id: finalSpaces.id,
+            type: sql<string>`'memorial'`,
+            title: finalSpaces.personName,
+            createdAt: finalSpaces.createdAt,
+            funeralHomeId: finalSpaces.funeralHomeId,
+            status: finalSpaces.status
+          })
+          .from(finalSpaces)
+          .where(
+            or(
+              ilike(finalSpaces.personName, searchQuery),
+              ilike(finalSpaces.description, searchQuery)
+            )
+          )
+          .orderBy(desc(finalSpaces.createdAt));
+        
+        results.memorials = memorialResults;
+      }
+
+      results.total = results.obituaries.length + results.memorials.length;
+      res.json(results);
+    } catch (error) {
+      console.error('Search error:', error);
+      res.status(500).json({ error: 'Search failed' });
     }
   });
 
