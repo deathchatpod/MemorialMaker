@@ -138,8 +138,8 @@ export default function EditFinalSpace() {
         <Card className="max-w-md mx-auto">
           <CardContent className="text-center py-12">
             <Heart className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Memorial Not Found</h3>
-            <p className="text-gray-600">
+            <h3 className="text-lg font-medium text-foreground mb-2">Memorial Not Found</h3>
+            <p className="text-muted-foreground">
               The memorial you're trying to edit doesn't exist or you don't have permission to edit it.
             </p>
             <Link href="/dashboard">
@@ -355,14 +355,8 @@ export default function EditFinalSpace() {
         <MediaManager 
           memorial={finalSpace}
           onMediaUpdate={(updates: any) => {
-            // Update memorial data with media changes  
-            if (finalSpace) {
-              // Handle media updates here
-              toast({
-                title: "Media Updated",
-                description: "Memorial media has been updated"
-              });
-            }
+            // Update memorial data with media changes silently
+            // Toast notifications are handled by MediaManager internally when needed
           }}
         />
       </TabsContent>
