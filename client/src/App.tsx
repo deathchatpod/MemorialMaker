@@ -37,28 +37,6 @@ interface User {
 function GlobalHeader() {
   const [location, setLocation] = useLocation();
 
-  // Get current user from URL params (existing functionality)
-  const urlParams = new URLSearchParams(window.location.search);
-  const userTypeParam = urlParams.get('userType');
-
-  const currentUser = (() => {
-    if (userTypeParam === 'admin') {
-      return { id: 2, username: 'John Admin', userType: 'admin' };
-    } else if (userTypeParam === 'employee') {
-      return { id: 3, username: 'Mike Johnson', userType: 'employee' };
-    } else if (userTypeParam === 'individual') {
-      return { id: 4, username: 'Sarah Wilson', userType: 'individual' };
-    } else {
-      return { id: 1, username: 'Jane Smith', userType: 'funeral_home' };
-    }
-  })();
-
-  const handleUserChange = (userType: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('userType', userType);
-    window.location.href = url.toString();
-  };
-
   const { data: authenticatedUser, isLoading: authLoading, error: authError } = useQuery({
     queryKey: ['/auth/user'],
     queryFn: async () => {
@@ -73,6 +51,48 @@ function GlobalHeader() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });
+
+  // Get current user from URL params (existing functionality)
+  const urlParams = new URLSearchParams(window.location.search);
+  const userTypeParam = urlParams.get('userType');
+
+  const currentUser = (() => {
+    // If user is authenticated, use their actual data but allow override for testing
+    if (authenticatedUser && !userTypeParam) {
+      return {
+        id: authenticatedUser.id,
+        username: authenticatedUser.name || 'User',
+        userType: authenticatedUser.userType || 'admin'
+      };
+    }
+    
+    // URL parameter override for testing
+    if (userTypeParam === 'admin') {
+      return { id: 1, username: 'John Admin', userType: 'admin' };
+    } else if (userTypeParam === 'employee') {
+      return { id: 3, username: 'Mike Johnson', userType: 'employee' };
+    } else if (userTypeParam === 'individual') {
+      return { id: 4, username: 'Sarah Wilson', userType: 'individual' };
+    } else if (userTypeParam === 'funeral_home') {
+      return { id: 2, username: 'Jane Smith', userType: 'funeral_home' };
+    } else if (authenticatedUser) {
+      // Default to authenticated user if no URL param
+      return {
+        id: authenticatedUser.id,
+        username: authenticatedUser.name || 'User',
+        userType: authenticatedUser.userType || 'admin'
+      };
+    } else {
+      // Fallback when not authenticated
+      return { id: 1, username: 'John Admin', userType: 'admin' };
+    }
+  })();
+
+  const handleUserChange = (userType: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('userType', userType);
+    window.location.href = url.toString();
+  };
 
   const handleLogout = async () => {
     try {
@@ -161,7 +181,7 @@ function GlobalHeader() {
               <label htmlFor="user-type-select" className="sr-only">Select user type for testing</label>
               <select 
                 id="user-type-select"
-                value={currentUser.userType}
+                value={userTypeParam || authenticatedUser.userType || 'admin'}
                 onChange={(e) => handleUserChange(e.target.value)}
                 className="bg-input border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
                 aria-label="Switch user type for testing purposes"
