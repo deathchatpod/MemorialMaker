@@ -84,8 +84,15 @@ export default function Dashboard() {
     { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-users' },
     { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-clipboard-list' },
     { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-chart-bar' },
+    ...(currentUser.userType === 'admin' || currentUser.userType === 'funeral_home' 
+      ? [{ id: 'team-management', label: 'Team Management', icon: 'fas fa-users-cog' }] 
+      : []),
     { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' }
   ];
+
+  // Debug: Log current user and menu items
+  console.log('Current user:', currentUser);
+  console.log('Menu items:', menuItems);
 
   const handleSectionChange = (section: string) => {
     setActiveSection(section);
@@ -158,6 +165,7 @@ export default function Dashboard() {
             {activeSection === 'finalspaces' && 'FinalSpaces'}
             {activeSection === 'surveys' && 'Platform Surveys'}
             {activeSection === 'pre-need' && 'Pre Need Evaluation'}
+            {activeSection === 'team-management' && 'Team Management'}
             {activeSection === 'account' && 'My Account'}
           </h1>
 
