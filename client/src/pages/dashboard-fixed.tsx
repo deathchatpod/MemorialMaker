@@ -206,7 +206,6 @@ export default function Dashboard() {
           {/* Obituaries Section */}
           {activeSection === 'obituaries' && (
             <DataTable
-              title="Obituaries"
               data={Array.isArray(obituaries) ? obituaries : []}
               columns={[
                 {
@@ -280,7 +279,6 @@ export default function Dashboard() {
           {/* FinalSpaces Section */}
           {activeSection === 'finalspaces' && (
             <DataTable
-              title="FinalSpaces"
               data={Array.isArray(finalSpaces) ? finalSpaces : []}
               columns={[
                 {

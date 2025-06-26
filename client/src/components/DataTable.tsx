@@ -17,7 +17,7 @@ export interface TableColumn {
 }
 
 interface DataTableProps {
-  title: string;
+  title?: string;
   data: any[];
   columns: TableColumn[];
   isLoading?: boolean;
@@ -147,9 +147,11 @@ export default function DataTable({
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
+        {title && (
+          <CardHeader>
+            <CardTitle>{title}</CardTitle>
+          </CardHeader>
+        )}
         <CardContent>
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
@@ -166,15 +168,31 @@ export default function DataTable({
 
   return (
     <Card className="bg-card border-border">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-foreground">
-            {title} ({processedData.length}
-            {searchTerm || Object.values(filters).some(f => f && f !== "all") 
-              ? ` of ${data.length} total` 
-              : ""})
-          </CardTitle>
-          {createButton && (
+      {title && (
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-foreground">
+              {title} ({processedData.length}
+              {searchTerm || Object.values(filters).some(f => f && f !== "all") 
+                ? ` of ${data.length} total` 
+                : ""})
+            </CardTitle>
+            {createButton && (
+              <Button onClick={createButton.onClick} className="flex items-center gap-2">
+                {createButton.icon ? (
+                  <createButton.icon className="w-4 h-4" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+                {createButton.label}
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+      )}
+      {!title && createButton && (
+        <CardHeader>
+          <div className="flex justify-end">
             <Button onClick={createButton.onClick} className="flex items-center gap-2">
               {createButton.icon ? (
                 <createButton.icon className="w-4 h-4" />
@@ -183,9 +201,9 @@ export default function DataTable({
               )}
               {createButton.label}
             </Button>
-          )}
-        </div>
-      </CardHeader>
+          </div>
+        </CardHeader>
+      )}
       <CardContent>
         {/* Search and Filter Controls */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">

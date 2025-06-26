@@ -75,7 +75,6 @@ export default function MyCollaborations() {
 
   return (
     <DataTable
-      title="My Collaborations"
       data={collaborations}
       columns={[
         {
