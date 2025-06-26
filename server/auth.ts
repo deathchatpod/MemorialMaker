@@ -7,6 +7,16 @@ import { db } from "./db";
 import { adminUsers, funeralHomes, employees, sessions } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import type { Request, Response, NextFunction } from "express";
+import { 
+  validatePasswordComplexity, 
+  hashPassword, 
+  verifyPassword, 
+  recordLoginAttempt, 
+  isAccountLocked, 
+  resetLoginAttempts, 
+  getRemainingAttempts 
+} from './utils/passwordSecurity';
+import { encryptUserSensitiveFields, decryptUserSensitiveFields } from './utils/encryption';
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
