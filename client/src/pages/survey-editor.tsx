@@ -16,6 +16,26 @@ import { apiRequest } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import {
+  CSS,
+} from '@dnd-kit/utilities';
+import { GripVertical, ChevronUp, ChevronDown, Edit, Trash2 } from "lucide-react";
 import type { Survey, Question } from "@shared/schema";
 
 const questionSchema = z.object({
@@ -42,6 +62,158 @@ const questionTypes = [
   { value: "select", label: "Dropdown" },
 ];
 
+// Sortable Question Item Component
+function SortableQuestionItem({ 
+  question, 
+  index, 
+  onEdit, 
+  onDelete, 
+  onMoveUp, 
+  onMoveDown, 
+  canMoveUp, 
+  canMoveDown 
+}: { 
+  question: Question; 
+  index: number; 
+  onEdit: (question: Question) => void; 
+  onDelete: (questionId: number) => void; 
+  onMoveUp: (questionId: number) => void; 
+  onMoveDown: (questionId: number) => void; 
+  canMoveUp: boolean; 
+  canMoveDown: boolean; 
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`border rounded-lg p-4 bg-card ${isDragging ? 'shadow-lg' : ''}`}
+    >
+      <div className="flex items-start gap-3">
+        {/* Drag Handle */}
+        <div className="flex flex-col items-center gap-1 pt-1">
+          <button
+            {...attributes}
+            {...listeners}
+            className="p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing"
+            title="Drag to reorder"
+          >
+            <GripVertical className="w-4 h-4 text-muted-foreground" />
+          </button>
+          
+          {/* Up/Down Arrows */}
+          <div className="flex flex-col">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onMoveUp(question.id)}
+              disabled={!canMoveUp}
+              className="h-6 w-6 p-0"
+              title="Move up"
+            >
+              <ChevronUp className="w-3 h-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onMoveDown(question.id)}
+              disabled={!canMoveDown}
+              className="h-6 w-6 p-0"
+              title="Move down"
+            >
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Question Content */}
+        <div className="flex-1">
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-sm font-medium text-muted-foreground">
+              {index + 1}.
+            </span>
+            <span className="text-sm text-muted-foreground uppercase">
+              {question.questionType}
+            </span>
+            {question.isRequired && (
+              <Badge variant="destructive" className="text-xs">
+                Required
+              </Badge>
+            )}
+          </div>
+          
+          <h3 className="font-medium text-foreground mb-2">
+            {question.questionText}
+          </h3>
+          
+          {question.placeholder && (
+            <p className="text-sm text-muted-foreground mb-2">
+              Placeholder: {question.placeholder}
+            </p>
+          )}
+          
+          {question.options && Array.isArray(question.options) && question.options.length > 0 && (
+            <div className="text-sm text-muted-foreground">
+              Options: {question.options.join(", ")}
+            </div>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(question)}
+            className="h-8 w-8 p-0"
+          >
+            <Edit className="w-4 h-4" />
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Question</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this question? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onDelete(question.id)}>
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SurveyEditor() {
   const [, params] = useRoute("/admin/surveys/:id/edit");
   const [, setLocation] = useLocation();
@@ -51,6 +223,14 @@ export default function SurveyEditor() {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   const surveyId = params?.id ? parseInt(params.id) : null;
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const { data: survey } = useQuery<Survey>({
     queryKey: [`/api/surveys/${surveyId}`],
@@ -132,6 +312,21 @@ export default function SurveyEditor() {
     },
   });
 
+  // Reorder questions mutation
+  const reorderQuestionsMutation = useMutation({
+    mutationFn: async (reorderedQuestions: { id: number; orderIndex: number }[]) => {
+      return await apiRequest('PUT', '/api/questions/reorder', { questions: reorderedQuestions });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/questions`, surveyId] });
+      toast({
+        title: "Success",
+        description: "Questions reordered successfully.",
+        duration: 3000,
+      });
+    },
+  });
+
   const form = useForm<z.infer<typeof questionSchema>>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
@@ -168,6 +363,50 @@ export default function SurveyEditor() {
       });
     }
   }, [editingQuestion, questions.length, form]);
+
+  // Drag and drop handlers
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = questions.findIndex((q) => q.id === active.id);
+      const newIndex = questions.findIndex((q) => q.id === over.id);
+
+      const reorderedQuestions = arrayMove(questions, oldIndex, newIndex);
+      
+      // Update order indices
+      const updatedQuestions = reorderedQuestions.map((question, index) => ({
+        id: question.id,
+        orderIndex: index + 1,
+      }));
+
+      reorderQuestionsMutation.mutate(updatedQuestions);
+    }
+  };
+
+  const handleMoveUp = (questionId: number) => {
+    const currentIndex = questions.findIndex((q) => q.id === questionId);
+    if (currentIndex > 0) {
+      const reorderedQuestions = arrayMove(questions, currentIndex, currentIndex - 1);
+      const updatedQuestions = reorderedQuestions.map((question, index) => ({
+        id: question.id,
+        orderIndex: index + 1,
+      }));
+      reorderQuestionsMutation.mutate(updatedQuestions);
+    }
+  };
+
+  const handleMoveDown = (questionId: number) => {
+    const currentIndex = questions.findIndex((q) => q.id === questionId);
+    if (currentIndex < questions.length - 1) {
+      const reorderedQuestions = arrayMove(questions, currentIndex, currentIndex + 1);
+      const updatedQuestions = reorderedQuestions.map((question, index) => ({
+        id: question.id,
+        orderIndex: index + 1,
+      }));
+      reorderQuestionsMutation.mutate(updatedQuestions);
+    }
+  };
 
   const onSubmit = (values: z.infer<typeof questionSchema>) => {
     if (editingQuestion) {
@@ -274,70 +513,40 @@ export default function SurveyEditor() {
             </CardHeader>
             <CardContent>
               {questions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <i className="fas fa-question-circle text-4xl mb-4 text-gray-300"></i>
+                <div className="text-center py-8 text-muted-foreground">
+                  <i className="fas fa-question-circle text-4xl mb-4 text-muted"></i>
                   <p className="text-lg font-medium mb-2">No questions yet</p>
                   <p>Add your first question to get started.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {questions
-                    .sort((a, b) => a.orderIndex - b.orderIndex)
-                    .map((question, index) => (
-                    <div key={question.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <span className="text-sm font-medium text-gray-500">
-                              {index + 1}.
-                            </span>
-                            <span className="text-sm text-gray-500 uppercase">
-                              {question.questionType}
-                            </span>
-                            {question.isRequired && (
-                              <Badge variant="destructive" className="text-xs">
-                                Required
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="font-medium">{question.questionText}</p>
-                          {question.placeholder && (
-                            <p className="text-sm text-gray-500 mt-1">
-                              Placeholder: {question.placeholder}
-                            </p>
-                          )}
-                          {question.options && question.options.length > 0 && (
-                            <div className="mt-2">
-                              <p className="text-sm text-gray-600 mb-1">Options:</p>
-                              <ul className="text-sm text-gray-500 list-disc list-inside">
-                                {(question.options as any[]).map((option, i) => (
-                                  <li key={i}>{option.label}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex space-x-2 ml-4">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEditingQuestion(question)}
-                          >
-                            <i className="fas fa-edit"></i>
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeleteQuestion(question.id)}
-                            disabled={deleteQuestionMutation.isPending}
-                          >
-                            <i className="fas fa-trash"></i>
-                          </Button>
-                        </div>
-                      </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={questions.map(q => q.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-4">
+                      {questions
+                        .sort((a, b) => a.orderIndex - b.orderIndex)
+                        .map((question, index) => (
+                          <SortableQuestionItem
+                            key={question.id}
+                            question={question}
+                            index={index}
+                            onEdit={setEditingQuestion}
+                            onDelete={(id) => deleteQuestionMutation.mutate(id)}
+                            onMoveUp={handleMoveUp}
+                            onMoveDown={handleMoveDown}
+                            canMoveUp={index > 0}
+                            canMoveDown={index < questions.length - 1}
+                          />
+                        ))}
                     </div>
-                  ))}
-                </div>
+                  </SortableContext>
+                </DndContext>
               )}
             </CardContent>
           </Card>

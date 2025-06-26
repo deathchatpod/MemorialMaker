@@ -912,6 +912,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/questions/:id", async (req, res) => {
+    try {
+      const questionId = parseInt(req.params.id);
+      const question = await storage.updateQuestion(questionId, req.body);
+      res.json(question);
+    } catch (error) {
+      console.error("Error updating question:", error);
+      res.status(500).json({ error: "Failed to update question" });
+    }
+  });
+
+  app.delete("/api/questions/:id", async (req, res) => {
+    try {
+      const questionId = parseInt(req.params.id);
+      await storage.deleteQuestion(questionId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      res.status(500).json({ error: "Failed to delete question" });
+    }
+  });
+
+  app.put("/api/questions/reorder", async (req, res) => {
+    try {
+      const { questions } = req.body;
+      
+      if (!Array.isArray(questions)) {
+        return res.status(400).json({ error: "Questions must be an array" });
+      }
+
+      // Update order indices for all questions
+      for (const question of questions) {
+        await storage.updateQuestion(question.id, { orderIndex: question.orderIndex });
+      }
+
+      res.json({ success: true, message: "Questions reordered successfully" });
+    } catch (error) {
+      console.error("Error reordering questions:", error);
+      res.status(500).json({ error: "Failed to reorder questions" });
+    }
+  });
+
   // Prompt Templates endpoints
   app.get("/api/prompt-templates", async (req, res) => {
     try {
