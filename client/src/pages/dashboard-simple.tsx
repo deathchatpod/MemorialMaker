@@ -35,12 +35,12 @@ export default function Dashboard() {
   };
 
   // Data fetching queries
-  const { data: obituaries = [], isLoading: isObituariesLoading } = useQuery({
-    queryKey: ['/api/obituaries', userTypeParam, userIdParam]
+  const { data: obituaries = [], isLoading: isObituariesLoading } = useQuery<any[]>({
+    queryKey: ['/api/obituaries']
   });
 
-  const { data: finalSpaces = [], isLoading: isFinalSpacesLoading } = useQuery({
-    queryKey: ['/api/final-spaces', userTypeParam, userIdParam]
+  const { data: finalSpaces = [], isLoading: isFinalSpacesLoading } = useQuery<any[]>({
+    queryKey: ['/api/final-spaces']
   });
 
   const menuItems = [
