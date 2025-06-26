@@ -151,7 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Registration endpoint
   app.post('/auth/register', async (req, res) => {
     try {
-      const { name, businessName, email, password, phone, address, website } = req.body;
+      const { name, businessName, email, password, phone, website } = req.body;
       
       // Check if email already exists
       const existingFuneralHome = await storage.getFuneralHomeByEmail(email);
@@ -169,7 +169,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email,
         password: hashedPassword,
         phone,
-        address,
         website,
         contactEmail: email,
         isActive: true
