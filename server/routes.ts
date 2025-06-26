@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import passport from "./auth";
 import { storage } from "./storage";
 import { hashPassword } from "./auth";
@@ -46,8 +47,13 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Session configuration with extended duration for testing
+  // Session configuration with PostgreSQL store for persistence
+  const PgSession = connectPgSimple(session);
   app.use(session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true,
+    }),
     secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
