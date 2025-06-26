@@ -103,14 +103,14 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-background">
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Section */}
         <header className="text-center mb-8">
-          <Skull className="h-16 w-16 text-gray-400 mx-auto mb-4" aria-hidden="true" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to DeathMatters</h1>
-          <p className="text-lg text-gray-600 mb-8">
+          <Skull className="h-16 w-16 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
+          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome to DeathMatters</h1>
+          <p className="text-lg text-muted-foreground mb-8">
             Creating meaningful tributes and lasting memories through AI-powered obituary generation.
           </p>
         </header>
@@ -118,13 +118,13 @@ export default function Home() {
         {/* Display Survey */}
         {homePageSurvey && questions.length > 0 && (
           <section aria-labelledby="survey-heading">
-            <Card className="mb-8">
+            <Card className="mb-8 bg-card border-border">
               <CardHeader>
-                <CardTitle id="survey-heading" className="text-xl font-semibold text-gray-900">
+                <CardTitle id="survey-heading" className="text-xl font-semibold text-foreground">
                   {homePageSurvey.name}
                 </CardTitle>
                 {homePageSurvey.description && (
-                  <p className="text-gray-600">{homePageSurvey.description}</p>
+                  <p className="text-muted-foreground">{homePageSurvey.description}</p>
                 )}
               </CardHeader>
               <CardContent>
@@ -141,15 +141,15 @@ export default function Home() {
 
         {/* Always show placeholder when no survey */}
         {(!homePageSurvey || questions.length === 0) && (
-          <Card className="mb-8">
+          <Card className="mb-8 bg-card border-border">
             <CardContent className="py-8 text-center">
               <div>
-                <Label className="text-base font-medium">Viewing as: {selectedUserType}</Label>
-                <p className="text-sm text-gray-500 mt-1">
+                <Label className="text-base font-medium text-foreground">Viewing as: {selectedUserType}</Label>
+                <p className="text-sm text-muted-foreground mt-1">
                   Use the header dropdown to switch between user types for testing
                 </p>
               </div>
-              <p className="text-gray-500 mt-4">
+              <p className="text-muted-foreground mt-4">
                 Survey content will appear here when an admin publishes a "Home Page" survey.
               </p>
             </CardContent>

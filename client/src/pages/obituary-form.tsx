@@ -204,18 +204,18 @@ export default function ObituaryForm() {
   ];
 
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-background">
       <div className="mb-8">
         <Button 
           variant="ghost" 
           onClick={() => setLocation('/')}
-          className="text-primary hover:text-blue-700 mb-4"
+          className="text-muted-foreground hover:text-foreground mb-4"
         >
           <i className="fas fa-arrow-left mr-2"></i>
           Back to Dashboard
         </Button>
-        <h2 className="text-2xl font-semibold text-gray-900">Create New Obituary</h2>
-        <p className="text-gray-600 mt-1">Fill out the information below to generate personalized obituaries</p>
+        <h2 className="text-2xl font-semibold text-foreground">Create New Obituary</h2>
+        <p className="text-muted-foreground mt-1">Fill out the information below to generate personalized obituaries</p>
       </div>
 
       <Form {...form}>

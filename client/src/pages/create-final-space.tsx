@@ -205,13 +205,13 @@ export default function CreateFinalSpace() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto max-w-4xl px-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold flex items-center">
-              <Heart className="mr-3 h-8 w-8 text-blue-600" />
+            <h1 className="text-3xl font-bold flex items-center text-foreground">
+              <Heart className="mr-3 h-8 w-8 text-muted-foreground" />
               Create Memorial Space
             </h1>
             <p className="text-muted-foreground mt-1">
@@ -227,9 +227,9 @@ export default function CreateFinalSpace() {
         </div>
 
         {/* Form */}
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle>Memorial Information</CardTitle>
+            <CardTitle className="text-foreground">Memorial Information</CardTitle>
           </CardHeader>
           <CardContent>
             <form 
@@ -418,29 +418,29 @@ export default function CreateFinalSpace() {
 
                 {/* Collaborators List */}
                 {collaborators.length > 0 && (
-                  <Card>
+                  <Card className="bg-card border-border">
                     <CardContent className="pt-6">
                       <div className="space-y-3">
                         {collaborators.map((collaborator) => (
-                          <div key={collaborator.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div key={collaborator.id} className="flex items-center justify-between p-3 border border-border rounded-lg bg-card">
                             <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <Mail className="w-4 h-4 text-blue-600" />
+                              <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                                <Mail className="w-4 h-4 text-muted-foreground" />
                               </div>
                               <div>
-                                <p className="font-medium">{collaborator.name}</p>
+                                <p className="font-medium text-foreground">{collaborator.name}</p>
                                 <p className="text-sm text-muted-foreground">{collaborator.email}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-yellow-600 border-yellow-200">
+                              <Badge variant="outline" className="text-muted-foreground border-border">
                                 Will be invited
                               </Badge>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeCollaborator(collaborator.id)}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -453,8 +453,8 @@ export default function CreateFinalSpace() {
                 )}
 
                 {collaborators.length === 0 && (
-                  <div className="text-center p-6 border-2 border-dashed border-gray-200 rounded-lg">
-                    <UserPlus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <div className="text-center p-6 border-2 border-dashed border-border rounded-lg bg-card">
+                    <UserPlus className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                     <p className="text-sm text-muted-foreground">
                       No collaborators added yet. Add collaborators to help manage this memorial space.
                     </p>

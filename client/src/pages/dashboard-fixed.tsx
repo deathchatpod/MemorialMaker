@@ -438,26 +438,16 @@ export default function Dashboard() {
 
           {/* Team Management Section */}
           {activeSection === 'team-management' && (
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground">Team Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TeamManagement />
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <TeamManagement />
+            </div>
           )}
 
           {/* Account Information Section */}
           {activeSection === 'account' && (
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground">My Account</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <AccountInformation />
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <AccountInformation />
+            </div>
           )}
         </div>
       </main>
