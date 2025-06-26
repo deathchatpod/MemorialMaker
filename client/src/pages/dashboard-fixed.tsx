@@ -224,22 +224,33 @@ export default function Dashboard() {
                     { value: "completed", label: "Completed" }
                   ],
                   render: createBadgeRenderer(getStatusColor)
-                }
-              ]}
-              actions={createActionButtons([
-                {
-                  icon: <Edit className="w-4 h-4" />,
-                  onClick: (row) => setLocation(`/obituary/${row.id}/edit`),
-                  variant: "outline",
-                  title: "Edit obituary"
                 },
                 {
-                  icon: <Eye className="w-4 h-4" />,
-                  onClick: (row) => setLocation(`/obituary/${row.id}/generated`),
-                  variant: "outline",
-                  title: "View obituary"
+                  key: "actions",
+                  title: "Actions",
+                  sortable: false,
+                  render: (value, row) => (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLocation(`/obituary/${row.id}/edit`)}
+                        title="Edit obituary"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLocation(`/obituary/${row.id}/generated`)}
+                        title="View obituary"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )
                 }
-              ])}
+              ]}
               createButton={{
                 label: "Create New Obituary",
                 onClick: () => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)
@@ -301,22 +312,33 @@ export default function Dashboard() {
                       {value ? 'Public' : 'Private'}
                     </Badge>
                   )
-                }
-              ]}
-              actions={createActionButtons([
-                {
-                  icon: <Edit className="w-4 h-4" />,
-                  onClick: (row) => setLocation(`/final-spaces/${row.id}/edit`),
-                  variant: "outline",
-                  title: "Edit memorial"
                 },
                 {
-                  icon: <Eye className="w-4 h-4" />,
-                  onClick: (row) => setLocation(`/memorial/${row.slug}`),
-                  variant: "outline",
-                  title: "View memorial"
+                  key: "actions",
+                  title: "Actions",
+                  sortable: false,
+                  render: (value, row) => (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLocation(`/final-spaces/${row.id}/edit`)}
+                        title="Edit memorial"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLocation(`/memorial/${row.slug}`)}
+                        title="View memorial"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )
                 }
-              ])}
+              ]}
               createButton={{
                 label: "Create New Memorial",
                 onClick: () => setLocation(`/final-spaces/create?userType=${userTypeParam}&userId=${userIdParam}`)
@@ -362,16 +384,25 @@ export default function Dashboard() {
                     { value: "inactive", label: "Inactive" }
                   ],
                   render: createBadgeRenderer(getStatusColor)
+                },
+                {
+                  key: "actions",
+                  title: "Actions",
+                  sortable: false,
+                  render: (value, row) => (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLocation(`/admin/surveys/${row.id}/edit`)}
+                        title="Edit survey"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )
                 }
               ]}
-              actions={createActionButtons([
-                {
-                  icon: <Edit className="w-4 h-4" />,
-                  onClick: (row) => setLocation(`/admin/surveys/${row.id}/edit`),
-                  variant: "outline",
-                  title: "Edit survey"
-                }
-              ])}
               createButton={{
                 label: "Create New Survey",
                 onClick: () => setLocation(`/admin/surveys/new?userType=${userTypeParam}&userId=${userIdParam}`)
@@ -386,7 +417,7 @@ export default function Dashboard() {
 
           {/* Pre Need Evaluation Section */}
           {activeSection === 'pre-need' && (
-            <PreNeedEvaluationTab userType={userTypeParam} userId={userIdParam} />
+            <PreNeedEvaluationTab />
           )}
 
           {/* Team Management Section */}
