@@ -138,18 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.json(req.user);
     } else {
-      // In development, provide mock user for testing
-      if (process.env.NODE_ENV === 'development') {
-        const mockUser = { 
-          id: 1, 
-          email: 'admin@deathmatters.com', 
-          userType: 'admin',
-          name: 'System Admin'
-        };
-        res.json(mockUser);
-      } else {
-        res.status(401).json({ message: 'Not authenticated' });
-      }
+      res.status(401).json({ message: 'Not authenticated' });
     }
   });
 
@@ -749,9 +738,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // For individuals, get collaborations where they are invited
         const allCollaborators = await db.select()
           .from(obituaryCollaborators)
-          .where(eq(obituaryCollaborators.collaboratorEmail, 
-            // Get user email from userId - this would need proper user lookup
-            'individual@example.com' // Placeholder
+          .where(eq(obituaryCollaborators.email, 
+            req.user?.email || ''
           ));
         
         // Get collaboration sessions and obituary details

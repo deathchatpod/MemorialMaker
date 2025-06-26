@@ -89,23 +89,8 @@ passport.deserializeUser(async (data: any, done) => {
   }
 });
 
-// Authentication middleware with development bypass
+// Authentication middleware
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-  // In development, allow bypass for testing
-  if (process.env.NODE_ENV === 'development') {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    // Provide mock admin user for testing when not authenticated
-    req.user = { 
-      id: 1, 
-      email: 'admin@deathmatters.com', 
-      userType: 'admin',
-      name: 'System Admin'
-    };
-    return next();
-  }
-  
   if (req.isAuthenticated()) {
     return next();
   }
