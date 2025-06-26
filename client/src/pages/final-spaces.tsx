@@ -85,7 +85,7 @@ export default function FinalSpaces() {
       {finalSpaces && finalSpaces.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {finalSpaces.map((space: any) => (
-            <Card key={space.id} className="hover:shadow-md transition-shadow">
+            <Card key={space.id} className="bg-card border-border hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div>

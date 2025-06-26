@@ -178,7 +178,7 @@ export default function CustomizationPanel({
                 {themes.map((theme) => (
                   <Card
                     key={theme.value}
-                    className={`cursor-pointer transition-all ${
+                    className={`cursor-pointer transition-all bg-card border-border ${
                       currentSettings.theme === theme.value ? 'ring-2 ring-blue-500' : ''
                     }`}
                     onClick={() => applyTheme(theme)}
