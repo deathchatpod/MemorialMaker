@@ -93,8 +93,8 @@ function GlobalHeader() {
           <Link href="/">
             <div className="flex items-center cursor-pointer">
               <Skull className="h-8 w-8 text-gray-600 mr-3" aria-hidden="true" />
-              <span className="text-2xl font-bold text-gray-900 whitespace-nowrap">
-                Death<span className="hidden sm:inline">Matters</span>
+              <span className="text-2xl font-bold text-gray-900">
+                Death<wbr />Matters
               </span>
             </div>
           </Link>
