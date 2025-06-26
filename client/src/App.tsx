@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "@/lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -58,9 +59,19 @@ function GlobalHeader() {
     window.location.href = url.toString();
   };
 
-  const { data: authenticatedUser } = useQuery({
+  const { data: authenticatedUser, isLoading: authLoading, error: authError } = useQuery({
     queryKey: ['/auth/user'],
+    queryFn: async () => {
+      const res = await fetch('/auth/user', {
+        credentials: 'include',
+      });
+      if (res.status === 401) return null;
+      if (!res.ok) throw new Error('Auth check failed');
+      return res.json();
+    },
     retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 
   const handleLogout = async () => {
