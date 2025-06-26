@@ -420,6 +420,7 @@ export default function Dashboard() {
               ]}
               createButton={{
                 label: "Create New Survey",
+                icon: Plus,
                 onClick: () => setLocation(`/admin/surveys/new?userType=${userTypeParam}&userId=${userIdParam}`)
               }}
               emptyState={{
@@ -437,9 +438,9 @@ export default function Dashboard() {
 
           {/* Team Management Section */}
           {activeSection === 'team-management' && (
-            <Card>
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle>Team Management</CardTitle>
+                <CardTitle className="text-foreground">Team Management</CardTitle>
               </CardHeader>
               <CardContent>
                 <TeamManagement />
@@ -449,9 +450,9 @@ export default function Dashboard() {
 
           {/* Account Information Section */}
           {activeSection === 'account' && (
-            <Card>
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle>My Account</CardTitle>
+                <CardTitle className="text-foreground">My Account</CardTitle>
               </CardHeader>
               <CardContent>
                 <AccountInformation />

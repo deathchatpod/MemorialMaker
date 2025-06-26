@@ -25,6 +25,7 @@ interface DataTableProps {
   createButton?: {
     label: string;
     onClick: () => void;
+    icon?: React.ComponentType<{ className?: string }>;
   };
   emptyState?: {
     title: string;
@@ -164,10 +165,10 @@ export default function DataTable({
   }
 
   return (
-    <Card>
+    <Card className="bg-card border-border">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>
+          <CardTitle className="text-foreground">
             {title} ({processedData.length}
             {searchTerm || Object.values(filters).some(f => f && f !== "all") 
               ? ` of ${data.length} total` 
@@ -175,7 +176,11 @@ export default function DataTable({
           </CardTitle>
           {createButton && (
             <Button onClick={createButton.onClick} className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
+              {createButton.icon ? (
+                <createButton.icon className="w-4 h-4" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
               {createButton.label}
             </Button>
           )}
