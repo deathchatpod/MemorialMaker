@@ -287,14 +287,18 @@ export default function ConditionalSurveyForm({
               onValueChange={(newValue) => handleInputChange(question.id, newValue)}
               required={question.isRequired}
             >
-              {radioOptions.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option} id={`${question.id}-${option}`} />
-                  <Label htmlFor={`${question.id}-${option}`} className="text-sm">
-                    {option}
-                  </Label>
-                </div>
-              ))}
+              {radioOptions.map((option, index) => {
+                const optionValue = typeof option === 'object' ? option.value : option;
+                const optionLabel = typeof option === 'object' ? option.label : option;
+                return (
+                  <div key={`${question.id}-${index}`} className="flex items-center space-x-2">
+                    <RadioGroupItem value={optionValue} id={`${question.id}-${optionValue}`} />
+                    <Label htmlFor={`${question.id}-${optionValue}`} className="text-sm">
+                      {optionLabel}
+                    </Label>
+                  </div>
+                );
+              })}
             </RadioGroup>
           </div>
         );
@@ -309,18 +313,22 @@ export default function ConditionalSurveyForm({
               {question.isRequired && <span className="text-red-500 ml-1">*</span>}
             </Label>
             <div className="space-y-2">
-              {checkboxOptions.map((option) => (
-                <div key={option} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`${question.id}-${option}`}
-                    checked={selectedValues.includes(option)}
-                    onCheckedChange={(checked) => handleCheckboxChange(question.id, option, !!checked)}
-                  />
-                  <Label htmlFor={`${question.id}-${option}`} className="text-sm">
-                    {option}
-                  </Label>
-                </div>
-              ))}
+              {checkboxOptions.map((option, index) => {
+                const optionValue = typeof option === 'object' ? option.value : option;
+                const optionLabel = typeof option === 'object' ? option.label : option;
+                return (
+                  <div key={`${question.id}-${index}`} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`${question.id}-${optionValue}`}
+                      checked={selectedValues.includes(optionValue)}
+                      onCheckedChange={(checked) => handleCheckboxChange(question.id, optionValue, !!checked)}
+                    />
+                    <Label htmlFor={`${question.id}-${optionValue}`} className="text-sm">
+                      {optionLabel}
+                    </Label>
+                  </div>
+                );
+              })}
             </div>
           </div>
         );
@@ -342,11 +350,15 @@ export default function ConditionalSurveyForm({
                 <SelectValue placeholder={question.placeholder || 'Select an option...'} />
               </SelectTrigger>
               <SelectContent>
-                {selectOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
+                {selectOptions.map((option, index) => {
+                  const optionValue = typeof option === 'object' ? option.value : option;
+                  const optionLabel = typeof option === 'object' ? option.label : option;
+                  return (
+                    <SelectItem key={`${question.id}-${index}`} value={optionValue}>
+                      {optionLabel}
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
