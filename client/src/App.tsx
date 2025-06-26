@@ -87,25 +87,25 @@ function GlobalHeader() {
   const isHomePage = location === '/' || location === '';
 
   return (
-    <header className="bg-white shadow-sm border-b" role="banner">
+    <header className="memorial-header bg-card shadow-lg border-b border-border" role="banner">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link href="/">
             <div className="flex items-center cursor-pointer">
-              <Skull className="h-8 w-8 text-gray-600 mr-3" aria-hidden="true" />
-              <span className="text-2xl font-bold text-gray-900">
+              <Skull className="h-8 w-8 text-primary mr-3" aria-hidden="true" />
+              <span className="text-2xl font-bold text-foreground">
                 Death<wbr />Matters
               </span>
             </div>
           </Link>
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-gray-700">
+              <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                <span className="text-sm font-medium text-muted-foreground">
                   {currentUser.username.charAt(0)}
                 </span>
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700 hidden sm:inline">
+              <span className="ml-2 text-sm font-medium text-foreground hidden sm:inline">
                 {currentUser.userType === 'admin' ? 'Admin' : 
                  currentUser.userType === 'funeral_home' ? 'Funeral Home' :
                  currentUser.userType === 'employee' ? 'Employee' : 'Individual'} - {currentUser.username}
@@ -119,21 +119,33 @@ function GlobalHeader() {
                   {!isDashboard && (
                     <Button 
                       variant="outline" 
+                      className="bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
                       onClick={() => setLocation('/dashboard')}
                     >
                       Dashboard
                     </Button>
                   )}
-                  <Button variant="outline" onClick={handleLogout}>
+                  <Button 
+                    variant="outline" 
+                    className="bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                    onClick={handleLogout}
+                  >
                     Logout
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="outline" onClick={() => setLocation('/login')}>
+                  <Button 
+                    variant="outline" 
+                    className="bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                    onClick={() => setLocation('/login')}
+                  >
                     Login
                   </Button>
-                  <Button onClick={() => setLocation('/register')}>
+                  <Button 
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => setLocation('/register')}
+                  >
                     Sign Up
                   </Button>
                 </>
@@ -144,14 +156,14 @@ function GlobalHeader() {
         
         {/* User type switching row - only show when authenticated */}
         {authenticatedUser && (
-          <div className="flex justify-end pb-2 border-t border-gray-100">
+          <div className="flex justify-end pb-2 border-t border-border">
             <div className="relative mt-2">
               <label htmlFor="user-type-select" className="sr-only">Select user type for testing</label>
               <select 
                 id="user-type-select"
                 value={currentUser.userType}
                 onChange={(e) => handleUserChange(e.target.value)}
-                className="bg-white border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="bg-input border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
                 aria-label="Switch user type for testing purposes"
               >
                 <option value="admin">Admin - John Admin</option>

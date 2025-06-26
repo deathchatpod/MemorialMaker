@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList } from "lucide-react";
+import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList, Skull, UserCog, Settings, Book } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
@@ -77,17 +77,17 @@ export default function Dashboard() {
     }
   });
 
-  // Menu items for all user types
+  // Menu items for all user types with Lucide icons
   const menuItems = [
-    { id: 'obituaries', label: 'Obituaries', icon: 'fas fa-file-text' },
-    { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
-    { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-users' },
-    { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-clipboard-list' },
-    { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-chart-bar' },
+    { id: 'obituaries', label: 'Obituaries', icon: FileText },
+    { id: 'finalspaces', label: 'FinalSpaces', icon: Heart },
+    { id: 'collaborations', label: 'My Collaborations', icon: Users },
+    { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
+    { id: 'pre-need', label: 'Pre Need Evaluation', icon: BarChart3 },
     ...(currentUser.userType === 'admin' || currentUser.userType === 'funeral_home' 
-      ? [{ id: 'team-management', label: 'Team Management', icon: 'fas fa-users-cog' }] 
+      ? [{ id: 'team-management', label: 'Team Management', icon: UserCog }] 
       : []),
-    { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' }
+    { id: 'account', label: 'My Account', icon: Settings }
   ];
 
   const handleSectionChange = (section: string) => {
