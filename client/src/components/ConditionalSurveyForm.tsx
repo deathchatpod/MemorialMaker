@@ -374,15 +374,6 @@ export default function ConditionalSurveyForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {userType && (
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <Label className="text-base font-medium">Responding as: {userType}</Label>
-          <p className="text-sm text-gray-500 mt-1">
-            Use the header dropdown to switch between user types for testing
-          </p>
-        </div>
-      )}
-      
       {sortedQuestions.map(renderQuestion)}
       
       <div className="pt-4">
