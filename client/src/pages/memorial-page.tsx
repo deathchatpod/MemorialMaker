@@ -269,7 +269,7 @@ export default function MemorialPage() {
 
         {/* Primary Media */}
         {memorial.primaryMediaType && memorial.primaryMediaId && (
-          <Card className="mb-8">
+          <Card className="mb-8 bg-card border-border">
             <CardContent className="p-0">
               {memorial.primaryMediaType === 'image' && (
                 <img 

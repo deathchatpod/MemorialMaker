@@ -143,10 +143,10 @@ export function TypographyControls({
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-card border-border">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Type className="h-5 w-5" />
             Typography Controls
             {elementId && <Badge variant="outline">{elementId}</Badge>}
