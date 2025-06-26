@@ -90,10 +90,6 @@ export default function Dashboard() {
     { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' }
   ];
 
-  // Debug: Log current user and menu items
-  console.log('Current user:', currentUser);
-  console.log('Menu items:', menuItems);
-
   const handleSectionChange = (section: string) => {
     setActiveSection(section);
     localStorage.setItem('dashboard-active-tab', section);
