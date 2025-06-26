@@ -141,15 +141,15 @@ export default function Home() {
 
         {/* Always show placeholder when no survey */}
         {(!homePageSurvey || questions.length === 0) && (
-          <Card className="mb-8 bg-card border-border">
+          <Card className="mb-8 bg-gray-800 border-gray-600">
             <CardContent className="py-8 text-center">
               <div>
-                <Label className="text-base font-medium text-foreground">Viewing as: {selectedUserType}</Label>
-                <p className="text-sm text-foreground mt-1">
+                <Label className="text-base font-medium text-white">Viewing as: {selectedUserType}</Label>
+                <p className="text-sm text-gray-300 mt-1">
                   Use the header dropdown to switch between user types for testing
                 </p>
               </div>
-              <p className="text-foreground mt-4">
+              <p className="text-gray-300 mt-4">
                 Survey content will appear here when an admin publishes a "Home Page" survey.
               </p>
             </CardContent>
