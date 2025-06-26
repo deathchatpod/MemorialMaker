@@ -83,14 +83,14 @@
   --background: hsl(220, 13%, 18%);
   --foreground: hsl(0, 0%, 95%);
   --muted: hsl(220, 8%, 28%);
-  --muted-foreground: hsl(220, 5%, 65%);
+  --muted-foreground: hsl(220, 5%, 75%);
   --popover: hsl(220, 10%, 20%);
   --popover-foreground: hsl(0, 0%, 95%);
   --card: hsl(220, 10%, 22%);
   --card-foreground: hsl(0, 0%, 92%);
   --border: hsl(220, 8%, 32%);
   --input: hsl(220, 10%, 24%);
-  --primary: hsl(25, 30%, 35%);
+  --primary: hsl(25, 30%, 45%);
   --primary-foreground: hsl(0, 0%, 98%);
   --secondary: hsl(220, 8%, 25%);
   --secondary-foreground: hsl(0, 0%, 90%);
