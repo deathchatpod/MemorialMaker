@@ -91,6 +91,15 @@ export default function AccountInformation() {
 
   const handleAccountUpdate = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // In a real implementation, this would save to the database
+    const accountData = {
+      ...formData,
+      additionalAddresses
+    };
+    
+    console.log('Saving account data:', accountData);
+    
     toast({
       title: 'Account updated',
       description: 'Your account information has been updated successfully.',
@@ -423,6 +432,14 @@ export default function AccountInformation() {
                   </Button>
                 </CollapsibleContent>
               </Collapsible>
+              
+              <Button 
+                onClick={handleAccountUpdate}
+                className="flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Save Address Information
+              </Button>
             </div>
           </CardContent>
         </Card>
