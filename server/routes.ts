@@ -74,49 +74,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize default data
   await initializeDefaultData();
 
-  // Auth routes with extended session
-  app.post('/auth/login', (req, res, next) => {
-    passport.authenticate('local', (err: any, user: any, info: any) => {
-      if (err) {
-        return res.status(500).json({ message: 'Authentication error' });
-      }
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
+  // Auth routes with enhanced security
+  app.post('/auth/login', async (req, res, next) => {
+    try {
+      const { username: email, password } = req.body;
       
-      req.logIn(user, (err) => {
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
+
+      // Check account lockout
+      const { isAccountLocked, getRemainingAttempts, recordLoginAttempt, resetLoginAttempts } = await import('./utils/passwordSecurity');
+      const lockInfo = isAccountLocked(email);
+      if (lockInfo.locked) {
+        return res.status(423).json({ 
+          message: `Account temporarily locked. Try again in ${lockInfo.remainingTime} minutes.`,
+          remainingTime: lockInfo.remainingTime
+        });
+      }
+
+      passport.authenticate('local', async (err: any, user: any, info: any) => {
         if (err) {
-          return res.status(500).json({ message: 'Login error' });
+          return res.status(500).json({ message: 'Authentication error' });
         }
         
-        // Extend session duration on login for testing
-        if (req.session && req.session.cookie) {
-          req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+        if (!user) {
+          // Record failed login attempt
+          recordLoginAttempt(email, false);
+          const remainingAttempts = getRemainingAttempts(email);
+          
+          let message = 'Invalid credentials';
+          if (remainingAttempts <= 2) {
+            message += ` (${remainingAttempts} attempts remaining)`;
+          }
+          
+          return res.status(401).json({ message });
         }
         
-        console.log('Login response:', { 
-          user: { 
-            id: user.id, 
-            email: user.email, 
-            userType: user.userType,
-            name: user.name || user.businessName
-          }, 
-          message: 'Login successful',
-          redirect: '/dashboard'
-        });
+        // Record successful login and reset attempts
+        recordLoginAttempt(email, true);
+        resetLoginAttempts(email);
         
-        res.json({ 
-          user: { 
-            id: user.id, 
-            email: user.email, 
-            userType: user.userType,
-            name: user.name || user.businessName
-          }, 
-          message: 'Login successful',
-          redirect: '/dashboard'
+        req.logIn(user, (err) => {
+          if (err) {
+            return res.status(500).json({ message: 'Login error' });
+          }
+          
+          // Extend session duration on login
+          if (req.session && req.session.cookie) {
+            req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+          }
+          
+          res.json({ 
+            user: { 
+              id: user.id, 
+              email: user.email, 
+              userType: user.userType,
+              name: user.name || user.businessName
+            }, 
+            message: 'Login successful',
+            redirect: '/dashboard'
+          });
         });
-      });
-    })(req, res, next);
+      })(req, res, next);
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
   });
 
   // Google OAuth routes - temporarily disabled
@@ -150,10 +174,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Registration endpoint
+  // Registration endpoint with password validation
   app.post('/auth/register', async (req, res) => {
     try {
       const { name, businessName, email, password, phone, website } = req.body;
+      
+      // Validate required fields
+      if (!name || !email || !password) {
+        return res.status(400).json({ message: 'Name, email, and password are required' });
+      }
+
+      // Validate password complexity
+      const { validatePasswordComplexity, hashPassword } = await import('./utils/passwordSecurity');
+      const passwordValidation = validatePasswordComplexity(password);
+      if (!passwordValidation.isValid) {
+        return res.status(400).json({ 
+          message: 'Password does not meet security requirements',
+          errors: passwordValidation.errors
+        });
+      }
       
       // Check if email already exists
       const existingFuneralHome = await storage.getFuneralHomeByEmail(email);
@@ -161,11 +200,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Email already registered' });
       }
 
-      // Hash password
+      // Hash password with enhanced security
       const hashedPassword = await hashPassword(password);
 
-      // Create funeral home account
-      const funeralHome = await storage.createFuneralHome({
+      // Create funeral home account with encrypted sensitive data
+      const { encryptUserSensitiveFields } = await import('./utils/encryption');
+      const userData = {
         name,
         businessName,
         email,
@@ -174,9 +214,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         website,
         contactEmail: email,
         isActive: true
-      });
+      };
 
-      res.status(201).json({ message: 'Account created successfully', funeralHome: { id: funeralHome.id, name: funeralHome.name, email: funeralHome.email } });
+      // Encrypt sensitive fields before storage
+      const encryptedUserData = encryptUserSensitiveFields(userData);
+      const funeralHome = await storage.createFuneralHome(encryptedUserData);
+
+      res.status(201).json({ 
+        message: 'Account created successfully', 
+        funeralHome: { 
+          id: funeralHome.id, 
+          name: funeralHome.name, 
+          email: funeralHome.email 
+        } 
+      });
     } catch (error) {
       console.error('Registration error:', error);
       res.status(500).json({ message: 'Registration failed' });
