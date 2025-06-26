@@ -1,5 +1,12 @@
 import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skull } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import ConditionalSurveyForm from "@/components/ConditionalSurveyForm";
+import type { Survey, Question, UserType } from "@shared/schema";
 
 export default function Home() {
   const { toast } = useToast();
