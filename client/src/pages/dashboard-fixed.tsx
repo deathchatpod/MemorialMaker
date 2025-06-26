@@ -114,38 +114,41 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background memorial-dashboard">
       {/* Sidebar */}
-      <nav className="w-64 bg-white shadow-lg border-r border-gray-200" role="navigation" aria-label="Dashboard navigation">
+      <nav className="w-64 bg-card shadow-lg border-r border-border" role="navigation" aria-label="Dashboard navigation">
         <div className="p-6">
           <div className="flex items-center mb-8">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-              <Users className="w-6 h-6 text-blue-600" aria-hidden="true" />
+            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+              <Skull className="w-6 h-6 text-primary" aria-hidden="true" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{currentUser.username}</h2>
-              <p className="text-sm text-gray-600 capitalize">{currentUser.userType.replace('_', ' ')}</p>
+              <h2 className="text-lg font-semibold text-foreground">{currentUser.username}</h2>
+              <p className="text-sm text-muted-foreground capitalize">{currentUser.userType.replace('_', ' ')}</p>
             </div>
           </div>
 
           <ul className="space-y-2" role="list">
-            {menuItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => handleSectionChange(item.id)}
-                  className={cn(
-                    "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors",
-                    activeSection === item.id
-                      ? "bg-blue-50 text-blue-700 border-r-2 border-blue-500"
-                      : "text-gray-700 hover:bg-gray-50"
-                  )}
-                  aria-current={activeSection === item.id ? "page" : undefined}
-                >
-                  <i className={`${item.icon} mr-3 w-5`} aria-hidden="true"></i>
-                  {item.label}
-                </button>
-              </li>
-            ))}
+            {menuItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <li key={item.id}>
+                  <button
+                    onClick={() => handleSectionChange(item.id)}
+                    className={cn(
+                      "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors",
+                      activeSection === item.id
+                        ? "bg-accent text-accent-foreground border-r-2 border-primary"
+                        : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                    )}
+                    aria-current={activeSection === item.id ? "page" : undefined}
+                  >
+                    <IconComponent className="mr-3 w-5 h-5" aria-hidden="true" />
+                    {item.label}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
 
 
@@ -153,16 +156,51 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-6" role="main">
+      <main className="flex-1 overflow-auto p-6 bg-background" role="main">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">
-            {activeSection === 'obituaries' && 'Obituaries'}
-            {activeSection === 'collaborations' && 'My Collaborations'}
-            {activeSection === 'finalspaces' && 'FinalSpaces'}
-            {activeSection === 'surveys' && 'Platform Surveys'}
-            {activeSection === 'pre-need' && 'Pre Need Evaluation'}
-            {activeSection === 'team-management' && 'Team Management'}
-            {activeSection === 'account' && 'My Account'}
+          <h1 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+            {activeSection === 'obituaries' && (
+              <>
+                <FileText className="w-7 h-7 text-primary" />
+                Obituaries
+              </>
+            )}
+            {activeSection === 'collaborations' && (
+              <>
+                <Users className="w-7 h-7 text-primary" />
+                My Collaborations
+              </>
+            )}
+            {activeSection === 'finalspaces' && (
+              <>
+                <Heart className="w-7 h-7 text-primary" />
+                FinalSpaces
+              </>
+            )}
+            {activeSection === 'surveys' && (
+              <>
+                <ClipboardList className="w-7 h-7 text-primary" />
+                Platform Surveys
+              </>
+            )}
+            {activeSection === 'pre-need' && (
+              <>
+                <BarChart3 className="w-7 h-7 text-primary" />
+                Pre Need Evaluation
+              </>
+            )}
+            {activeSection === 'team-management' && (
+              <>
+                <UserCog className="w-7 h-7 text-primary" />
+                Team Management
+              </>
+            )}
+            {activeSection === 'account' && (
+              <>
+                <Settings className="w-7 h-7 text-primary" />
+                My Account
+              </>
+            )}
           </h1>
 
           {/* Obituaries Section */}
@@ -228,6 +266,7 @@ export default function Dashboard() {
               ]}
               createButton={{
                 label: "Create New Obituary",
+                icon: Plus,
                 onClick: () => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)
               }}
               emptyState={{
@@ -316,6 +355,7 @@ export default function Dashboard() {
               ]}
               createButton={{
                 label: "Create New Memorial",
+                icon: Plus,
                 onClick: () => setLocation(`/final-spaces/create?userType=${userTypeParam}&userId=${userIdParam}`)
               }}
               emptyState={{
