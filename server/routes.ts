@@ -945,9 +945,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update order indices for all questions using direct SQL to avoid syntax errors
       for (const question of questions) {
         await db
-          .update(questions)
+          .update(questionsTable)
           .set({ orderIndex: question.orderIndex })
-          .where(eq(questions.id, question.id));
+          .where(eq(questionsTable.id, question.id));
       }
 
       res.json({ success: true, message: "Questions reordered successfully" });
