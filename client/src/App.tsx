@@ -106,7 +106,9 @@ function GlobalHeader() {
                 </span>
               </div>
               <span className="ml-2 text-sm font-medium text-gray-700 hidden sm:inline">
-                {currentUser.username}
+                {currentUser.userType === 'admin' ? 'Admin' : 
+                 currentUser.userType === 'funeral_home' ? 'Funeral Home' :
+                 currentUser.userType === 'employee' ? 'Employee' : 'Individual'} - {currentUser.username}
               </span>
             </div>
 
