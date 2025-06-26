@@ -17,7 +17,8 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import nodemailer from "nodemailer";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and, or, ilike, gte, lte, desc, sql } from "drizzle-orm";
+import { obituaries, finalSpaces } from "@shared/schema";
 
 // Configure multer for file uploads
 const storage_multer = multer.diskStorage({

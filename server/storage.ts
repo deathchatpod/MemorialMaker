@@ -8,12 +8,11 @@ import {
   type TextFeedback, type InsertTextFeedback, type Survey, type InsertSurvey, type Question, type InsertQuestion, 
   type PromptTemplate, type InsertPromptTemplate, type FinalSpace, type InsertFinalSpace, 
   type FinalSpaceComment, type InsertFinalSpaceComment, type FinalSpaceImage, type InsertFinalSpaceImage,
-  type FinalSpaceCollaborator, type InsertFinalSpaceCollaborator, type FinalSpaceCollaborationSession, type InsertFinalSpaceCollaborationSession,
-  type ObituaryCollaborator, type InsertObituaryCollaborator, type CollaborationSession, type InsertCollaborationSession,
+  type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, count, sql } from "drizzle-orm";
+import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   // Admin Users
@@ -140,6 +139,19 @@ export interface IStorage {
   // Collaboration queries for unified table
   getObituaryCollaborationsByEmail(email: string): Promise<any[]>;
   getFinalSpaceCollaborationsByEmail(email: string): Promise<any[]>;
+  
+  // Search functionality
+  searchContent(query: string, filters?: {
+    type?: 'obituaries' | 'memorials' | 'all';
+    dateFrom?: string;
+    dateTo?: string;
+    funeralHomeId?: number;
+    status?: string;
+  }): Promise<{
+    obituaries: any[];
+    memorials: any[];
+    total: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -672,6 +684,139 @@ export class DatabaseStorage implements IStorage {
       .from(finalSpaceCollaborators)
       .leftJoin(finalSpaces, eq(finalSpaceCollaborators.finalSpaceId, finalSpaces.id))
       .where(eq(finalSpaceCollaborators.collaboratorEmail, email));
+  }
+
+  // Search functionality implementation
+  async searchContent(query: string, filters?: {
+    type?: 'obituaries' | 'memorials' | 'all';
+    dateFrom?: string;
+    dateTo?: string;
+    funeralHomeId?: number;
+    status?: string;
+  }): Promise<{
+    obituaries: any[];
+    memorials: any[];
+    total: number;
+  }> {
+    const searchResults = {
+      obituaries: [] as any[],
+      memorials: [] as any[],
+      total: 0
+    };
+
+    const searchQuery = `%${query}%`;
+    
+    // Search obituaries if not filtered to memorials only
+    if (!filters?.type || filters.type === 'obituaries' || filters.type === 'all') {
+      let obituaryQuery = db
+        .select({
+          id: obituaries.id,
+          type: sql<string>`'obituary'`,
+          title: obituaries.deceasedName,
+          description: obituaries.personalityTraits,
+          createdAt: obituaries.createdAt,
+          funeralHomeId: obituaries.funeralHomeId,
+          status: obituaries.status
+        })
+        .from(obituaries)
+        .where(
+          or(
+            ilike(obituaries.deceasedName, searchQuery),
+            ilike(obituaries.personalityTraits, searchQuery),
+            ilike(obituaries.biography, searchQuery)
+          )
+        );
+
+      // Apply filters
+      if (filters?.funeralHomeId) {
+        obituaryQuery = obituaryQuery.where(eq(obituaries.funeralHomeId, filters.funeralHomeId));
+      }
+      if (filters?.dateFrom) {
+        obituaryQuery = obituaryQuery.where(gte(obituaries.createdAt, new Date(filters.dateFrom)));
+      }
+      if (filters?.dateTo) {
+        obituaryQuery = obituaryQuery.where(lte(obituaries.createdAt, new Date(filters.dateTo)));
+      }
+      if (filters?.status) {
+        obituaryQuery = obituaryQuery.where(eq(obituaries.status, filters.status));
+      }
+
+      searchResults.obituaries = await obituaryQuery.orderBy(desc(obituaries.createdAt));
+    }
+
+    // Search memorials if not filtered to obituaries only
+    if (!filters?.type || filters.type === 'memorials' || filters.type === 'all') {
+      let memorialQuery = db
+        .select({
+          id: finalSpaces.id,
+          type: sql<string>`'memorial'`,
+          title: finalSpaces.personName,
+          description: finalSpaces.description,
+          createdAt: finalSpaces.createdAt,
+          funeralHomeId: finalSpaces.funeralHomeId,
+          status: finalSpaces.status
+        })
+        .from(finalSpaces)
+        .where(
+          or(
+            ilike(finalSpaces.personName, searchQuery),
+            ilike(finalSpaces.description, searchQuery),
+            ilike(finalSpaces.slug, searchQuery)
+          )
+        );
+
+      // Apply filters
+      if (filters?.funeralHomeId) {
+        memorialQuery = memorialQuery.where(eq(finalSpaces.funeralHomeId, filters.funeralHomeId));
+      }
+      if (filters?.dateFrom) {
+        memorialQuery = memorialQuery.where(gte(finalSpaces.createdAt, new Date(filters.dateFrom)));
+      }
+      if (filters?.dateTo) {
+        memorialQuery = memorialQuery.where(lte(finalSpaces.createdAt, new Date(filters.dateTo)));
+      }
+      if (filters?.status) {
+        memorialQuery = memorialQuery.where(eq(finalSpaces.status, filters.status));
+      }
+
+      searchResults.memorials = await memorialQuery.orderBy(desc(finalSpaces.createdAt));
+    }
+
+    searchResults.total = searchResults.obituaries.length + searchResults.memorials.length;
+    return searchResults;
+  }
+
+  // Missing getSurveyResponsesByType implementation
+  async getSurveyResponsesByType(responseType: string, userId?: number, userType?: string, funeralHomeId?: number): Promise<SurveyResponse[]> {
+    let query = db.select().from(surveyResponses).where(eq(surveyResponses.responseType, responseType));
+
+    if (userId && userType) {
+      query = query.where(
+        and(
+          eq(surveyResponses.completedById, userId),
+          eq(surveyResponses.completedByType, userType)
+        )
+      );
+    }
+
+    if (funeralHomeId && userType === 'funeral_home') {
+      // For funeral homes, get their own responses and employee responses
+      query = db.select().from(surveyResponses)
+        .where(
+          and(
+            eq(surveyResponses.responseType, responseType),
+            or(
+              and(
+                eq(surveyResponses.completedById, userId!),
+                eq(surveyResponses.completedByType, 'funeral_home')
+              ),
+              eq(surveyResponses.completedByType, 'employee')
+            )
+          )
+        );
+    }
+
+    return await query.orderBy(desc(surveyResponses.createdAt));
   }
 }
 
