@@ -10,7 +10,7 @@ import { processDocument, deleteDocument } from "./services/document";
 import { generateObituaryPDF } from "./services/pdf";
 import { NotificationService } from "./services/notifications";
 import notificationRoutes from "./routes/notifications";
-import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions } from "@shared/schema";
+import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions, questions as questionsTable } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -942,9 +942,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Questions must be an array" });
       }
 
-      // Update order indices for all questions
+      // Update order indices for all questions using direct SQL to avoid syntax errors
       for (const question of questions) {
-        await storage.updateQuestion(question.id, { orderIndex: question.orderIndex });
+        await db
+          .update(questions)
+          .set({ orderIndex: question.orderIndex })
+          .where(eq(questions.id, question.id));
       }
 
       res.json({ success: true, message: "Questions reordered successfully" });

@@ -422,12 +422,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateQuestion(id: number, updates: Partial<Question>): Promise<Question> {
-    const [question] = await db
-      .update(questions)
-      .set(updates)
-      .where(eq(questions.id, id))
-      .returning();
-    return question;
+    try {
+      const [question] = await db
+        .update(questions)
+        .set(updates)
+        .where(eq(questions.id, id))
+        .returning();
+      
+      if (!question) {
+        throw new Error(`Question with id ${id} not found`);
+      }
+      
+      return question;
+    } catch (error) {
+      console.error('Error updating question:', error);
+      throw error;
+    }
   }
 
   async deleteQuestion(id: number): Promise<void> {
