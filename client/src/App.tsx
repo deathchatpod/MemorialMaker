@@ -59,12 +59,13 @@ function GlobalHeader() {
   };
 
   const { data: authenticatedUser } = useQuery({
-    queryKey: ['/api/auth/me'],
+    queryKey: ['/auth/user'],
+    retry: false,
   });
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch('/auth/logout', { method: 'POST' });
       setLocation('/login');
     } catch (error) {
       console.error('Logout failed:', error);
