@@ -145,35 +145,7 @@ export default function Dashboard() {
             ))}
           </ul>
 
-          {/* Account Section */}
-          <div className="my-4 h-px bg-gray-200"></div>
-          <p className="text-xs font-medium text-gray-500 mb-2 px-3">Account</p>
 
-          <button
-            onClick={() => handleSectionChange('team-management')}
-            className={cn(
-              "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors mb-2",
-              activeSection === 'team-management'
-                ? "bg-blue-50 text-blue-700 border-r-2 border-blue-500"
-                : "text-gray-700 hover:bg-gray-50"
-            )}
-          >
-            <i className="fas fa-users mr-3 w-5" aria-hidden="true"></i>
-            Team Management
-          </button>
-
-          <button
-            onClick={() => handleSectionChange('account')}
-            className={cn(
-              "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors",
-              activeSection === 'account'
-                ? "bg-blue-50 text-blue-700 border-r-2 border-blue-500"
-                : "text-gray-700 hover:bg-gray-50"
-            )}
-          >
-            <i className="fas fa-cog mr-3 w-5" aria-hidden="true"></i>
-            My Account
-          </button>
         </div>
       </nav>
 
@@ -186,8 +158,6 @@ export default function Dashboard() {
             {activeSection === 'finalspaces' && 'FinalSpaces'}
             {activeSection === 'surveys' && 'Platform Surveys'}
             {activeSection === 'pre-need' && 'Pre Need Evaluation'}
-            {activeSection === 'prompts' && 'Prompt Templates'}
-            {activeSection === 'team-management' && 'Team Management'}
             {activeSection === 'account' && 'My Account'}
           </h1>
 
