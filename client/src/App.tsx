@@ -84,6 +84,7 @@ function GlobalHeader() {
   };
 
   const isDashboard = location === '/dashboard' || location.startsWith('/dashboard?');
+  const isHomePage = location === '/' || location === '';
 
   return (
     <header className="bg-white shadow-sm border-b" role="banner">
@@ -92,34 +93,19 @@ function GlobalHeader() {
           <Link href="/">
             <div className="flex items-center cursor-pointer">
               <Skull className="h-8 w-8 text-gray-600 mr-3" aria-hidden="true" />
-              <span className="text-2xl font-bold text-gray-900">DeathMatters</span>
+              <span className="text-2xl font-bold text-gray-900 whitespace-nowrap">
+                Death<span className="hidden sm:inline">Matters</span>
+              </span>
             </div>
           </Link>
           <div className="flex items-center space-x-4">
-            {/* User Type Switching (Testing) */}
-            <div className="relative">
-              <label htmlFor="user-type-select" className="sr-only">Select user type for testing</label>
-              <select 
-                id="user-type-select"
-                value={currentUser.userType}
-                onChange={(e) => handleUserChange(e.target.value)}
-                className="bg-white border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                aria-label="Switch user type for testing purposes"
-              >
-                <option value="admin">Admin - John Admin</option>
-                <option value="funeral_home">Funeral Home - Jane Smith</option>
-                <option value="employee">Employee - Mike Johnson</option>
-                <option value="individual">Individual - Sarah Wilson</option>
-              </select>
-            </div>
-
             <div className="flex items-center">
               <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                 <span className="text-sm font-medium text-gray-700">
                   {currentUser.username.charAt(0)}
                 </span>
               </div>
-              <span className="ml-2 text-sm font-medium text-gray-700">
+              <span className="ml-2 text-sm font-medium text-gray-700 hidden sm:inline">
                 {currentUser.username}
               </span>
             </div>
@@ -128,11 +114,10 @@ function GlobalHeader() {
             <nav role="navigation" aria-label="User account navigation">
               {authenticatedUser ? (
                 <>
-                  {isDashboard && (
+                  {!isDashboard && (
                     <Button 
                       variant="outline" 
                       onClick={() => setLocation('/dashboard')}
-                      className="hidden md:flex"
                     >
                       Dashboard
                     </Button>
@@ -154,6 +139,27 @@ function GlobalHeader() {
             </nav>
           </div>
         </div>
+        
+        {/* User type switching row - only show when authenticated */}
+        {authenticatedUser && (
+          <div className="flex justify-end pb-2 border-t border-gray-100">
+            <div className="relative mt-2">
+              <label htmlFor="user-type-select" className="sr-only">Select user type for testing</label>
+              <select 
+                id="user-type-select"
+                value={currentUser.userType}
+                onChange={(e) => handleUserChange(e.target.value)}
+                className="bg-white border border-gray-300 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                aria-label="Switch user type for testing purposes"
+              >
+                <option value="admin">Admin - John Admin</option>
+                <option value="funeral_home">Funeral Home - Jane Smith</option>
+                <option value="employee">Employee - Mike Johnson</option>
+                <option value="individual">Individual - Sarah Wilson</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
