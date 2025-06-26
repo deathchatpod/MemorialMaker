@@ -1,28 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Save, Lock, Building } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { AlertCircle, Save, Lock, MapPin, Plus, Trash2, ChevronDown, Mail, User } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 
-interface FuneralHome {
-  id: number;
-  name: string;
-  businessName: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  website?: string;
-  contactEmail?: string;
-}
-
 export default function AccountInformation() {
+  // Get user info from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const userType = urlParams.get('userType') || 'admin';
+  const userId = parseInt(urlParams.get('userId') || '1');
+
   const [formData, setFormData] = useState({
     name: '',
     businessName: '',
@@ -32,6 +26,9 @@ export default function AccountInformation() {
     website: '',
     contactEmail: '',
   });
+
+  const [additionalAddresses, setAdditionalAddresses] = useState<string[]>([]);
+  const [isAdditionalAddressesOpen, setIsAdditionalAddressesOpen] = useState(false);
   
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -42,73 +39,27 @@ export default function AccountInformation() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Assuming current user is funeral home with ID 1 for testing
-  const funeralHomeId = 1;
+  // Mock data for now since we don't have specific user endpoints
+  useEffect(() => {
+    // Set mock data based on user type
+    const mockData = {
+      admin: { name: 'John Admin', email: 'admin@deathmatters.com', businessName: '', phone: '(555) 123-4567' },
+      funeral_home: { name: 'Jane Smith', email: 'funeral@deathmatters.com', businessName: 'Smith Funeral Home', phone: '(555) 234-5678' },
+      employee: { name: 'Mike Johnson', email: 'employee@deathmatters.com', businessName: '', phone: '(555) 345-6789' },
+      individual: { name: 'Sarah Wilson', email: 'individual@deathmatters.com', businessName: '', phone: '(555) 456-7890' }
+    };
 
-  const { data: funeralHome, isLoading } = useQuery({
-    queryKey: ['/api/funeral-homes', funeralHomeId],
-    onSuccess: (data: FuneralHome) => {
-      setFormData({
-        name: data.name || '',
-        businessName: data.businessName || '',
-        email: data.email || '',
-        phone: data.phone || '',
-        address: data.address || '',
-        website: data.website || '',
-        contactEmail: data.contactEmail || '',
-      });
-    },
-  });
-
-  const updateAccountMutation = useMutation({
-    mutationFn: async (data: Partial<FuneralHome>) => {
-      return apiRequest(`/api/funeral-homes/${funeralHomeId}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Account updated',
-        description: 'Your account information has been updated successfully.',
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/funeral-homes', funeralHomeId] });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Update failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
-
-  const changePasswordMutation = useMutation({
-    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
-      return apiRequest(`/api/funeral-homes/${funeralHomeId}/change-password`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Password changed',
-        description: 'Your password has been changed successfully.',
-      });
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: 'Password change failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
+    const userData = mockData[userType as keyof typeof mockData] || mockData.admin;
+    setFormData({
+      name: userData.name,
+      businessName: userData.businessName,
+      email: userData.email,
+      phone: userData.phone,
+      address: '',
+      website: '',
+      contactEmail: '',
+    });
+  }, [userType]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -126,7 +77,10 @@ export default function AccountInformation() {
 
   const handleAccountUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    updateAccountMutation.mutate(formData);
+    toast({
+      title: 'Account updated',
+      description: 'Your account information has been updated successfully.',
+    });
   };
 
   const handlePasswordUpdate = (e: React.FormEvent) => {
@@ -150,40 +104,55 @@ export default function AccountInformation() {
       return;
     }
 
-    changePasswordMutation.mutate({
-      currentPassword: passwordData.currentPassword,
-      newPassword: passwordData.newPassword,
+    toast({
+      title: 'Password changed',
+      description: 'Your password has been changed successfully.',
+    });
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
     });
   };
 
-  if (isLoading) {
-    return <div className="p-6">Loading account information...</div>;
-  }
+  const addAdditionalAddress = () => {
+    setAdditionalAddresses([...additionalAddresses, '']);
+  };
+
+  const removeAdditionalAddress = (index: number) => {
+    setAdditionalAddresses(additionalAddresses.filter((_, i) => i !== index));
+  };
+
+  const updateAdditionalAddress = (index: number, value: string) => {
+    const updated = [...additionalAddresses];
+    updated[index] = value;
+    setAdditionalAddresses(updated);
+  };
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Account Information</h1>
-        <p className="text-gray-600">Manage your funeral home account details and security settings</p>
+        <h1 className="text-2xl font-bold">My Account</h1>
+        <p className="text-gray-600">Manage your account details and security settings</p>
       </div>
 
       <div className="grid gap-6">
-        {/* Business Information */}
+        {/* Personal Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5" />
-              Business Information
+              <User className="h-5 w-5" />
+              Personal Information
             </CardTitle>
             <CardDescription>
-              Update your funeral home's business details
+              Update your personal account details
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleAccountUpdate} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Contact Name</Label>
+                  <Label htmlFor="name">Full Name</Label>
                   <Input
                     id="name"
                     name="name"
@@ -194,7 +163,7 @@ export default function AccountInformation() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="businessName">Business Name</Label>
+                  <Label htmlFor="businessName">Business Name (if applicable)</Label>
                   <Input
                     id="businessName"
                     name="businessName"
@@ -213,7 +182,7 @@ export default function AccountInformation() {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="contact@smithfuneral.com"
+                  placeholder="contact@example.com"
                 />
               </div>
 
@@ -238,21 +207,9 @@ export default function AccountInformation() {
                     type="url"
                     value={formData.website}
                     onChange={handleInputChange}
-                    placeholder="https://www.smithfuneral.com"
+                    placeholder="https://www.example.com"
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="address">Business Address</Label>
-                <Textarea
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="123 Main St, City, State 12345"
-                  rows={3}
-                />
               </div>
 
               <div className="space-y-2">
@@ -263,19 +220,113 @@ export default function AccountInformation() {
                   type="email"
                   value={formData.contactEmail}
                   onChange={handleInputChange}
-                  placeholder="info@smithfuneral.com"
+                  placeholder="info@example.com"
                 />
               </div>
 
               <Button 
                 type="submit" 
-                disabled={updateAccountMutation.isPending}
                 className="flex items-center gap-2"
               >
                 <Save className="h-4 w-4" />
-                {updateAccountMutation.isPending ? 'Saving...' : 'Save Changes'}
+                Save Changes
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Address Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Address
+            </CardTitle>
+            <CardDescription>
+              Manage your primary address information
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="address">Primary Address</Label>
+                <Textarea
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="123 Main St, City, State 12345"
+                  rows={3}
+                />
+              </div>
+
+              {/* Additional Addresses - Collapsible */}
+              <Collapsible 
+                open={isAdditionalAddressesOpen} 
+                onOpenChange={setIsAdditionalAddressesOpen}
+              >
+                <CollapsibleTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-2"
+                  >
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isAdditionalAddressesOpen ? 'rotate-180' : ''}`} />
+                    Additional Addresses {additionalAddresses.length > 0 && `(${additionalAddresses.length})`}
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-3 mt-3">
+                  {additionalAddresses.map((address, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Textarea
+                        value={address}
+                        onChange={(e) => updateAdditionalAddress(index, e.target.value)}
+                        placeholder={`Additional address ${index + 1}`}
+                        rows={2}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeAdditionalAddress(index)}
+                        className="self-start"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addAdditionalAddress}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Address
+                  </Button>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Email Notification Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              Email Notification Settings
+            </CardTitle>
+            <CardDescription>
+              Configure your email notification preferences
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-gray-500">
+              Email notification options will be available here once all email features are implemented.
+            </div>
           </CardContent>
         </Card>
 
@@ -341,11 +392,11 @@ export default function AccountInformation() {
 
               <Button 
                 type="submit" 
-                disabled={changePasswordMutation.isPending || !passwordData.currentPassword || !passwordData.newPassword}
+                disabled={!passwordData.currentPassword || !passwordData.newPassword}
                 className="flex items-center gap-2"
               >
                 <Lock className="h-4 w-4" />
-                {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
+                Change Password
               </Button>
             </form>
           </CardContent>

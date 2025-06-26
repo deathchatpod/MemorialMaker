@@ -77,13 +77,14 @@ export default function Dashboard() {
     }
   });
 
-  // Menu items for different user types
+  // Menu items for all user types
   const menuItems = [
     { id: 'obituaries', label: 'Obituaries', icon: 'fas fa-file-text' },
     { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
     { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-users' },
     { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-clipboard-list' },
-    { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-chart-bar' }
+    { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-chart-bar' },
+    { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' }
   ];
 
   const handleSectionChange = (section: string) => {
