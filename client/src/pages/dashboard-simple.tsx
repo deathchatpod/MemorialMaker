@@ -36,13 +36,11 @@ export default function Dashboard() {
 
   // Data fetching queries
   const { data: obituaries = [], isLoading: isObituariesLoading } = useQuery({
-    queryKey: ['/api/obituaries'],
-    enabled: false // Disable for now to avoid errors
+    queryKey: ['/api/obituaries', userTypeParam, userIdParam]
   });
 
   const { data: finalSpaces = [], isLoading: isFinalSpacesLoading } = useQuery({
-    queryKey: ['/api/final-spaces'],
-    enabled: false // Disable for now to avoid errors
+    queryKey: ['/api/final-spaces', userTypeParam, userIdParam]
   });
 
   const menuItems = [
@@ -121,7 +119,57 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Manage your obituaries here.</p>
+                  {isObituariesLoading ? (
+                    <p className="text-gray-600">Loading obituaries...</p>
+                  ) : obituaries.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Created</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {obituaries.map((obituary: any) => (
+                            <tr key={obituary.id} className="hover:bg-gray-50">
+                              <td className="border border-gray-300 px-4 py-2">{obituary.fullName || obituary.full_name || 'Untitled'}</td>
+                              <td className="border border-gray-300 px-4 py-2">
+                                <Badge className={obituary.status === 'generated' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                  {obituary.status}
+                                </Badge>
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2">
+                                {new Date(obituary.createdAt || obituary.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2">
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setLocation(`/obituary/${obituary.id}/edit`)}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setLocation(`/obituary/${obituary.id}/generated`)}
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-600">No obituaries found. Create your first obituary to get started.</p>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -139,7 +187,63 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Manage your memorial spaces here.</p>
+                  {isFinalSpacesLoading ? (
+                    <p className="text-gray-600">Loading memorials...</p>
+                  ) : finalSpaces.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-300">
+                        <thead>
+                          <tr className="bg-gray-50">
+                            <th className="border border-gray-300 px-4 py-2 text-left">Person Name</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Visibility</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Created</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {finalSpaces.map((finalSpace: any) => (
+                            <tr key={finalSpace.id} className="hover:bg-gray-50">
+                              <td className="border border-gray-300 px-4 py-2">{finalSpace.personName || finalSpace.person_name || 'Untitled'}</td>
+                              <td className="border border-gray-300 px-4 py-2">
+                                <Badge className={finalSpace.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                  {finalSpace.status}
+                                </Badge>
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2">
+                                <Badge className={finalSpace.isPublic || finalSpace.is_public ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}>
+                                  {finalSpace.isPublic || finalSpace.is_public ? 'Public' : 'Private'}
+                                </Badge>
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2">
+                                {new Date(finalSpace.createdAt || finalSpace.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="border border-gray-300 px-4 py-2">
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setLocation(`/final-spaces/${finalSpace.id}/edit`)}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setLocation(`/memorial/${finalSpace.slug}`)}
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-600">No memorials found. Create your first memorial space to get started.</p>
+                  )}
                 </CardContent>
               </Card>
             )}
