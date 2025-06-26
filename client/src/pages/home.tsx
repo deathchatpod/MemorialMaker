@@ -139,20 +139,7 @@ export default function Home() {
           </section>
         )}
 
-        {/* Always show placeholder when no survey */}
-        {(!homePageSurvey || questions.length === 0) && (
-          <div className="mb-8 p-8 text-center" style={{backgroundColor: 'transparent'}}>
-            <div>
-              <div className="text-base font-medium text-white mb-1">Viewing as: {selectedUserType}</div>
-              <div className="text-sm text-white/70 mb-4">
-                Use the header dropdown to switch between user types for testing
-              </div>
-            </div>
-            <div className="text-white/70">
-              Survey content will appear here when an admin publishes a "Home Page" survey.
-            </div>
-          </div>
-        )}
+
 
 
       </main>
