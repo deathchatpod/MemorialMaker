@@ -145,11 +145,11 @@ export default function Home() {
             <CardContent className="py-8 text-center">
               <div>
                 <Label className="text-base font-medium text-foreground">Viewing as: {selectedUserType}</Label>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-foreground mt-1">
                   Use the header dropdown to switch between user types for testing
                 </p>
               </div>
-              <p className="text-muted-foreground mt-4">
+              <p className="text-foreground mt-4">
                 Survey content will appear here when an admin publishes a "Home Page" survey.
               </p>
             </CardContent>
