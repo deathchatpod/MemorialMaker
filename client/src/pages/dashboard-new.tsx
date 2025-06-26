@@ -173,76 +173,7 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto" role="main">
-        <div className="p-8">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">DeathMatters</h2>
-          <p className="text-sm text-gray-600">
-            {currentUser.userType === 'admin' ? 'System Admin Panel' : 
-             currentUser.userType === 'funeral_home' ? 'Funeral Home Panel' : 
-             currentUser.userType === 'employee' ? 'Employee Panel' : 
-             currentUser.userType === 'individual' ? 'Individual Panel' : 'Panel'}
-          </p>
-        </div>
-
-        {/* Main Menu */}
-        <nav className="p-4">
-          <ul className="space-y-2">
-            {menuItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => handleSectionChange(item.id)}
-                  className={cn(
-                    "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                    activeSection === item.id
-                      ? "bg-blue-600 text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  )}
-                >
-                  <i className={cn(item.icon, "w-5 h-5 mr-3")}></i>
-                  <span>{item.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-
-          {/* Account Section - Available to all users */}
-          <div className="my-4 h-px bg-gray-200"></div>
-          <p className="text-xs font-medium text-gray-500 mb-2 px-3">Account</p>
-
-          <button
-            onClick={() => handleSectionChange('team-management')}
-            className={cn(
-              "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors mb-2",
-              activeSection === 'team-management'
-                ? "bg-blue-600 text-white"
-                : "text-gray-700 hover:bg-gray-100"
-            )}
-          >
-            <i className="fas fa-users w-5 h-5 mr-3"></i>
-            <span>Team Management</span>
-          </button>
-
-          <button
-            onClick={() => handleSectionChange('account')}
-            className={cn(
-              "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-              activeSection === 'account'
-                ? "bg-blue-600 text-white"
-                : "text-gray-700 hover:bg-gray-100"
-            )}
-          >
-            <i className="fas fa-cog w-5 h-5 mr-3"></i>
-            <span>My Account</span>
-          </button>
-        </nav>
-
-
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-auto p-6" role="main">
           <div className="max-w-7xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">
               {activeSection === 'obituaries' && 'Obituaries'}
@@ -661,7 +592,6 @@ export default function Dashboard() {
               </Card>
             )}
           </div>
-        </div>
       </main>
     </div>
   );
