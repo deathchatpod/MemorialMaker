@@ -307,6 +307,7 @@ export default function ObituaryReviewResults() {
     mutationFn: async () => {
       return apiRequest(`/api/obituary-reviews/${id}/reprocess`, {
         method: "POST",
+        body: JSON.stringify({}),
         headers: {
           'Content-Type': 'application/json'
         }
@@ -321,7 +322,7 @@ export default function ObituaryReviewResults() {
     },
     onError: (error) => {
       toast({
-        title: "Reprocessing Failed",
+        title: "Reprocessing Failed", 
         description: error.message || "Failed to start reprocessing. Please try again.",
         variant: "destructive",
       });
