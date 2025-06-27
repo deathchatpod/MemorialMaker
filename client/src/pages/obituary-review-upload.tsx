@@ -151,59 +151,71 @@ export default function ObituaryReviewUpload() {
         );
 
       case 'select':
-        const selectOptions = question.answerOptions || [];
+        const selectOptions = question.options ? JSON.parse(question.options) : (question.answerOptions || []);
         return (
           <Select value={currentValue} onValueChange={(value) => handleAnswerChange(question.id, value)}>
             <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
-              {selectOptions.map((option: string, index: number) => (
-                <SelectItem key={index} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
+              {selectOptions.map((option: any, index: number) => {
+                const optionValue = typeof option === 'string' ? option : option.value || option.label;
+                const optionLabel = typeof option === 'string' ? option : option.label || option.value;
+                return (
+                  <SelectItem key={index} value={optionValue}>
+                    {optionLabel}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         );
 
       case 'radio':
-        const radioOptions = question.answerOptions || [];
+        const radioOptions = question.options ? JSON.parse(question.options) : (question.answerOptions || []);
         return (
           <RadioGroup value={currentValue} onValueChange={(value) => handleAnswerChange(question.id, value)}>
-            {radioOptions.map((option: string, index: number) => (
-              <div key={index} className="flex items-center space-x-2">
-                <RadioGroupItem value={option} id={`${question.id}-${index}`} />
-                <Label htmlFor={`${question.id}-${index}`} className="text-gray-300">
-                  {option}
-                </Label>
-              </div>
-            ))}
+            {radioOptions.map((option: any, index: number) => {
+              const optionValue = typeof option === 'string' ? option : option.value || option.label;
+              const optionLabel = typeof option === 'string' ? option : option.label || option.value;
+              return (
+                <div key={index} className="flex items-center space-x-2">
+                  <RadioGroupItem value={optionValue} id={`${question.id}-${index}`} />
+                  <Label htmlFor={`${question.id}-${index}`} className="text-gray-300">
+                    {optionLabel}
+                  </Label>
+                </div>
+              );
+            })}
           </RadioGroup>
         );
 
       case 'checkbox':
-        const checkboxOptions = question.answerOptions || [];
+        const checkboxOptions = question.options ? JSON.parse(question.options) : (question.answerOptions || []);
         const checkedValues = Array.isArray(currentValue) ? currentValue : [];
         return (
           <div className="space-y-2">
-            {checkboxOptions.map((option: string, index: number) => (
-              <div key={index} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`${question.id}-${index}`}
-                  checked={checkedValues.includes(option)}
-                  onCheckedChange={(checked) => {
-                    const newValues = checked
-                      ? [...checkedValues, option]
-                      : checkedValues.filter((v: string) => v !== option);
-                    handleAnswerChange(question.id, newValues);
-                  }}
-                />
-                <Label htmlFor={`${question.id}-${index}`} className="text-gray-300">
-                  {option}
-                </Label>
-              </div>
-            ))}
+            {checkboxOptions.map((option: any, index: number) => {
+              const optionValue = typeof option === 'string' ? option : option.value || option.label;
+              const optionLabel = typeof option === 'string' ? option : option.label || option.value;
+              return (
+                <div key={index} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`${question.id}-${index}`}
+                    checked={checkedValues.includes(optionValue)}
+                    onCheckedChange={(checked) => {
+                      const newValues = checked
+                        ? [...checkedValues, optionValue]
+                        : checkedValues.filter((v: string) => v !== optionValue);
+                      handleAnswerChange(question.id, newValues);
+                    }}
+                  />
+                  <Label htmlFor={`${question.id}-${index}`} className="text-gray-300">
+                    {optionLabel}
+                  </Label>
+                </div>
+              );
+            })}
           </div>
         );
 
