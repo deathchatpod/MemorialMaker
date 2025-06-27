@@ -385,14 +385,7 @@ export default function QuestionManagement() {
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => setLocation('/')}
-          className="text-primary hover:text-blue-700 mb-4"
-        >
-          <i className="fas fa-arrow-left mr-2"></i>
-          Back to Dashboard
-        </Button>
+
         <h2 className="text-2xl font-semibold text-gray-900">Question Management</h2>
         <p className="text-gray-600 mt-1">Edit form questions and available answer options</p>
       </div>

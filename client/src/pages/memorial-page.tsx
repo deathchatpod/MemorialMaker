@@ -239,14 +239,7 @@ export default function MemorialPage() {
               </Badge>
             </div>
             
-            {isMobile && (
-              <Link href="/dashboard" className="order-3">
-                <Button variant="outline" size="sm" className="w-full">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-            )}
+
           </div>
           
           {(memorial.dateOfBirth || memorial.dateOfDeath) && (

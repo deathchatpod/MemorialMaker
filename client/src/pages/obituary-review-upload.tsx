@@ -351,14 +351,7 @@ export default function ObituaryReviewUpload() {
   return (
     <div className="min-h-screen bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
-        <Button 
-          variant="ghost" 
-          onClick={() => setLocation('/dashboard')}
-          className="text-white hover:text-gray-300 mb-6"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Button>
+
 
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>

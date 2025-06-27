@@ -619,7 +619,7 @@ export default function ObituaryReviewResults() {
                   className="mt-4 border-gray-600 text-gray-300 hover:bg-gray-700"
                 >
                   <ChevronLeft className="h-4 w-4 mr-2" />
-                  Back to Dashboard
+                  Return to Reviews
                 </Button>
               </div>
             </CardContent>

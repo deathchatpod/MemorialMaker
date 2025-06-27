@@ -219,7 +219,7 @@ export default function TakePreNeedEvaluation() {
             </Alert>
             <div className="mt-6 flex gap-4">
               <Button variant="outline" onClick={handleCancel}>
-                Back to Dashboard
+                Return to Evaluations
               </Button>
             </div>
           </CardContent>
