@@ -213,6 +213,7 @@ function Router() {
       <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
       <Route path="/obituary/:id/edit" component={ObituaryForm} />
       <Route path="/obituary-review/upload" component={ObituaryReviewUpload} />
+      <Route path="/obituary-review/:id/results" component={ObituaryReviewResults} />
       <Route path="/admin/questions" component={QuestionManagement} />
       <Route path="/admin/surveys" component={SurveyManagement} />
       <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />

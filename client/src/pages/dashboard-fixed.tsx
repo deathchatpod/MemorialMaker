@@ -77,6 +77,14 @@ export default function Dashboard() {
     }
   });
 
+  const { data: obituaryReviews = [], isLoading: isObituaryReviewsLoading } = useQuery({
+    queryKey: ['/api/obituary-reviews', userTypeParam, userIdParam],
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/obituary-reviews?userId=${userIdParam}&userType=${userTypeParam}`);
+      return res.json();
+    }
+  });
+
   const { data: apiUsage, isLoading: isApiUsageLoading } = useQuery({
     queryKey: ['/api/api-usage', userTypeParam, userIdParam],
     queryFn: async () => {
@@ -307,6 +315,76 @@ export default function Dashboard() {
                 }}
                 isLoading={isObituariesLoading}
               />
+
+              {/* Obituary Reviews Table */}
+              {obituaryReviews.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-white mb-4">Obituary Reviews</h3>
+                  <DataTable
+                    data={Array.isArray(obituaryReviews) ? obituaryReviews : []}
+                    columns={[
+                      {
+                        key: "originalFilename",
+                        title: "Document Name",
+                        sortable: true,
+                        render: (value) => value || "Unnamed Document"
+                      },
+                      {
+                        key: "createdAt",
+                        title: "Uploaded",
+                        sortable: true,
+                        render: (value) => (
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {formatDate(value)}
+                          </div>
+                        )
+                      },
+                      {
+                        key: "status",
+                        title: "Status",
+                        sortable: true,
+                        filterable: true,
+                        filterOptions: [
+                          { value: "pending", label: "Pending" },
+                          { value: "processing", label: "Processing" },
+                          { value: "completed", label: "Completed" },
+                          { value: "error", label: "Error" }
+                        ],
+                        render: createBadgeRenderer(getStatusColor)
+                      },
+                      {
+                        key: "actions",
+                        title: "Actions",
+                        sortable: false,
+                        render: (value, row) => (
+                          <div className="flex gap-2">
+                            {row.status === 'completed' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setLocation(`/obituary-review/${row.id}/results`)}
+                                title="View AI feedback and results"
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                View Results
+                              </Button>
+                            )}
+                            {row.status === 'pending' && (
+                              <Badge variant="secondary">Processing...</Badge>
+                            )}
+                          </div>
+                        )
+                      }
+                    ]}
+                    emptyState={{
+                      title: 'No obituary reviews found',
+                      description: 'Upload an obituary document for AI review to get started.'
+                    }}
+                    isLoading={isObituaryReviewsLoading}
+                  />
+                </div>
+              )}
             </div>
           )}
 
