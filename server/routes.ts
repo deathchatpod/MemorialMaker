@@ -1977,15 +1977,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error publishing obituary review:', error);
       console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
         reviewId,
         publishToSystem,
         createMemorial
       });
       res.status(500).json({ 
         error: 'Failed to publish content',
-        details: error.message 
+        details: error instanceof Error ? error.message : 'Unknown error occurred'
       });
     }
   });

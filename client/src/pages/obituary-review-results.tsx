@@ -303,13 +303,7 @@ export default function ObituaryReviewResults() {
   // Enhanced publish to system mutation with options
   const publishMutation = useMutation({
     mutationFn: async ({ publishToSystem = true, createMemorial = false }: { publishToSystem?: boolean; createMemorial?: boolean }) => {
-      return apiRequest(`/api/obituary-reviews/${id}/publish`, {
-        method: "POST",
-        body: JSON.stringify({ publishToSystem, createMemorial }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      return apiRequest("POST", `/api/obituary-reviews/${id}/publish`, { publishToSystem, createMemorial });
     },
     onSuccess: (data) => {
       toast({
@@ -330,13 +324,7 @@ export default function ObituaryReviewResults() {
   // Reprocess obituary with improved settings
   const reprocessMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest(`/api/obituary-reviews/${id}/reprocess`, {
-        method: "POST",
-        body: JSON.stringify({}),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      return apiRequest("POST", `/api/obituary-reviews/${id}/reprocess`, {});
     },
     onSuccess: () => {
       toast({
