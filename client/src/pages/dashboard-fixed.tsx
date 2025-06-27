@@ -212,84 +212,92 @@ export default function Dashboard() {
 
           {/* Obituaries Section */}
           {activeSection === 'obituaries' && (
-            <DataTable
-              title="Obituaries"
-              data={Array.isArray(obituaries) ? obituaries : []}
-              columns={[
-                {
-                  key: "fullName",
-                  title: "Deceased Name",
-                  sortable: true,
-                  render: (value) => value || "Untitled"
-                },
-                {
-                  key: "createdAt",
-                  title: "Date Created",
-                  sortable: true,
-                  render: (value) => (
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {formatDate(value)}
-                    </div>
-                  )
-                },
-                {
-                  key: "status",
-                  title: "Status",
-                  sortable: true,
-                  filterable: true,
-                  filterOptions: [
-                    { value: "draft", label: "Draft" },
-                    { value: "generated", label: "Generated" },
-                    { value: "completed", label: "Completed" }
-                  ],
-                  render: createBadgeRenderer(getStatusColor)
-                },
-                {
-                  key: "actions",
-                  title: "Actions",
-                  sortable: false,
-                  render: (value, row) => (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setLocation(`/obituary/${row.id}/edit`)}
-                        title="Edit obituary"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setLocation(`/obituary/${row.id}/generated`)}
-                        title="View obituary"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )
-                }
-              ]}
-              createButtons={[
-                {
-                  label: "Create New Obituary",
-                  icon: Plus,
-                  onClick: () => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)
-                },
-                {
-                  label: "Upload Existing Obituary for Review",
-                  icon: FileText,
-                  variant: "outline" as const,
-                  onClick: () => setLocation(`/obituary-review/upload?userType=${userTypeParam}&userId=${userIdParam}`)
-                }
-              ]}
-              emptyState={{
-                title: 'No obituaries found',
-                description: 'Create your first obituary to get started.'
-              }}
-              isLoading={isObituariesLoading}
-            />
+            <div className="space-y-4">
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-2">
+                <Button 
+                  onClick={() => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create New Obituary
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setLocation(`/obituary-review/upload?userType=${userTypeParam}&userId=${userIdParam}`)}
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  Upload Existing Obituary for Review
+                </Button>
+              </div>
+
+              {/* Obituaries Table */}
+              <DataTable
+                data={Array.isArray(obituaries) ? obituaries : []}
+                columns={[
+                  {
+                    key: "fullName",
+                    title: "Deceased Name",
+                    sortable: true,
+                    render: (value) => value || "Untitled"
+                  },
+                  {
+                    key: "createdAt",
+                    title: "Date Created",
+                    sortable: true,
+                    render: (value) => (
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {formatDate(value)}
+                      </div>
+                    )
+                  },
+                  {
+                    key: "status",
+                    title: "Status",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "draft", label: "Draft" },
+                      { value: "generated", label: "Generated" },
+                      { value: "completed", label: "Completed" }
+                    ],
+                    render: createBadgeRenderer(getStatusColor)
+                  },
+                  {
+                    key: "actions",
+                    title: "Actions",
+                    sortable: false,
+                    render: (value, row) => (
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setLocation(`/obituary/${row.id}/edit`)}
+                          title="Edit obituary"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setLocation(`/obituary/${row.id}/generated`)}
+                          title="View obituary"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )
+                  }
+                ]}
+                emptyState={{
+                  title: 'No obituaries found',
+                  description: 'Create your first obituary to get started.'
+                }}
+                isLoading={isObituariesLoading}
+              />
+            </div>
           )}
 
           {/* FinalSpaces Section */}
