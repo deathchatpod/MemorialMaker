@@ -85,11 +85,13 @@ export class ClaudeService {
         obituaryReviewId: options.obituaryReviewId,
         provider: 'claude',
         model: DEFAULT_MODEL_STR,
+        platformFunction: 'obituary_review',
+        promptTemplate: 'Obituary Review',
         status: 'pending',
       });
 
       // Get prompt template
-      const promptTemplate = await storage.getPromptTemplateByName('Obituary Review');
+      const promptTemplate = await storage.getPromptTemplate(1); // Default obituary review template
       if (!promptTemplate) {
         throw new Error('Obituary Review prompt template not found');
       }

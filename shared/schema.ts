@@ -652,12 +652,30 @@ export const apiCalls = pgTable("api_calls", {
   obituaryReviewId: integer("obituary_review_id").references(() => obituaryReviews.id),
   provider: varchar("provider", { length: 50 }).notNull(), // 'claude', 'openai', etc
   model: varchar("model", { length: 100 }).notNull(),
-  tokensUsed: integer("tokens_used"),
+  // Enhanced tracking fields
+  platformFunction: varchar("platform_function", { length: 100 }).notNull(), // 'obituary_generation', 'obituary_review', 'revision', etc
+  promptTemplate: varchar("prompt_template", { length: 100 }), // which template was used
+  inputTokens: integer("input_tokens"),
+  outputTokens: integer("output_tokens"),
+  tokensUsed: integer("tokens_used"), // total tokens (input + output)
+  inputCost: decimal("input_cost", { precision: 10, scale: 6 }),
+  outputCost: decimal("output_cost", { precision: 10, scale: 6 }),
   estimatedCost: decimal("estimated_cost", { precision: 10, scale: 4 }),
   status: varchar("status", { length: 50 }).notNull(), // 'success', 'error', 'rate_limited'
   errorMessage: text("error_message"),
   responseTime: integer("response_time"), // milliseconds
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// API Pricing Configuration table
+export const apiPricing = pgTable("api_pricing", {
+  id: serial("id").primaryKey(),
+  provider: varchar("provider", { length: 50 }).notNull(),
+  model: varchar("model", { length: 100 }).notNull(),
+  inputCostPer1M: decimal("input_cost_per_1m", { precision: 10, scale: 6 }).notNull(),
+  outputCostPer1M: decimal("output_cost_per_1m", { precision: 10, scale: 6 }).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const insertObituaryReviewSchema = createInsertSchema(obituaryReviews);
@@ -671,3 +689,7 @@ export type InsertObituaryReviewEdit = z.infer<typeof insertObituaryReviewEditSc
 export const insertApiCallSchema = createInsertSchema(apiCalls);
 export type ApiCall = typeof apiCalls.$inferSelect;
 export type InsertApiCall = z.infer<typeof insertApiCallSchema>;
+
+export const insertApiPricingSchema = createInsertSchema(apiPricing);
+export type ApiPricing = typeof apiPricing.$inferSelect;
+export type InsertApiPricing = z.infer<typeof insertApiPricingSchema>;

@@ -903,6 +903,36 @@ export class DatabaseStorage implements IStorage {
     return updatedCall;
   }
 
+  // API Pricing management methods
+  async getApiPricing(): Promise<ApiPricing[]> {
+    return await db.select().from(apiPricing).where(eq(apiPricing.isActive, true)).orderBy(apiPricing.provider, apiPricing.model);
+  }
+
+  async getApiPricingByProvider(provider: string, model: string): Promise<ApiPricing | undefined> {
+    const [pricing] = await db.select().from(apiPricing)
+      .where(
+        and(
+          eq(apiPricing.provider, provider),
+          eq(apiPricing.model, model),
+          eq(apiPricing.isActive, true)
+        )
+      );
+    return pricing;
+  }
+
+  async createApiPricing(pricing: InsertApiPricing): Promise<ApiPricing> {
+    const [newPricing] = await db.insert(apiPricing).values(pricing).returning();
+    return newPricing;
+  }
+
+  async updateApiPricing(id: number, updates: Partial<ApiPricing>): Promise<ApiPricing> {
+    const [updatedPricing] = await db.update(apiPricing)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(apiPricing.id, id))
+      .returning();
+    return updatedPricing;
+  }
+
   // Phase 4: Obituary Review Edit History
   async getObituaryReviewEdits(reviewId: number): Promise<ObituaryReviewEdit[]> {
     return db.select().from(obituaryReviewEdits)
