@@ -113,27 +113,24 @@ export default function Dashboard() {
   // Menu items - show all for admin, subset for others
   const isAdmin = userTypeParam === 'admin' || currentUser.userType === 'admin';
   
-  const allMenuItems = [
+  const baseMenuItems = [
     { id: 'obituaries', label: 'Obituaries', icon: 'fas fa-file-alt' },
     { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
     { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
     { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-poll-h' },
-    { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-file-medical' },
+    { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-file-medical' }
+  ];
+
+  const adminOnlyItems = [
     { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' },
-    { id: 'team-management', label: 'Team Management', icon: 'fas fa-users' },
-    { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' }
+    { id: 'team-management', label: 'Team Management', icon: 'fas fa-users' }
   ];
 
-  const regularMenuItems = [
-    { id: 'obituaries', label: 'Obituaries', icon: 'fas fa-file-alt' },
-    { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
-    { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
-    { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-poll-h' },
-    { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-file-medical' },
-    { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' }
-  ];
+  const accountItem = { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' };
 
-  const menuItems = isAdmin ? allMenuItems : regularMenuItems;
+  const menuItems = isAdmin 
+    ? [...baseMenuItems, ...adminOnlyItems, accountItem]
+    : [...baseMenuItems, accountItem];
 
   // Restore tab state from localStorage
   const [activeSection, setActiveSection] = useState(() => {
