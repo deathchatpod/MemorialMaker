@@ -592,6 +592,12 @@ export type InsertUserType = typeof userTypes.$inferInsert;
 export type SurveyResponse = typeof surveyResponses.$inferSelect;
 export type InsertSurveyResponse = typeof surveyResponses.$inferInsert;
 
+export type FinalSpaceCollaborator = typeof finalSpaceCollaborators.$inferSelect;
+export type InsertFinalSpaceCollaborator = z.infer<typeof insertFinalSpaceCollaboratorSchema>;
+
+export type FinalSpaceCollaborationSession = typeof finalSpaceCollaborationSessions.$inferSelect;
+export type InsertFinalSpaceCollaborationSession = z.infer<typeof insertFinalSpaceCollaborationSessionSchema>;
+
 // Obituary Reviews - extends obituaries for review workflow
 export const obituaryReviews = pgTable("obituary_reviews", {
   id: serial("id").primaryKey(),

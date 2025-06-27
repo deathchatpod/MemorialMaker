@@ -8,6 +8,9 @@ import {
   type TextFeedback, type InsertTextFeedback, type Survey, type InsertSurvey, type Question, type InsertQuestion, 
   type PromptTemplate, type InsertPromptTemplate, type FinalSpace, type InsertFinalSpace, 
   type FinalSpaceComment, type InsertFinalSpaceComment, type FinalSpaceImage, type InsertFinalSpaceImage,
+  type FinalSpaceCollaborator, type InsertFinalSpaceCollaborator,
+  type FinalSpaceCollaborationSession, type InsertFinalSpaceCollaborationSession,
+  type ObituaryCollaborator, type InsertObituaryCollaborator,
   type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
   type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall
