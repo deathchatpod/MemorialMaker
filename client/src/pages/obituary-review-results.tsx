@@ -70,6 +70,29 @@ export default function ObituaryReviewResults() {
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   
+  // Phrase feedback selection states
+  const [selectedFeedback, setSelectedFeedback] = useState<{[key: string]: boolean}>({});
+  const [includedPhrases, setIncludedPhrases] = useState<{[key: string]: boolean}>({});
+  
+  // Initialize phrase selections when review data loads
+  useEffect(() => {
+    if (review) {
+      const initialSelections: {[key: string]: boolean} = {};
+      const positivePhrases = parsePhrasesArray(review.positivePhrases);
+      const phrasesToImprove = parsePhrasesArray(review.phrasesToImprove);
+      
+      // Default all phrases to included
+      positivePhrases.forEach((_, index) => {
+        initialSelections[`positive-${index}`] = true;
+      });
+      phrasesToImprove.forEach((_, index) => {
+        initialSelections[`improve-${index}`] = true;
+      });
+      
+      setIncludedPhrases(initialSelections);
+    }
+  }, [review]);
+  
   // State persistence for feedback section
   useEffect(() => {
     const savedState = localStorage.getItem(`obituary-feedback-${id}`);
@@ -871,7 +894,23 @@ export default function ObituaryReviewResults() {
                     <div className="space-y-2">
                       {positivePhrases.map((phrase, index) => (
                         <div key={index} className="p-3 bg-green-900/20 border border-green-700/30 rounded">
-                          <p className="text-gray-100 text-sm italic">"{phrase}"</p>
+                          <div className="flex items-start justify-between">
+                            <p className="text-gray-100 text-sm italic flex-1 mr-3">"{phrase}"</p>
+                            <div className="flex items-center space-x-2">
+                              <label className="flex items-center space-x-1 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={includedPhrases[`positive-${index}`] || false}
+                                  onChange={(e) => setIncludedPhrases(prev => ({
+                                    ...prev,
+                                    [`positive-${index}`]: e.target.checked
+                                  }))}
+                                  className="w-3 h-3 text-green-500 bg-gray-700 border-gray-600 rounded focus:ring-green-500"
+                                />
+                                <span className="text-xs text-gray-400">Include</span>
+                              </label>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -890,23 +929,78 @@ export default function ObituaryReviewResults() {
                         const isObject = typeof phraseObj === 'object' && phraseObj !== null && phraseObj.original && phraseObj.improved;
                         return (
                           <div key={index} className="p-3 bg-orange-900/20 border border-orange-700/30 rounded space-y-2">
-                            {isObject ? (
-                              <>
-                                <div>
-                                  <div className="text-gray-400 text-sm font-medium">Original:</div>
-                                  <p className="text-gray-100 text-sm italic mt-1">"{phraseObj.original}"</p>
-                                </div>
-                                <div>
-                                  <div className="text-gray-400 text-sm font-medium">Improved:</div>
-                                  <p className="text-green-300 text-sm italic mt-1">"{phraseObj.improved}"</p>
-                                </div>
-                              </>
-                            ) : (
-                              <p className="text-gray-100 text-sm italic">"{phraseObj}"</p>
-                            )}
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 mr-3">
+                                {isObject ? (
+                                  <>
+                                    <div>
+                                      <div className="text-gray-400 text-sm font-medium">Original:</div>
+                                      <p className="text-gray-100 text-sm italic mt-1">"{phraseObj.original}"</p>
+                                    </div>
+                                    <div className="mt-2">
+                                      <div className="text-gray-400 text-sm font-medium">Improved:</div>
+                                      <p className="text-green-300 text-sm italic mt-1">"{phraseObj.improved}"</p>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <p className="text-gray-100 text-sm italic">"{phraseObj}"</p>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <label className="flex items-center space-x-1 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={includedPhrases[`improve-${index}`] || false}
+                                    onChange={(e) => setIncludedPhrases(prev => ({
+                                      ...prev,
+                                      [`improve-${index}`]: e.target.checked
+                                    }))}
+                                    className="w-3 h-3 text-orange-500 bg-gray-700 border-gray-600 rounded focus:ring-orange-500"
+                                  />
+                                  <span className="text-xs text-gray-400">Include</span>
+                                </label>
+                              </div>
+                            </div>
                           </div>
                         );
                       })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Revision Controls */}
+                {review.status === 'completed' && (positivePhrases.length > 0 || phrasesToImprove.length > 0) && (
+                  <div className="pt-4 border-t border-gray-600">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h4 className="text-blue-400 font-medium text-sm mb-1">Create Revision with Selected Feedback</h4>
+                        <p className="text-gray-400 text-xs">
+                          Generate a new version using only the feedback you've selected above
+                        </p>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {Object.values(includedPhrases).filter(Boolean).length} items selected
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleRevisionWithFeedback('claude')}
+                        disabled={Object.values(includedPhrases).filter(Boolean).length === 0 || reprocessMutation.isPending}
+                        className="bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
+                      >
+                        <Sparkles className="h-4 w-4 mr-1" />
+                        Revise with Claude
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleRevisionWithFeedback('chatgpt')}
+                        disabled={Object.values(includedPhrases).filter(Boolean).length === 0 || reprocessMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50"
+                      >
+                        <Zap className="h-4 w-4 mr-1" />
+                        Revise with ChatGPT
+                      </Button>
                     </div>
                   </div>
                 )}
