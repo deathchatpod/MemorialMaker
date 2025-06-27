@@ -51,6 +51,87 @@ const upload = multer({
   }
 });
 
+// Initialize Anthropic client
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+// Automatic AI processing function
+async function processObituaryReviewAsync(reviewId: number) {
+  try {
+    // Set status to processing
+    await storage.updateObituaryReview(reviewId, { 
+      status: 'processing',
+      aiProvider: 'claude'
+    });
+
+    // Get review data
+    const review = await storage.getObituaryReview(reviewId);
+    if (!review) {
+      throw new Error('Review not found');
+    }
+
+    // Create AI prompt for obituary feedback
+    const prompt = `You are an expert obituary editor providing constructive feedback. Please review this obituary content and provide:
+
+1. IMPROVED VERSION: A refined version of the obituary with better flow, structure, and emotional resonance
+2. SPECIFIC FEEDBACK: Detailed suggestions for improvements in areas like:
+   - Writing style and tone
+   - Structure and organization  
+   - Emotional impact
+   - Completeness of information
+   - Grammar and clarity
+
+Original Obituary Content:
+${review.extractedText}
+
+Survey Context (if provided):
+${JSON.stringify(review.surveyResponses, null, 2)}
+
+Please format your response as:
+IMPROVED VERSION:
+[Your improved obituary here]
+
+FEEDBACK:
+[Your detailed feedback here]`;
+
+    // Call Claude API
+    const response = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 2000,
+      messages: [{
+        role: "user",
+        content: prompt
+      }]
+    });
+
+    const aiResponse = response.content[0].text;
+    
+    // Parse the response to separate improved content and feedback
+    const parts = aiResponse.split('FEEDBACK:');
+    const improvedContent = parts[0]?.replace('IMPROVED VERSION:', '').trim() || aiResponse;
+    const additionalFeedback = parts[1]?.trim() || 'AI processing completed successfully.';
+
+    // Update review with AI results
+    await storage.updateObituaryReview(reviewId, {
+      status: 'completed',
+      improvedContent,
+      additionalFeedback,
+      processedAt: new Date()
+    });
+
+    console.log(`Obituary review ${reviewId} processed successfully`);
+  } catch (error) {
+    console.error(`Error processing obituary review ${reviewId}:`, error);
+    
+    // Update status to failed
+    await storage.updateObituaryReview(reviewId, {
+      status: 'failed',
+      additionalFeedback: `Processing failed: ${error.message}`
+    });
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session configuration with PostgreSQL store for persistence
   const PgSession = connectPgSimple(session);
