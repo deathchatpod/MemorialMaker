@@ -60,19 +60,11 @@ export default function FinalSpaces() {
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold">FinalSpaces</h1>
-            <p className="text-muted-foreground mt-1">
-              Create and manage FinalSpaces to honor loved ones
-            </p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">FinalSpaces</h1>
+          <p className="text-muted-foreground mt-1">
+            Create and manage FinalSpaces to honor loved ones
+          </p>
         </div>
         <Link href="/final-spaces/create">
           <Button>

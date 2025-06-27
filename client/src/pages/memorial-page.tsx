@@ -209,14 +209,7 @@ export default function MemorialPage() {
         {/* Header */}
         <div className={`${isMobile ? 'text-center mb-6' : 'text-center mb-8'}`}>
           <div className={`${isMobile ? 'flex flex-col gap-4 mb-4' : 'flex justify-between items-start mb-4'}`}>
-            {!isMobile && (
-              <Link href="/dashboard">
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-            )}
+
             
             <div className={`${isMobile ? 'order-1' : 'text-center flex-1'}`}>
               <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-white mb-2`}>

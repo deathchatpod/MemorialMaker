@@ -119,7 +119,7 @@ export default function ViewEvaluation() {
               </p>
               <Button onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
+                Return to Evaluations
               </Button>
             </div>
           </CardContent>
@@ -136,7 +136,7 @@ export default function ViewEvaluation() {
         className="mb-6"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Dashboard
+        Return to Evaluations
       </Button>
 
       <Card>
