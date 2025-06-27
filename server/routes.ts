@@ -863,6 +863,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const surveyData = {
         ...req.body,
         createdById: req.user.id,
+        createdByType: req.user.userType,
         version: 1
       };
       const survey = await storage.createSurvey(surveyData);
