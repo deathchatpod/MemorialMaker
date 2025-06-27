@@ -71,20 +71,31 @@ export default function ObituaryReviewResults() {
   }, [feedbackOpen, id]);
 
   // Helper functions for phrase feedback
-  const parsePhrasesArray = (jsonString: string | undefined): any[] => {
-    if (!jsonString) return [];
-    try {
-      // Handle double-encoded JSON strings
-      let cleanString = jsonString;
-      if (typeof jsonString === 'string' && jsonString.startsWith('"') && jsonString.endsWith('"')) {
-        cleanString = JSON.parse(jsonString);
-      }
-      const parsed = JSON.parse(cleanString);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (error) {
-      console.log('Error parsing phrases array:', error, 'Input:', jsonString);
-      return [];
+  const parsePhrasesArray = (data: string | any[] | undefined): any[] => {
+    if (!data) return [];
+    
+    // If it's already an array, return it directly
+    if (Array.isArray(data)) {
+      return data;
     }
+    
+    // If it's a string, try to parse it
+    if (typeof data === 'string') {
+      try {
+        // Handle double-encoded JSON strings
+        let cleanString = data;
+        if (data.startsWith('"') && data.endsWith('"')) {
+          cleanString = JSON.parse(data);
+        }
+        const parsed = JSON.parse(cleanString);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (error) {
+        console.log('Error parsing phrases array:', error, 'Input:', data);
+        return [];
+      }
+    }
+    
+    return [];
   };
 
   // Enhanced function to extract phrase feedback from improvedContent JSON structure
@@ -512,6 +523,17 @@ export default function ObituaryReviewResults() {
   // Combine feedback from both sources
   const allPositivePhrases = [...positivePhrases, ...contentFeedback.liked];
   const allImprovedPhrases = [...phrasesToImprove, ...contentFeedback.improved];
+  
+  // Debug logging
+  console.log('Review data debug:', {
+    status: review.status,
+    positivePhrases: positivePhrases,
+    phrasesToImprove: phrasesToImprove,
+    allPositivePhrases: allPositivePhrases,
+    allImprovedPhrases: allImprovedPhrases,
+    rawPositive: review.positivePhrases,
+    rawImproved: review.phrasesToImprove
+  });
   
   // Extract clean text from improvedContent (remove ALL JSON structure)
   const getCleanUpdatedText = (content: string): string => {
