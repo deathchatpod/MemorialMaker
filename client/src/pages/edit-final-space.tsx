@@ -218,10 +218,14 @@ export default function EditFinalSpace() {
 
         {/* Tabbed Interface */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="basic" className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Basic Details
+            </TabsTrigger>
+            <TabsTrigger value="collaboration" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              Collaboration
             </TabsTrigger>
             <TabsTrigger value="media" className="flex items-center gap-2">
               <ImageIcon className="w-4 h-4" />
@@ -297,6 +301,14 @@ export default function EditFinalSpace() {
                         <FormMessage />
                       </FormItem>
                     )}
+                  />
+                </div>
+
+                {/* Social Media Section */}
+                <div className="md:col-span-2">
+                  <SocialMediaForm
+                    socialMediaLinks={socialMediaLinks}
+                    onChange={setSocialMediaLinks}
                   />
                 </div>
 
@@ -397,6 +409,15 @@ export default function EditFinalSpace() {
         </Card>
       </TabsContent>
 
+      <TabsContent value="collaboration">
+        <CollaborationManager 
+          memorial={finalSpace} 
+          onCollaboratorChange={(updatedCollaborators) => {
+            setCollaborators(updatedCollaborators);
+          }}
+        />
+      </TabsContent>
+
       <TabsContent value="media">
         <MediaManager 
           memorial={finalSpace}
@@ -431,6 +452,16 @@ export default function EditFinalSpace() {
         </Card>
       </TabsContent>
     </Tabs>
+
+        {/* Collaboration Confirmation Modal */}
+        <CollaboratorConfirmationModal
+          isOpen={showCollaboratorModal}
+          onClose={() => setShowCollaboratorModal(false)}
+          onAddCollaborator={handleAddCollaborator}
+          onDoItLater={handleDoItLater}
+          onDontAskAgain={handleDontAskAgain}
+          dontAskAgain={dontAskAgain}
+        />
       </div>
     </div>
   );

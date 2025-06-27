@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import MediaGallery from "@/components/MediaGallery";
 import ObituaryIntegration from "@/components/ObituaryIntegration";
+import SocialMediaDisplay from "@/components/SocialMediaDisplay";
 import { 
   Heart, 
   Calendar, 
