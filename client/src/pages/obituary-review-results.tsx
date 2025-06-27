@@ -356,6 +356,26 @@ export default function ObituaryReviewResults() {
   // Parse phrase feedback arrays
   const positivePhrases = parsePhrasesArray(review.positivePhrases);
   const phrasesToImprove = parsePhrasesArray(review.phrasesToImprove);
+  
+  // Extract clean text from improvedContent (remove JSON structure if present)
+  const getCleanUpdatedText = (content: string): string => {
+    if (!content) return "";
+    
+    try {
+      // Try to parse as JSON and extract improvedVersion
+      const parsed = JSON.parse(content);
+      if (parsed.improvedVersion) {
+        return parsed.improvedVersion;
+      }
+      // If it's structured data but no improvedVersion, return original
+      return content;
+    } catch {
+      // If not JSON, return as is
+      return content;
+    }
+  };
+  
+  const cleanUpdatedText = getCleanUpdatedText(review.improvedContent || "");
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -499,6 +519,68 @@ export default function ObituaryReviewResults() {
                   </div>
                 </div>
 
+                {/* Specific Content Feedback - Only show if we have phrase feedback */}
+                {(positivePhrases.length > 0 || phrasesToImprove.length > 0) && review.status === 'completed' && (
+                  <div>
+                    <h4 className="text-orange-400 font-medium text-xs mb-2 flex items-center space-x-1">
+                      <AlertTriangle className="h-3 w-3" />
+                      <span>Specific Content Feedback</span>
+                    </h4>
+                    <div className="space-y-3">
+                      
+                      {/* Phrases Claude Liked */}
+                      {positivePhrases.length > 0 && (
+                        <div className="space-y-2">
+                          <h5 className="text-green-400 font-medium text-xs flex items-center space-x-1">
+                            <ThumbsUp className="h-3 w-3" />
+                            <span>Phrases Kept (up to 10)</span>
+                          </h5>
+                          <div className="space-y-1">
+                            {positivePhrases.slice(0, 10).map((phrase, index) => (
+                              <div key={index} className="bg-green-900/20 border border-green-700/30 rounded px-2 py-1">
+                                <p className="text-green-200 text-xs">"{phrase}"</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Phrases Claude Improved */}
+                      {phrasesToImprove.length > 0 && (
+                        <div className="space-y-2">
+                          <h5 className="text-yellow-400 font-medium text-xs flex items-center space-x-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            <span>Phrases Improved (up to 10)</span>
+                          </h5>
+                          <div className="space-y-2">
+                            {phrasesToImprove.slice(0, 10).map((phraseData, index) => {
+                              // Handle both string and object formats
+                              const original = typeof phraseData === 'string' ? phraseData : phraseData.original || phraseData;
+                              const improved = typeof phraseData === 'object' ? phraseData.improved : null;
+                              
+                              return (
+                                <div key={index} className="bg-yellow-900/20 border border-yellow-700/30 rounded p-2 space-y-1">
+                                  <div>
+                                    <span className="text-yellow-300 text-xs font-medium">Original: </span>
+                                    <span className="text-yellow-200 text-xs">"{original}"</span>
+                                  </div>
+                                  {improved && (
+                                    <div>
+                                      <span className="text-yellow-300 text-xs font-medium">Improved: </span>
+                                      <span className="text-yellow-100 text-xs">"{improved}"</span>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      
+                    </div>
+                  </div>
+                )}
+
               </CardContent>
             </Card>
           </CollapsibleContent>
@@ -534,7 +616,7 @@ export default function ObituaryReviewResults() {
               <TabsContent value="updated" className="mt-4">
                 <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
                   <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
-                    {currentContent || "No updated content available"}
+                    {cleanUpdatedText || currentContent || "No updated content available"}
                   </div>
                 </ScrollArea>
               </TabsContent>
