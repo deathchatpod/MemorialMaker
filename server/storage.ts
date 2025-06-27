@@ -1,7 +1,7 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
@@ -13,7 +13,7 @@ import {
   type ObituaryCollaborator, type InsertObituaryCollaborator,
   type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
-  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall
+  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall, type ApiPricing, type InsertApiPricing
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
@@ -156,6 +156,13 @@ export interface IStorage {
   getApiCalls(userId?: number, timeRange?: { start: Date; end: Date }): Promise<ApiCall[]>;
   createApiCall(apiCall: InsertApiCall): Promise<number>;
   updateApiCall(id: number, updates: Partial<ApiCall>): Promise<ApiCall>;
+  
+  // API Pricing
+  getApiPricing(): Promise<ApiPricing[]>;
+  getApiPricingByProvider(provider: string, model: string): Promise<ApiPricing | undefined>;
+  createApiPricing(pricing: InsertApiPricing): Promise<ApiPricing>;
+  updateApiPricing(id: number, updates: Partial<ApiPricing>): Promise<ApiPricing>;
+  deleteApiPricing(id: number): Promise<void>;
   
   // Collaboration queries for unified table
   getObituaryCollaborationsByEmail(email: string): Promise<any[]>;
@@ -931,6 +938,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(apiPricing.id, id))
       .returning();
     return updatedPricing;
+  }
+
+  async deleteApiPricing(id: number): Promise<void> {
+    await db.delete(apiPricing).where(eq(apiPricing.id, id));
   }
 
   // Phase 4: Obituary Review Edit History
