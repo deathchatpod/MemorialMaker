@@ -1947,7 +1947,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
     } catch (error) {
-      console.error('Error saving obituary review edit:', error);
+
       res.status(500).json({ error: 'Failed to save changes' });
     }
   });
@@ -2053,14 +2053,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
     } catch (error) {
-      console.error('Error publishing obituary review:', error);
-      console.error('Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        reviewId,
-        publishToSystem,
-        createMemorial
-      });
+
       res.status(500).json({ 
         error: 'Failed to publish content',
         details: error instanceof Error ? error.message : 'Unknown error occurred'

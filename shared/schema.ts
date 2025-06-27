@@ -282,7 +282,11 @@ export const surveyResponses = pgTable("survey_responses", {
   surveyId: integer("survey_id").references(() => surveys.id).notNull(),
   userTypeId: integer("user_type_id").references(() => userTypes.id), 
   responses: jsonb("responses").notNull(),
+  responseType: varchar("response_type", { length: 50 }).default("survey").notNull(),
+  completedById: integer("completed_by_id"),
+  completedByType: varchar("completed_by_type", { length: 50 }),
   submittedAt: timestamp("submitted_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Relations
@@ -613,6 +617,7 @@ export const obituaryReviews = pgTable("obituary_reviews", {
   originalFilename: text("original_filename").notNull(),
   originalFileSize: integer("original_file_size").notNull(),
   extractedText: text("extracted_text").notNull(),
+  originalContent: text("original_content"), // Add missing field
   surveyResponses: jsonb("survey_responses").notNull(),
   status: varchar("status", { length: 20 }).notNull().default("pending"), // 'pending', 'processing', 'completed', 'failed'
   aiProvider: varchar("ai_provider", { length: 20 }), // 'claude' or 'chatgpt'
@@ -626,6 +631,10 @@ export const obituaryReviews = pgTable("obituary_reviews", {
   finalObituaryId: integer("final_obituary_id").references(() => obituaries.id),
   isPublishedToSystem: boolean("is_published_to_system").default(false).notNull(),
   currentVersion: integer("current_version").default(1).notNull(),
+  // Missing fields from storage layer
+  uploadedBy: integer("uploaded_by"),
+  uploadedByName: varchar("uploaded_by_name", { length: 255 }),
+  documentMetadata: jsonb("document_metadata"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
