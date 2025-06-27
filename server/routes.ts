@@ -884,6 +884,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Processing endpoint for obituary reviews
+  app.post("/api/obituary-reviews/:id/process", requireAuth, async (req: any, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const review = await storage.getObituaryReview(reviewId);
+      
+      if (!review) {
+        return res.status(404).json({ error: "Obituary review not found" });
+      }
+
+      // Check if user has permission to process this review
+      const user = req.user;
+      if (user.userType !== 'admin' && review.createdById !== user.id) {
+        return res.status(403).json({ error: "Unauthorized to process this review" });
+      }
+
+      // Import Claude service
+      const { ClaudeService } = await import('./services/claude');
+
+      // Process with Claude AI
+      const result = await ClaudeService.processWithRetry({
+        userId: user.id,
+        userType: user.userType,
+        originalText: review.extractedText,
+        surveyResponses: review.surveyResponses,
+        obituaryReviewId: reviewId
+      });
+
+      // Update review with AI results
+      const updatedReview = await storage.updateObituaryReview(reviewId, {
+        improvedContent: result.editedText,
+        additionalFeedback: result.feedback,
+        aiProvider: 'claude',
+        processingStatus: 'completed',
+        processedAt: new Date()
+      });
+
+      res.json({
+        feedback: result.feedback,
+        editedText: result.editedText,
+        tokensUsed: result.tokensUsed,
+        estimatedCost: result.estimatedCost,
+        review: updatedReview
+      });
+
+    } catch (error) {
+      console.error("Error processing obituary review:", error);
+      
+      if (error.message.includes('Rate limit exceeded')) {
+        return res.status(429).json({ error: error.message });
+      }
+      
+      res.status(500).json({ error: "Failed to process obituary review. Please try again later." });
+    }
+  });
+
+  // API Usage dashboard endpoint
+  app.get("/api/api-usage", requireAuth, async (req: any, res) => {
+    try {
+      const user = req.user;
+      const { timeRange = '24h', userId } = req.query;
+      
+      // Only admin can view all users' usage
+      if (userId && user.userType !== 'admin') {
+        return res.status(403).json({ error: "Unauthorized to view other users' API usage" });
+      }
+
+      // Calculate time range
+      const now = new Date();
+      let startDate: Date;
+      
+      switch (timeRange) {
+        case '24h':
+          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          break;
+        case '7d':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      }
+
+      const targetUserId = userId ? parseInt(userId) : (user.userType === 'admin' ? undefined : user.id);
+      
+      const apiCalls = await storage.getApiCalls(targetUserId, {
+        start: startDate,
+        end: now
+      });
+
+      // Calculate totals
+      const totalCalls = apiCalls.length;
+      const totalCost = apiCalls.reduce((sum, call) => sum + (parseFloat(call.estimatedCost?.toString() || '0')), 0);
+      const totalTokens = apiCalls.reduce((sum, call) => sum + (call.tokensUsed || 0), 0);
+      const successfulCalls = apiCalls.filter(call => call.status === 'success').length;
+
+      res.json({
+        calls: apiCalls,
+        summary: {
+          totalCalls,
+          totalCost: totalCost.toFixed(4),
+          totalTokens,
+          successfulCalls,
+          errorRate: totalCalls > 0 ? ((totalCalls - successfulCalls) / totalCalls * 100).toFixed(2) : 0
+        },
+        timeRange,
+        period: {
+          start: startDate,
+          end: now
+        }
+      });
+
+    } catch (error) {
+      console.error("Error fetching API usage:", error);
+      res.status(500).json({ error: "Failed to fetch API usage data" });
+    }
+  });
+
   // Document processing endpoint for obituary reviews
   app.post('/api/process-document', requireAuth, upload.single('document'), async (req, res) => {
     try {
@@ -1500,6 +1620,13 @@ async function initializeDefaultPromptTemplates() {
           platform: "chatgpt",
           promptType: "revision", 
           content: "Please revise this obituary based on the feedback. Keep the elements that were liked and improve or rewrite the parts that were marked for change. Maintain dignity and respect throughout."
+        },
+        {
+          name: "Obituary Review",
+          description: "AI prompt for reviewing and providing feedback on existing obituaries",
+          platform: "claude",
+          promptType: "review",
+          content: "You are an expert obituary editor with years of experience in creating meaningful, dignified tributes. Your task is to review the provided obituary and provide constructive feedback along with an improved version.\n\nPlease analyze the obituary for:\n- Clarity and readability\n- Emotional tone and dignity\n- Completeness of life story\n- Flow and structure\n- Grammar and style\n- Accuracy and consistency\n\nProvide specific, actionable feedback that helps honor the deceased person's memory while improving the overall quality of the writing."
         }
       ];
 

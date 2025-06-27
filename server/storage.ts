@@ -1,7 +1,7 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, apiCalls,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
@@ -10,7 +10,7 @@ import {
   type FinalSpaceComment, type InsertFinalSpaceComment, type FinalSpaceImage, type InsertFinalSpaceImage,
   type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
-  type ObituaryReview, type InsertObituaryReview
+  type ObituaryReview, type InsertObituaryReview, type ApiCall, type InsertApiCall
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
@@ -900,7 +900,7 @@ export class DatabaseStorage implements IStorage {
       .set(updates)
       .where(eq(apiCalls.id, id))
       .returning();
-    return updatedReview;
+    return updatedCall;
   }
 }
 
