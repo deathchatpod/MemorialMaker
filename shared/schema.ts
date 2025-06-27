@@ -591,3 +591,26 @@ export type InsertUserType = typeof userTypes.$inferInsert;
 
 export type SurveyResponse = typeof surveyResponses.$inferSelect;
 export type InsertSurveyResponse = typeof surveyResponses.$inferInsert;
+
+// Obituary Reviews - extends obituaries for review workflow
+export const obituaryReviews = pgTable("obituary_reviews", {
+  id: serial("id").primaryKey(),
+  funeralHomeId: integer("funeral_home_id").notNull().references(() => funeralHomes.id),
+  createdById: integer("created_by_id").notNull(),
+  createdByType: varchar("created_by_type", { length: 20 }).notNull(),
+  originalFilename: text("original_filename").notNull(),
+  originalFileSize: integer("original_file_size").notNull(),
+  extractedText: text("extracted_text").notNull(),
+  surveyResponses: jsonb("survey_responses").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("pending"), // 'pending', 'processing', 'completed', 'failed'
+  aiProvider: varchar("ai_provider", { length: 20 }), // 'claude' or 'chatgpt'
+  improvedContent: text("improved_content"),
+  additionalFeedback: text("additional_feedback"),
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertObituaryReviewSchema = createInsertSchema(obituaryReviews);
+export type ObituaryReview = typeof obituaryReviews.$inferSelect;
+export type InsertObituaryReview = z.infer<typeof insertObituaryReviewSchema>;

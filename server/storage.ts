@@ -1,7 +1,7 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
@@ -9,7 +9,8 @@ import {
   type PromptTemplate, type InsertPromptTemplate, type FinalSpace, type InsertFinalSpace, 
   type FinalSpaceComment, type InsertFinalSpaceComment, type FinalSpaceImage, type InsertFinalSpaceImage,
   type CollaborationSession, type InsertCollaborationSession,
-  type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse
+  type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
+  type ObituaryReview, type InsertObituaryReview
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
@@ -135,6 +136,12 @@ export interface IStorage {
   getSurveyResponses(surveyId: number): Promise<SurveyResponse[]>;
   getSurveyResponsesByType(responseType: string, userId?: number, userType?: string, funeralHomeId?: number): Promise<SurveyResponse[]>;
   createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
+
+  // Obituary Reviews
+  getObituaryReviews(funeralHomeId?: number): Promise<ObituaryReview[]>;
+  getObituaryReview(id: number): Promise<ObituaryReview | undefined>;
+  createObituaryReview(review: InsertObituaryReview): Promise<ObituaryReview>;
+  updateObituaryReview(id: number, updates: Partial<ObituaryReview>): Promise<ObituaryReview>;
   
   // Collaboration queries for unified table
   getObituaryCollaborationsByEmail(email: string): Promise<any[]>;
@@ -827,6 +834,35 @@ export class DatabaseStorage implements IStorage {
     }
 
     return await query.orderBy(desc(surveyResponses.createdAt));
+  }
+
+  // Obituary Reviews
+  async getObituaryReviews(funeralHomeId?: number): Promise<ObituaryReview[]> {
+    let query = db.select().from(obituaryReviews);
+    
+    if (funeralHomeId) {
+      query = query.where(eq(obituaryReviews.funeralHomeId, funeralHomeId));
+    }
+    
+    return await query.orderBy(desc(obituaryReviews.createdAt));
+  }
+
+  async getObituaryReview(id: number): Promise<ObituaryReview | undefined> {
+    const [review] = await db.select().from(obituaryReviews).where(eq(obituaryReviews.id, id));
+    return review;
+  }
+
+  async createObituaryReview(review: InsertObituaryReview): Promise<ObituaryReview> {
+    const [newReview] = await db.insert(obituaryReviews).values(review).returning();
+    return newReview;
+  }
+
+  async updateObituaryReview(id: number, updates: Partial<ObituaryReview>): Promise<ObituaryReview> {
+    const [updatedReview] = await db.update(obituaryReviews)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(obituaryReviews.id, id))
+      .returning();
+    return updatedReview;
   }
 }
 
