@@ -148,6 +148,60 @@ export default function ObituaryReviewUpload() {
     }
   };
 
+  const handleConfirmSubmission = async () => {
+    if (!uploadedFile || !extractedText) {
+      toast({
+        title: "Missing Information",
+        description: "Please upload a document before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/obituary-reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          originalFilename: uploadedFile.name,
+          originalFileSize: uploadedFile.size,
+          extractedText: extractedText,
+          surveyResponses: surveyAnswers,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to submit review: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      toast({
+        title: "Review Submitted Successfully",
+        description: "Your obituary review has been saved and will be processed.",
+      });
+
+      // Close preview and redirect to dashboard
+      setIsPreviewOpen(false);
+      setLocation('/dashboard');
+
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        title: "Submission Failed",
+        description: error instanceof Error ? error.message : "Failed to submit review. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Handle survey answer changes
   const handleAnswerChange = (questionId: number, value: any) => {
     setSurveyAnswers(prev => ({
