@@ -80,6 +80,13 @@ ${review.extractedText}
 Survey Context (if provided):
 ${JSON.stringify(review.surveyResponses, null, 2)}
 
+CRITICAL REQUIREMENTS:
+1. The improved version MUST contain ALL information from the original obituary
+2. MUST include all memorial service details, dates, times, locations if present in original
+3. MUST preserve all family member names, relationships, and biographical details
+4. MUST maintain the complete life story without cutting any sections
+5. The improved version should be COMPLETE and COMPREHENSIVE
+
 Please analyze the original text and respond with a JSON object containing:
 {
   "likedPhrases": ["exact phrase from original", "another exact phrase"],
@@ -87,22 +94,23 @@ Please analyze the original text and respond with a JSON object containing:
     {"original": "exact phrase from original text", "improved": "your improved version"},
     {"original": "another phrase", "improved": "improved version"}
   ],
-  "improvedVersion": "Complete improved obituary text with NO JSON or formatting markup",
+  "improvedVersion": "COMPLETE improved obituary text with ALL original information preserved - NO JSON or formatting markup",
   "generalFeedback": "Brief constructive assessment focusing on key improvements made"
 }
 
 Rules:
 - "likedPhrases": Extract 3-8 exact phrases from the original text that are well-written and should remain unchanged
 - "improvedPhrases": Identify 3-8 specific phrases that you changed, showing original vs improved
-- "improvedVersion": Clean, complete obituary text with all improvements - NO JSON, NO markdown, NO code blocks
+- "improvedVersion": COMPLETE obituary text with all improvements AND all original information - NO JSON, NO markdown, NO code blocks, NO truncation
 - "generalFeedback": 2-3 sentences summarizing your key improvements
+- ENSURE the improvedVersion includes ALL memorial service details, family information, and biographical content from the original
 
 Respond ONLY with valid JSON, no other text or markup.`;
 
-    // Call Claude API with reduced token limit for faster processing
+    // Call Claude API with increased token limit for complete responses
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 1500,
+      max_tokens: 4000,
       messages: [{
         role: "user",
         content: prompt
@@ -1953,6 +1961,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error publishing obituary review:', error);
       res.status(500).json({ error: 'Failed to publish content' });
+    }
+  });
+
+  // Reprocess obituary review with improved settings
+  app.post('/api/obituary-reviews/:id/reprocess', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const review = await storage.getObituaryReview(id);
+      
+      if (!review) {
+        return res.status(404).json({ error: "Review not found" });
+      }
+
+      // Start async processing with improved prompt and token limits
+      processObituaryReviewAsync(id);
+
+      res.json({ 
+        message: "Reprocessing started with improved settings for complete content preservation.",
+        status: "processing"
+      });
+
+    } catch (error) {
+      console.error("Error reprocessing obituary review:", error);
+      res.status(500).json({ error: "Failed to start reprocessing." });
     }
   });
 

@@ -302,6 +302,32 @@ export default function ObituaryReviewResults() {
     },
   });
 
+  // Reprocess obituary with improved settings
+  const reprocessMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest(`/api/obituary-reviews/${id}/reprocess`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Reprocessing Started",
+        description: "Using improved settings to preserve all memorial details. This may take a moment.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}`] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Reprocessing Failed",
+        description: error.message || "Failed to start reprocessing. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Export mutation with format options
   const exportMutation = useMutation({
     mutationFn: async ({ format, includeHistory }: { format: 'docx' | 'pdf'; includeHistory?: boolean }) => {
@@ -495,24 +521,24 @@ export default function ObituaryReviewResults() {
         
         // Handle structured response with improvedVersion field
         if (parsed.improvedVersion) {
-          return parsed.improvedVersion.trim();
+          return cleanTextArtifacts(parsed.improvedVersion);
         }
         
         // Handle structured response with improvedContent field
         if (parsed.improvedContent) {
-          return parsed.improvedContent.trim();
+          return cleanTextArtifacts(parsed.improvedContent);
         }
         
         // Handle structured response with editedText field
         if (parsed.editedText) {
-          return parsed.editedText.trim();
+          return cleanTextArtifacts(parsed.editedText);
         }
         
         // Handle array of phrase objects - extract the full improved text if available
         if (Array.isArray(parsed) && parsed.length > 0) {
           // Look for a complete improved text in the first item
           if (parsed[0].improvedText) {
-            return parsed[0].improvedText.trim();
+            return cleanTextArtifacts(parsed[0].improvedText);
           }
           // Otherwise, don't try to reconstruct from individual phrases
           return "Unable to extract clean text from phrase-level feedback.";
@@ -527,15 +553,15 @@ export default function ObituaryReviewResults() {
         // Try to extract improvedVersion using regex as fallback
         const improvedVersionMatch = cleanContent.match(/"improvedVersion":\s*"([^"]*(?:\\.[^"]*)*)"/s);
         if (improvedVersionMatch) {
-          return improvedVersionMatch[1]
+          const extracted = improvedVersionMatch[1]
             .replace(/\\n/g, '\n')
             .replace(/\\"/g, '"')
-            .replace(/\\t/g, '\t')
-            .trim();
+            .replace(/\\t/g, '\t');
+          return cleanTextArtifacts(extracted);
         }
         
         // Last resort: aggressive text cleanup
-        return cleanContent
+        const aggressiveClean = cleanContent
           .replace(/\{[^}]*"likedPhrases"[^}]*\}/g, '')
           .replace(/\{[^}]*"improvedPhrases"[^}]*\}/g, '')
           .replace(/^\s*\{/, '')
@@ -543,23 +569,67 @@ export default function ObituaryReviewResults() {
           .replace(/^"/, '')
           .replace(/"$/, '')
           .replace(/\\n/g, '\n')
-          .replace(/\\"/g, '"')
-          .trim();
+          .replace(/\\"/g, '"');
+        return cleanTextArtifacts(aggressiveClean);
       }
     }
     
     // If content doesn't start with JSON markers, clean up any JSON artifacts
     if (cleanContent.includes('"likedPhrases"') || cleanContent.includes('"improvedPhrases"')) {
-      return cleanContent
+      const cleaned = cleanContent
         .replace(/\{[^}]*"likedPhrases"[^}]*\}/g, '')
         .replace(/\{[^}]*"improvedPhrases"[^}]*\}/g, '')
         .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim();
+        .replace(/```/g, '');
+      return cleanTextArtifacts(cleaned);
     }
     
     // Return cleaned content
-    return cleanContent;
+    return cleanTextArtifacts(cleanContent);
+  };
+
+  // Helper function to clean text artifacts and truncation issues
+  const cleanTextArtifacts = (text: string): string => {
+    if (!text) return "";
+    
+    let cleaned = text.trim();
+    
+    // Remove trailing backslashes and incomplete sentences
+    cleaned = cleaned.replace(/\\+$/, '');
+    
+    // Remove incomplete sentences that end abruptly (common with truncation)
+    // Look for sentences that end with incomplete words or strange characters
+    const lines = cleaned.split('\n');
+    const cleanedLines = lines.filter((line, index) => {
+      const trimmedLine = line.trim();
+      
+      // Skip empty lines
+      if (!trimmedLine) return true;
+      
+      // If it's the last line and seems incomplete, check for truncation
+      if (index === lines.length - 1) {
+        // Remove lines that end with backslashes, incomplete words, or seem cut off
+        if (trimmedLine.endsWith('\\') || 
+            trimmedLine.endsWith(' \\') ||
+            trimmedLine.match(/\s[a-z]+$/i) && trimmedLine.length < 20) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+    
+    cleaned = cleanedLines.join('\n').trim();
+    
+    // Remove any remaining JSON artifacts
+    cleaned = cleaned
+      .replace(/^[\{\[\"]|[\}\]\"]$/g, '')
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, '\n')
+      .replace(/\\t/g, '\t')
+      .replace(/\\\\/g, '\\');
+    
+    return cleaned;
   };
   
   const cleanUpdatedText = getCleanUpdatedText(review.improvedContent || "");
