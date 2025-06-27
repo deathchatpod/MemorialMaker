@@ -174,6 +174,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 - June 26, 2025: **TEXT CONTRAST FIXES** - Fixed home page text readability issues by replacing brown text on light backgrounds with high-contrast white text (text-foreground) matching other page elements, ensuring all text meets accessibility standards
 - June 26, 2025: **TOAST & READABILITY IMPROVEMENTS** - Fixed excessive "Media Updated" toast notifications in FinalSpaces editing by removing redundant triggers, replaced all hardcoded amber/yellow text colors with proper theme colors for consistent readability across all components and pages
 - June 27, 2025: **COMPREHENSIVE COLOR CONTRAST FIXES COMPLETE** - Systematically eliminated ALL instances of brown/amber text on light backgrounds across entire platform, replaced yellow/amber colors with orange variants and gray text with theme-aware `text-muted-foreground`, fixed contrast issues in MediaUploader star icons, DeploymentReadiness warning badges, PasswordStrengthIndicator, MediaManager, and MemorialEditor components, ensuring full accessibility compliance while maintaining memorial theme aesthetic
+- June 27, 2025: **MEMORIAL PAGE TEXT READABILITY FIXED** - Resolved all dark text on black background issues in memorial pages, updated main headers, descriptions, comments, and media gallery text to use white and light gray colors for proper contrast, ensuring complete readability across all memorial page elements while preserving dark memorial aesthetic
 
 # User Management Structure
 

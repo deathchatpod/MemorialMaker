@@ -218,7 +218,7 @@ export default function MemorialPage() {
             )}
             
             <div className={`${isMobile ? 'order-1' : 'text-center flex-1'}`}>
-              <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-gray-900 mb-2`}>
+              <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-bold text-white mb-2`}>
                 {memorial.personName}
               </h1>
             </div>
@@ -256,7 +256,7 @@ export default function MemorialPage() {
           </div>
           
           {(memorial.dateOfBirth || memorial.dateOfDeath) && (
-            <div className="flex items-center justify-center gap-2 text-gray-600 mb-4">
+            <div className="flex items-center justify-center gap-2 text-gray-300 mb-4">
               <Calendar className="w-4 h-4" />
               <span>
                 {memorial.dateOfBirth && format(new Date(memorial.dateOfBirth), 'MMMM d, yyyy')}
@@ -306,7 +306,7 @@ export default function MemorialPage() {
         {memorial.description && (
           <Card className="mb-8">
             <CardContent className="py-6">
-              <p className="text-lg leading-relaxed text-gray-700">
+              <p className="text-lg leading-relaxed text-white">
                 {memorial.description}
               </p>
             </CardContent>
@@ -316,7 +316,7 @@ export default function MemorialPage() {
         {/* Media Gallery */}
         {(memorial.images?.length > 0 || memorial.audioFiles?.length > 0 || memorial.youtubeLinks?.length > 0) && (
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-white">
               <ImageIcon className="w-6 h-6" />
               Memories & Media
             </h2>
@@ -412,11 +412,11 @@ export default function MemorialPage() {
                       <div className="flex-1 min-w-0">
                         <div className={`${isMobile ? 'flex flex-col gap-1 mb-2' : 'flex items-center gap-2 mb-2'}`}>
                           <span className="font-medium truncate">{comment.authorName}</span>
-                          <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-500`}>
+                          <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-300`}>
                             {format(new Date(comment.createdAt), isMobile ? 'MMM d' : 'MMM d, yyyy')}
                           </span>
                         </div>
-                        <p className={`text-gray-700 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
+                        <p className={`text-white leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
                           {comment.content}
                         </p>
                       </div>
@@ -424,7 +424,7 @@ export default function MemorialPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-300">
                   <MessageCircle className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 opacity-50`} />
                   <p className={isMobile ? 'text-sm' : ''}>No messages yet. Be the first to share a memory.</p>
                 </div>
