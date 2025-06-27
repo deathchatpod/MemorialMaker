@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import TextHighlighter from "@/components/text-highlighter";
 import ObituaryEditor from "@/components/obituary-editor";
-import CollaborationManager from "@/components/CollaborationManager";
+
 import VersionManager from "@/components/version-manager";
 import { RefreshCw, ChevronDown, ChevronUp, Clock, Users, MessageSquare, Eye, EyeOff } from "lucide-react";
 
@@ -42,10 +42,10 @@ export default function GeneratedObituaries() {
   const obituaryId = parseInt(params?.id || "0");
   
   const [selectedTexts, setSelectedTexts] = useState<{ [key: number]: TextFeedback[] }>({});
-  const [editingObituary, setEditingObituary] = useState<GeneratedObituary | null>(null);
   const [feedbackInclusion, setFeedbackInclusion] = useState<{ [key: string]: boolean }>({});
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [editingObituary, setEditingObituary] = useState<GeneratedObituary | null>(null);
   const [activeTab, setActiveTab] = useState<string>('latest');
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -58,11 +58,11 @@ export default function GeneratedObituaries() {
       return response.json();
     },
     enabled: !!obituaryId,
-    refetchInterval: generatedObituaries.length === 0 ? 3000 : false, // Poll every 3 seconds if no obituaries yet
+    refetchInterval: (data) => (data && data.length === 0) ? 3000 : false, // Poll only when no obituaries exist
   });
 
   // Check if obituaries are still being generated
-  const isGenerating = !isLoading && generatedObituaries.length === 0;
+  const isGenerating = !isLoading && (!generatedObituaries || generatedObituaries.length === 0);
 
   // Fetch feedback for all generated obituaries
   const { data: allFeedback } = useQuery({
@@ -445,12 +445,48 @@ export default function GeneratedObituaries() {
           </div>
         </CardHeader>
         <CardContent>
-          <VersionManager
-            obituaries={generatedObituaries}
-            feedback={allFeedback || {}}
-            onSelectText={handleTextSelection}
-            isCollaborator={false}
-          />
+          {generatedObituaries.length > 0 ? (
+            <div className="space-y-6">
+              {generatedObituaries.map((obituary) => (
+                <Card key={obituary.id} className="bg-gray-800 border-gray-700">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-foreground capitalize">
+                          {obituary.aiProvider} Version {obituary.version}
+                        </CardTitle>
+                        <Badge variant={obituary.isRevision ? "secondary" : "default"}>
+                          {obituary.isRevision ? "Revision" : "Original"}
+                        </Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setEditingObituary(obituary)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <TextHighlighter 
+                      content={obituary.content}
+                      onTextSelect={(text, type) => handleTextSelection(obituary.id, text, type)}
+                      className="text-gray-300 leading-relaxed"
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+              <p className="text-muted-foreground">No obituaries generated yet. Processing may still be in progress.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
