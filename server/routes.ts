@@ -934,7 +934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error processing obituary review:", error);
       
-      if (error.message.includes('Rate limit exceeded')) {
+      if (error instanceof Error && error.message.includes('Rate limit exceeded')) {
         return res.status(429).json({ error: error.message });
       }
       

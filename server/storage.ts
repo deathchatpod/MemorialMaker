@@ -386,15 +386,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(textFeedback).where(eq(textFeedback.generatedObituaryId, generatedObituaryId));
   }
 
-  async createTextFeedback(insertFeedback: InsertTextFeedback): Promise<TextFeedback> {
-    const [feedback] = await db.insert(textFeedback).values(insertFeedback).returning();
-    return feedback;
-  }
-
-  async deleteTextFeedback(generatedObituaryId: number): Promise<void> {
-    await db.delete(textFeedback).where(eq(textFeedback.generatedObituaryId, generatedObituaryId));
-  }
-
   // Surveys
   async getSurveys(): Promise<Survey[]> {
     return await db.select().from(surveys)

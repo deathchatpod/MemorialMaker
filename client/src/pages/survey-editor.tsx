@@ -168,7 +168,7 @@ function SortableQuestionItem({
           
           {question.options && Array.isArray(question.options) && question.options.length > 0 && (
             <div className="text-sm text-muted-foreground">
-              Options: {question.options.join(", ")}
+              Options: {(question.options as string[]).join(", ")}
             </div>
           )}
         </div>
