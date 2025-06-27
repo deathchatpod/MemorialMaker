@@ -108,28 +108,58 @@ Rules:
 
 Respond ONLY with valid JSON, no other text or markup.`;
 
-    // Call Claude API with increased token limit for complete responses
+    // Create API call record for tracking
+    const apiCallId = await storage.createApiCall({
+      userId: review.createdById,
+      userType: review.createdByType || 'admin',
+      obituaryReviewId: reviewId,
+      provider: 'claude',
+      model: 'claude-sonnet-4-20250514',
+      platformFunction: 'obituary_review_reprocess',
+      promptTemplate: 'Obituary Review Enhanced',
+      status: 'pending',
+    });
 
+    // Call Claude API with increased token limit for complete responses
     const startTime = Date.now();
     
-    const response = await Promise.race([
-      anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 2000, // Reduced for faster processing
-        messages: [{
-          role: "user",
-          content: prompt
-        }]
-      }),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Claude API timeout after 30 seconds')), 30000)
-      )
-    ]) as any;
-    
-    const processingTime = Date.now() - startTime;
+    try {
+      const response = await Promise.race([
+        anthropic.messages.create({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 2000, // Reduced for faster processing
+          messages: [{
+            role: "user",
+            content: prompt
+          }]
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Claude API timeout after 30 seconds')), 30000)
+        )
+      ]) as any;
+      
+      const processingTime = Date.now() - startTime;
+      
+      // Update API call record with success
+      const inputTokens = response.usage.input_tokens;
+      const outputTokens = response.usage.output_tokens;
+      const tokensUsed = inputTokens + outputTokens;
+      const inputCost = (inputTokens / 1000) * 0.003; // $3 per 1M input tokens
+      const outputCost = (outputTokens / 1000) * 0.015; // $15 per 1M output tokens
+      const estimatedCost = inputCost + outputCost;
 
+      await storage.updateApiCall(apiCallId, {
+        inputTokens,
+        outputTokens,
+        tokensUsed,
+        inputCost: inputCost.toString(),
+        outputCost: outputCost.toString(),
+        estimatedCost: estimatedCost.toString(),
+        status: 'success',
+        responseTime: processingTime,
+      });
 
-    const contentBlock = response.content[0];
+      const contentBlock = response.content[0];
     const aiResponse = contentBlock.type === 'text' ? contentBlock.text : '';
     
     // Parse the structured JSON response
