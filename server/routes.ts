@@ -109,7 +109,7 @@ Rules:
 Respond ONLY with valid JSON, no other text or markup.`;
 
     // Call Claude API with increased token limit for complete responses
-    console.log(`Starting Claude API call for obituary review ${reviewId}`);
+
     const startTime = Date.now();
     
     const response = await Promise.race([
@@ -127,7 +127,7 @@ Respond ONLY with valid JSON, no other text or markup.`;
     ]) as any;
     
     const processingTime = Date.now() - startTime;
-    console.log(`Claude API call completed in ${processingTime}ms for review ${reviewId}`);
+
 
     const contentBlock = response.content[0];
     const aiResponse = contentBlock.type === 'text' ? contentBlock.text : '';
@@ -152,7 +152,7 @@ Respond ONLY with valid JSON, no other text or markup.`;
       if (!parsedResponse.generalFeedback) parsedResponse.generalFeedback = 'AI processing completed successfully.';
       
     } catch (error) {
-      console.error('Failed to parse JSON response, using fallback parsing:', error);
+
       // Fallback to old parsing method
       const parts = aiResponse.split('FEEDBACK:');
       parsedResponse = {
@@ -173,9 +173,9 @@ Respond ONLY with valid JSON, no other text or markup.`;
       processedAt: new Date()
     });
 
-    console.log(`Obituary review ${reviewId} processed successfully`);
+
   } catch (error) {
-    console.error(`Error processing obituary review ${reviewId}:`, error);
+
     
     // Update status to failed
     await storage.updateObituaryReview(reviewId, {
@@ -275,7 +275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       })(req, res, next);
     } catch (error) {
-      console.error('Login error:', error);
+
       res.status(500).json({ message: 'Login failed' });
     }
   });
@@ -300,7 +300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/auth/user', (req, res) => {
     if (req.isAuthenticated()) {
-      console.log('Authenticated user:', req.user);
+
       // Extend session on each request during development
       if (process.env.NODE_ENV === 'development' && req.session && req.session.cookie) {
         req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -366,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } 
       });
     } catch (error) {
-      console.error('Registration error:', error);
+
       res.status(500).json({ message: 'Registration failed' });
     }
   });
@@ -599,7 +599,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const obituaries = await storage.getAllObituaries();
       res.json(obituaries);
     } catch (error) {
-      console.error('Error fetching obituaries:', error);
+
       res.status(500).json({ message: "Failed to fetch obituaries" });
     }
   });
@@ -611,7 +611,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const completed = obituaries.filter(o => o.status === 'generated');
       res.json(completed);
     } catch (error) {
-      console.error('Error fetching completed obituaries:', error);
+
       res.status(500).json({ message: "Failed to fetch obituaries" });
     }
   });
@@ -667,7 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const obituary = await storage.createObituary(validatedData);
       res.json(obituary);
     } catch (error) {
-      console.error('Error creating obituary:', error);
+
       
       // Enhanced error handling with detailed user feedback
       if (error instanceof Error) {

@@ -454,7 +454,7 @@ export class DatabaseStorage implements IStorage {
       
       return question;
     } catch (error) {
-      console.error('Error updating question:', error);
+
       throw error;
     }
   }
