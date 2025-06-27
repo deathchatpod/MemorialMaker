@@ -819,7 +819,18 @@ export default function ObituaryReviewResults() {
               <TabsContent value="updated" className="mt-4">
                 <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
                   <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
-                    {cleanUpdatedText || currentContent || "No updated content available"}
+                    {review.status === 'processing' ? (
+                      <div className="flex items-center justify-center h-full text-center">
+                        <div className="space-y-3">
+                          <Clock className="h-8 w-8 animate-spin mx-auto text-blue-400" />
+                          <p className="text-gray-300">
+                            Reviewing the obituary and feedback request. An updated obituary will be displayed shortly.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      cleanUpdatedText || currentContent || "No updated content available"
+                    )}
                   </div>
                 </ScrollArea>
               </TabsContent>
