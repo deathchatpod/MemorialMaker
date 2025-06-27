@@ -492,13 +492,15 @@ export default function SurveyEditor() {
           </div>
           
           <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              onClick={toggleSurveyStatus}
-              disabled={updateSurveyMutation.isPending}
-            >
-              {survey.status === 'active' ? 'Mark as Draft' : 'Publish Survey'}
-            </Button>
+            {!isNewSurvey && (
+              <Button
+                variant="outline"
+                onClick={toggleSurveyStatus}
+                disabled={updateSurveyMutation.isPending}
+              >
+                {displaySurvey.status === 'active' ? 'Mark as Draft' : 'Publish Survey'}
+              </Button>
+            )}
             
             <Dialog open={isAddQuestionOpen || !!editingQuestion} onOpenChange={(open) => {
               setIsAddQuestionOpen(open);
@@ -592,7 +594,7 @@ export default function SurveyEditor() {
                 
                 {questions.length > 0 && (
                   <div className="border rounded-lg p-4 bg-gray-50">
-                    <h3 className="font-medium mb-4">{survey.name}</h3>
+                    <h3 className="font-medium mb-4">{displaySurvey.name}</h3>
                     <div className="space-y-3">
                       {questions
                         .sort((a, b) => a.orderIndex - b.orderIndex)

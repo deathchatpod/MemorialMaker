@@ -19,6 +19,7 @@ import SurveyManagement from "./pages/survey-management";
 import SurveyEditor from "./pages/survey-editor";
 import FinalSpaces from "./pages/final-spaces";
 import CreateFinalSpace from "./pages/create-final-space";
+import CreateSurvey from "./pages/create-survey";
 import Collaborate from "./pages/collaborate";
 import NotFound from "./pages/not-found";
 import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";
@@ -212,7 +213,7 @@ function Router() {
       <Route path="/admin/questions" component={QuestionManagement} />
       <Route path="/admin/surveys" component={SurveyManagement} />
       <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />
-      <Route path="/admin/surveys/new" component={SurveyEditor} />
+      <Route path="/admin/surveys/new" component={CreateSurvey} />
       <Route path="/admin/surveys/:id" component={SurveyEditor} />
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
