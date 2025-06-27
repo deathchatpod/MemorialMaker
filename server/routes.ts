@@ -105,7 +105,8 @@ FEEDBACK:
       }]
     });
 
-    const aiResponse = response.content[0].text;
+    const contentBlock = response.content[0];
+    const aiResponse = contentBlock.type === 'text' ? contentBlock.text : '';
     
     // Parse the response to separate improved content and feedback
     const parts = aiResponse.split('FEEDBACK:');
@@ -127,7 +128,7 @@ FEEDBACK:
     // Update status to failed
     await storage.updateObituaryReview(reviewId, {
       status: 'failed',
-      additionalFeedback: `Processing failed: ${error.message}`
+      additionalFeedback: `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
     });
   }
 }
@@ -1165,10 +1166,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Obituary review not found' });
       }
 
+      // If review is pending, trigger automatic processing
+      if (review.status === 'pending') {
+        processObituaryReviewAsync(id);
+      }
+
       res.json(review);
     } catch (error) {
       console.error('Error fetching obituary review:', error);
       res.status(500).json({ error: 'Failed to fetch obituary review' });
+    }
+  });
+
+  // Manual processing trigger endpoint
+  app.post('/api/obituary-reviews/:id/process', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const review = await storage.getObituaryReview(id);
+      
+      if (!review) {
+        return res.status(404).json({ error: 'Obituary review not found' });
+      }
+
+      if (review.status === 'completed') {
+        return res.json({ message: 'Review already processed', review });
+      }
+
+      // Trigger processing
+      processObituaryReviewAsync(id);
+      
+      res.json({ message: 'Processing started', status: 'processing' });
+    } catch (error) {
+      console.error('Error triggering obituary review processing:', error);
+      res.status(500).json({ error: 'Failed to trigger processing' });
     }
   });
 
