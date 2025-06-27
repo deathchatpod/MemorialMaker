@@ -351,6 +351,21 @@ export default function Dashboard() {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
+                        {currentUser.userType === 'admin' && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm('Are you sure you want to delete this obituary? This action cannot be undone.')) {
+                                deleteObituaryMutation.mutate(row.id);
+                              }
+                            }}
+                            title="Delete obituary"
+                            disabled={deleteObituaryMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     )
                   }
@@ -418,6 +433,21 @@ export default function Dashboard() {
                             )}
                             {row.status === 'pending' && (
                               <Badge variant="secondary">Processing...</Badge>
+                            )}
+                            {currentUser.userType === 'admin' && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this obituary review? This action cannot be undone.')) {
+                                    deleteObituaryReviewMutation.mutate(row.id);
+                                  }
+                                }}
+                                title="Delete obituary review"
+                                disabled={deleteObituaryReviewMutation.isPending}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
                             )}
                           </div>
                         )
