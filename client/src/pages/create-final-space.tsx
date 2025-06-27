@@ -20,6 +20,29 @@ import CollaboratorConfirmationModal from "@/components/CollaboratorConfirmation
 import SocialMediaForm from "@/components/SocialMediaForm";
 import CemeteryForm from "@/components/CemeteryForm";
 
+interface MediaFile {
+  id: string;
+  filename: string;
+  url: string;
+  isPrimary?: boolean;
+  title?: string;
+}
+
+interface CemeteryData {
+  cemeteryName: string;
+  cemeterySection: string;
+  plotNumber: string;
+  graveNotes: string;
+}
+
+interface SocialMediaLinks {
+  pinterest?: string;
+  instagram?: string;
+  facebook?: string;
+  twitter?: string;
+  tiktok?: string;
+}
+
 const createFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
   dateOfBirth: z.string().optional(),
@@ -43,7 +66,12 @@ type CreateFinalSpaceForm = z.infer<typeof createFinalSpaceSchema>;
 function CreateFinalSpace() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [mediaData, setMediaData] = useState({
+  const [mediaData, setMediaData] = useState<{
+    images: MediaFile[];
+    audioFiles: MediaFile[];
+    youtubeLinks: MediaFile[];
+    primaryMedia: MediaFile | null;
+  }>({
     images: [],
     audioFiles: [],
     youtubeLinks: [],
