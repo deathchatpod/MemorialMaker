@@ -24,12 +24,6 @@ export default function DeploymentSettings() {
     <div className="container mx-auto p-6 max-w-6xl">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link href={`/dashboard?userType=${userType}&userId=${userId}`}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Link>
-          </Button>
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Rocket className="h-6 w-6" />

@@ -295,22 +295,14 @@ function CreateFinalSpace() {
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto max-w-4xl px-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center text-foreground">
-              <Heart className="mr-3 h-8 w-8 text-muted-foreground" />
-              Create Memorial Space
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Create a memorial space to honor a loved one
-            </p>
-          </div>
-          <Link href={`/dashboard?userType=${userTypeParam}&userId=${userIdParam}`}>
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
-          </Link>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold flex items-center text-foreground">
+            <Heart className="mr-3 h-8 w-8 text-muted-foreground" />
+            Create Memorial Space
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Create a memorial space to honor a loved one
+          </p>
         </div>
 
         {/* Form */}

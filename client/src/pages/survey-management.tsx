@@ -123,15 +123,6 @@ export default function SurveyManagement() {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => setLocation('/')}
-          className="text-blue-600 hover:text-blue-700 mb-4"
-        >
-          <i className="fas fa-arrow-left mr-2"></i>
-          Back to Dashboard
-        </Button>
-        
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">Platform Surveys</h2>
