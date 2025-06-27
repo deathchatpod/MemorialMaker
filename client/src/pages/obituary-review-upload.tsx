@@ -302,11 +302,6 @@ export default function ObituaryReviewUpload() {
                       <p className="text-gray-400 text-sm mb-4">
                         Supports .docx and .pdf files (max 10MB)
                       </p>
-                      <Label htmlFor="file-upload" className="cursor-pointer">
-                        <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-700" disabled={isUploading}>
-                          {isUploading ? 'Processing...' : 'Choose File'}
-                        </Button>
-                      </Label>
                       <Input
                         id="file-upload"
                         type="file"
@@ -314,6 +309,16 @@ export default function ObituaryReviewUpload() {
                         onChange={handleFileUpload}
                         className="hidden"
                       />
+                      <Label htmlFor="file-upload" className="cursor-pointer">
+                        <Button 
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700" 
+                          disabled={isUploading}
+                          type="button"
+                        >
+                          {isUploading ? 'Processing...' : 'Choose File'}
+                        </Button>
+                      </Label>
                     </div>
                   </div>
                 )}
