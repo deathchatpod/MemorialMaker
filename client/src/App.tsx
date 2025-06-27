@@ -20,6 +20,7 @@ import SurveyEditor from "./pages/survey-editor";
 import FinalSpaces from "./pages/final-spaces";
 import CreateFinalSpace from "./pages/create-final-space";
 import CreateSurvey from "./pages/create-survey";
+import ObituaryReviewUpload from "./pages/obituary-review-upload";
 import Collaborate from "./pages/collaborate";
 import NotFound from "./pages/not-found";
 import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";
@@ -210,6 +211,7 @@ function Router() {
       <Route path="/obituary/new" component={ObituaryForm} />
       <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
       <Route path="/obituary/:id/edit" component={ObituaryForm} />
+      <Route path="/obituary-review/upload" component={ObituaryReviewUpload} />
       <Route path="/admin/questions" component={QuestionManagement} />
       <Route path="/admin/surveys" component={SurveyManagement} />
       <Route path="/admin/surveys/:id/edit" component={SurveyEditor} />

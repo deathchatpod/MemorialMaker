@@ -1,0 +1,39 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 Feature Enhancement: Upload Existing Obituary for Review\
+Access Level: All user types have the same access to this function.\
+Entry Point: Add a "+Upload Existing Obituary for Review" button next to the existing "+Create New Obituary" button in the Obituaries section.\
+New Function Page:\
+Create a dedicated page following existing UX consistency patterns\
+Display all questions from the current "Obituary Feedback" survey\
+Ensure dynamic updates: if an admin modifies the survey questions, changes should automatically reflect on this page\
+Include a document upload component (supporting .docx and .pdf formats) below the survey questions\
+Function button "Preview Obituary Feedback Request" \
+Preview Modal:\
+Display summarized answers from the completed survey questions\
+Show a preview of the uploaded document text\
+Include a "Confirm" function button to proceed\
+AI Integration:\
+Upon confirmation, trigger a Claude Sonnet 4.0 API call\
+The prompt template must be visible and editable by admins in the "Prompt Templates" function tab on their dashboard\
+Prompt requirements:\
+Request improvements to writing, grammar, and spelling\
+Explicitly prohibit changes or elimination of any factual details\
+Require explicit change documentation in format: "it was written [ABC], but I recommend it is written [123]"\
+Request a final, complete obituary with all improvements implemented\
+Results Page:\
+Create a new page to display Claude's response\
+Feedback Section (top of page): Organize AI feedback using the existing Collaborators feedback styling (showing what the AI liked and suggestions for improvement)\
+Main Content Area:Display both "Original Obituary" and "Final Obituary" as full text bodies\
+Implement tabbed interface allowing users to switch between versions\
+Make both text versions editable\
+Include save functionality for each version separately\
+Provide download options for both "Original Obituary" and "Final Obituary" in .doc and .pdf formats\
+This enhancement maintains consistency with your existing platform while adding comprehensive obituary review and editing capabilities.\
+\
+Please ask all questions before build, make recommendations for functions or stability}

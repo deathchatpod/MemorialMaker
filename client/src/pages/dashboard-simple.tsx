@@ -53,6 +53,9 @@ export default function Dashboard() {
     { id: 'collaborations', label: 'My Collaborations', icon: Users },
     { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
     { id: 'evaluations', label: 'Pre Need Evaluation', icon: BarChart3 },
+    ...(currentUser.userType === 'admin' ? [
+      { id: 'templates', label: 'Prompt Templates', icon: FileText }
+    ] : []),
     { id: 'team', label: 'Team Management', icon: Users },
     { id: 'account', label: 'My Account', icon: Users }
   ];
@@ -114,12 +117,22 @@ export default function Dashboard() {
             {activeSection === 'obituaries' && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <span>Obituaries</span>
-                    <Button onClick={() => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create New Obituary
-                    </Button>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <Button onClick={() => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create New Obituary
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setLocation(`/obituary-review/upload?userType=${userTypeParam}&userId=${userIdParam}`)}
+                        className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Upload Existing Obituary for Review
+                      </Button>
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -329,6 +342,30 @@ export default function Dashboard() {
             {/* Pre Need Evaluation Section */}
             {activeSection === 'evaluations' && (
               <PreNeedEvaluationTab />
+            )}
+
+            {/* Prompt Templates Section */}
+            {activeSection === 'templates' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileText className="w-5 h-5 mr-2" />
+                    Prompt Templates
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-4">
+                    <Button 
+                      onClick={() => setLocation(`/admin/templates/new?userType=${userTypeParam}&userId=${userIdParam}`)}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Template
+                    </Button>
+                  </div>
+                  <p className="text-gray-300">Prompt template management coming soon.</p>
+                </CardContent>
+              </Card>
             )}
 
             {/* Team Management Section */}
