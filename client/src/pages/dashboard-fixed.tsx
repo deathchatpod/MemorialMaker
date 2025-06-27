@@ -407,10 +407,9 @@ export default function Dashboard() {
               />
 
               {/* Obituary Reviews Table */}
-              {obituaryReviews.length > 0 && (
-                <div className="mt-8">
-                  <h3 className="text-lg font-semibold text-white mb-4">Obituary Reviews</h3>
-                  <DataTable
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold text-white mb-4">Obituary Reviews</h3>
+                <DataTable
                     data={Array.isArray(obituaryReviews) ? obituaryReviews : []}
                     columns={[
                       {
@@ -506,8 +505,7 @@ export default function Dashboard() {
                     }}
                     isLoading={isObituaryReviewsLoading}
                   />
-                </div>
-              )}
+              </div>
             </div>
           )}
 
