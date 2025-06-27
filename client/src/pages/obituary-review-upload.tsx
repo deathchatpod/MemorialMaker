@@ -32,6 +32,11 @@ export default function ObituaryReviewUpload() {
   // Get the "Obituary Feedback" survey questions
   const { data: surveys = [], isLoading: surveysLoading, error: surveysError } = useQuery<any[]>({
     queryKey: ['/api/surveys'],
+    queryFn: async () => {
+      const response = await fetch('/api/surveys');
+      if (!response.ok) throw new Error('Failed to fetch surveys');
+      return response.json();
+    },
     retry: 1
   });
 
@@ -39,6 +44,11 @@ export default function ObituaryReviewUpload() {
 
   const { data: questions = [], isLoading: questionsLoading, error: questionsError } = useQuery<any[]>({
     queryKey: ['/api/questions'],
+    queryFn: async () => {
+      const response = await fetch('/api/questions');
+      if (!response.ok) throw new Error('Failed to fetch questions');
+      return response.json();
+    },
     enabled: !!obituaryFeedbackSurvey,
     retry: 1
   });
