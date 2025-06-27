@@ -54,9 +54,21 @@ export default function ObituaryReviewResults() {
   const [isEditing, setIsEditing] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(true);
   
+  // Edit mode states for both tabs
+  const [isEditingOriginal, setIsEditingOriginal] = useState(false);
+  const [isEditingUpdated, setIsEditingUpdated] = useState(false);
+  const [originalEditText, setOriginalEditText] = useState("");
+  const [updatedEditText, setUpdatedEditText] = useState("");
+  const [hasUnsavedOriginal, setHasUnsavedOriginal] = useState(false);
+  const [hasUnsavedUpdated, setHasUnsavedUpdated] = useState(false);
+  
   // Confirmation modal states
   const [showDownloadConfirm, setShowDownloadConfirm] = useState(false);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [showEditConfirm, setShowEditConfirm] = useState(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
   
   // State persistence for feedback section
   useEffect(() => {
@@ -69,6 +81,104 @@ export default function ObituaryReviewResults() {
   useEffect(() => {
     localStorage.setItem(`obituary-feedback-${id}`, JSON.stringify(feedbackOpen));
   }, [feedbackOpen, id]);
+
+  // Fetch review data
+  const { data: review, isLoading: reviewLoading } = useQuery<ObituaryReview>({
+    queryKey: ["/api/obituary-reviews", id],
+    enabled: !!id,
+  });
+
+  // Initialize edit text when review data loads
+  useEffect(() => {
+    if (review) {
+      setOriginalEditText(review.extractedContent || '');
+      setUpdatedEditText(review.reviewContent || '');
+    }
+  }, [review]);
+
+  // Edit/Save handler functions
+  const handleEditClick = (textType: 'original' | 'updated') => {
+    const hasUnsaved = textType === 'original' ? hasUnsavedUpdated : hasUnsavedOriginal;
+    
+    if (hasUnsaved) {
+      setPendingAction(`edit-${textType}`);
+      setShowUnsavedWarning(true);
+      return;
+    }
+    
+    setPendingAction(`edit-${textType}`);
+    setShowEditConfirm(true);
+  };
+
+  const handleSaveClick = (textType: 'original' | 'updated') => {
+    setPendingAction(`save-${textType}`);
+    setShowSaveConfirm(true);
+  };
+
+  const confirmEdit = () => {
+    if (pendingAction === 'edit-original') {
+      setIsEditingOriginal(true);
+      setIsEditingUpdated(false);
+    } else if (pendingAction === 'edit-updated') {
+      setIsEditingUpdated(true);
+      setIsEditingOriginal(false);
+    }
+    setShowEditConfirm(false);
+    setShowUnsavedWarning(false);
+    setPendingAction(null);
+  };
+
+  const confirmSave = async () => {
+    try {
+      if (pendingAction === 'save-original') {
+        // Save original text changes
+        setIsEditingOriginal(false);
+        setHasUnsavedOriginal(false);
+        toast({
+          title: "Original obituary saved",
+          description: "Your changes have been saved successfully.",
+        });
+      } else if (pendingAction === 'save-updated') {
+        // Save updated text changes
+        setIsEditingUpdated(false);
+        setHasUnsavedUpdated(false);
+        toast({
+          title: "Updated obituary saved", 
+          description: "Your changes have been saved successfully.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error saving changes",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    }
+    setShowSaveConfirm(false);
+    setPendingAction(null);
+  };
+
+  const handleTextChange = (textType: 'original' | 'updated', value: string) => {
+    if (textType === 'original') {
+      setOriginalEditText(value);
+      setHasUnsavedOriginal(value !== (review?.extractedContent || ''));
+    } else {
+      setUpdatedEditText(value);
+      setHasUnsavedUpdated(value !== (review?.reviewContent || ''));
+    }
+  };
+
+  const cancelEdit = (textType: 'original' | 'updated') => {
+    if (textType === 'original') {
+      setIsEditingOriginal(false);
+      setOriginalEditText(review?.extractedContent || '');
+      setHasUnsavedOriginal(false);
+    } else {
+      setIsEditingUpdated(false);
+      setUpdatedEditText(review?.reviewContent || '');
+      setHasUnsavedUpdated(false);
+    }
+  };
 
   // Helper functions for phrase feedback
   const parsePhrasesArray = (data: string | any[] | undefined): any[] => {
