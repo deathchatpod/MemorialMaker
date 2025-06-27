@@ -10,6 +10,7 @@ import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
 import MyCollaborations from "./my-collaborations";
 import { PreNeedEvaluationTab } from "@/components/pre-need-evaluation-tab";
+import PromptTemplates from "./prompt-templates";
 
 interface User {
   id: number;
@@ -56,7 +57,7 @@ export default function Dashboard() {
     { id: 'collaborations', label: 'My Collaborations', icon: Users },
     { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
     { id: 'evaluations', label: 'Pre Need Evaluation', icon: BarChart3 },
-    { id: 'templates', label: 'Prompt Templates', icon: Settings },
+    ...(isAdmin ? [{ id: 'templates', label: 'Prompt Templates', icon: Settings }] : []),
     { id: 'team', label: 'Team Management', icon: Users },
     { id: 'account', label: 'My Account', icon: Users }
   ];
