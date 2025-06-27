@@ -196,21 +196,24 @@ export default function DataTable({
                     {createButton.label}
                   </Button>
                 )}
-                {createButtons && createButtons.map((button, index) => (
-                  <Button 
-                    key={index}
-                    onClick={button.onClick} 
-                    variant={button.variant || "default"}
-                    className="flex items-center gap-2"
-                  >
-                    {button.icon ? (
-                      <button.icon className="w-4 h-4" />
-                    ) : (
-                      <Plus className="w-4 h-4" />
-                    )}
-                    {button.label}
-                  </Button>
-                ))}
+                {createButtons && createButtons.map((button, index) => {
+                  const IconComponent = button.icon;
+                  return (
+                    <Button 
+                      key={index}
+                      onClick={button.onClick} 
+                      variant={button.variant || "default"}
+                      className="flex items-center gap-2"
+                    >
+                      {IconComponent ? (
+                        <IconComponent className="w-4 h-4" />
+                      ) : (
+                        <Plus className="w-4 h-4" />
+                      )}
+                      {button.label}
+                    </Button>
+                  );
+                })}
               </div>
             )}
           </div>
