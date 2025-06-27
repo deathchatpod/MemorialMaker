@@ -28,6 +28,7 @@ export default function ObituaryReviewUpload() {
   const [surveyAnswers, setSurveyAnswers] = useState<Record<string, any>>({});
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Get the "Obituary Feedback" survey questions
   const { data: surveys = [], isLoading: surveysLoading, error: surveysError } = useQuery<any[]>({
@@ -55,10 +56,8 @@ export default function ObituaryReviewUpload() {
 
   const surveyQuestions = questions.filter(q => q.surveyId === obituaryFeedbackSurvey?.id);
 
-  // Handle file upload
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // Process file upload
+  const processFile = async (file: File) => {
 
     // Validate file type
     const allowedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf'];
@@ -117,6 +116,34 @@ export default function ObituaryReviewUpload() {
       setUploadedFile(null);
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Handle file upload from input
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    await processFile(file);
+  };
+
+  // Handle drag and drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await processFile(files[0]);
     }
   };
 
@@ -355,7 +382,16 @@ export default function ObituaryReviewUpload() {
             {/* Document Upload Section */}
             <div>
               <h3 className="text-lg font-semibold text-white mb-4">Upload Document</h3>
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center">
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                  isDragOver 
+                    ? 'border-blue-400 bg-blue-50 bg-opacity-10' 
+                    : 'border-gray-600'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 {uploadedFile ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-center">
@@ -389,27 +425,31 @@ export default function ObituaryReviewUpload() {
                   <div className="space-y-4">
                     <Upload className="w-12 h-12 text-gray-400 mx-auto" />
                     <div>
-                      <p className="text-white mb-2">Upload your obituary document</p>
-                      <p className="text-gray-400 text-sm mb-4">
-                        Supports .docx and .pdf files (max 10MB)
+                      <p className="text-white mb-2">
+                        {isDragOver ? "Drop your file here" : "Upload your obituary document"}
                       </p>
-                      <Input
-                        id="file-upload"
-                        type="file"
-                        accept=".docx,.pdf"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                      />
-                      <Label htmlFor="file-upload" className="cursor-pointer">
+                      <p className="text-gray-400 text-sm mb-4">
+                        Drag and drop or click to select .docx and .pdf files (max 10MB)
+                      </p>
+                      <div className="relative">
+                        <Input
+                          id="file-upload"
+                          type="file"
+                          accept=".docx,.pdf"
+                          onChange={handleFileUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                          disabled={isUploading}
+                        />
                         <Button 
                           variant="outline" 
-                          className="border-gray-600 text-gray-300 hover:bg-gray-700" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700 relative z-0" 
                           disabled={isUploading}
                           type="button"
+                          onClick={() => document.getElementById('file-upload')?.click()}
                         >
                           {isUploading ? 'Processing...' : 'Choose File'}
                         </Button>
-                      </Label>
+                      </div>
                     </div>
                   </div>
                 )}
