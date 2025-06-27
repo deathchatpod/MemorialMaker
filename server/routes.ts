@@ -109,14 +109,25 @@ Rules:
 Respond ONLY with valid JSON, no other text or markup.`;
 
     // Call Claude API with increased token limit for complete responses
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      messages: [{
-        role: "user",
-        content: prompt
-      }]
-    });
+    console.log(`Starting Claude API call for obituary review ${reviewId}`);
+    const startTime = Date.now();
+    
+    const response = await Promise.race([
+      anthropic.messages.create({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        messages: [{
+          role: "user",
+          content: prompt
+        }]
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Claude API timeout after 60 seconds')), 60000)
+      )
+    ]);
+    
+    const processingTime = Date.now() - startTime;
+    console.log(`Claude API call completed in ${processingTime}ms for review ${reviewId}`);
 
     const contentBlock = response.content[0];
     const aiResponse = contentBlock.type === 'text' ? contentBlock.text : '';
