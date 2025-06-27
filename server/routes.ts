@@ -56,6 +56,31 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Configure session middleware
+  const PgSession = connectPgSimple(session);
+  app.use(session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+    }),
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    },
+  }));
+
+  // Initialize passport
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  // Apply security middleware
+  app.use(securityHeaders);
+
 // Automatic AI processing function
 async function processObituaryReviewAsync(reviewId: number) {
   try {
@@ -221,17 +246,7 @@ Respond ONLY with valid JSON, no other text or markup.`;
   }
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Session configuration with PostgreSQL store for persistence
-  const PgSession = connectPgSimple(session);
-  app.use(session({
-    store: new PgSession({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
-    resave: false,
-    saveUninitialized: false,
+  // Add all the API routes here
     rolling: true, // Reset expiration on activity
     cookie: {
       secure: false, // Set to true in production with HTTPS
@@ -2629,4 +2644,15 @@ async function initializeDefaultApiPricing() {
   } catch (error) {
     console.error("Error initializing API pricing:", error);
   }
+}
+
+  // Initialize default data
+  await initializeDefaultData();
+  await initializeDefaultPromptTemplates();
+  await initializeDefaultQuestions();
+  await initializeDefaultApiPricing();
+
+  // Create and return server
+  const server = createServer(app);
+  return server;
 }
