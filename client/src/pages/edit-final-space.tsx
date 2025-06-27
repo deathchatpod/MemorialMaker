@@ -322,6 +322,14 @@ export default function EditFinalSpace() {
                   />
                 </div>
 
+                {/* Cemetery/Grave Plot Section */}
+                <div className="md:col-span-2">
+                  <CemeteryForm
+                    data={cemeteryData}
+                    onChange={setCemeteryData}
+                  />
+                </div>
+
                 {/* Description */}
                 <FormField
                   control={form.control}
