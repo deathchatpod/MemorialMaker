@@ -120,10 +120,10 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   {isObituariesLoading ? (
-                    <p className="text-gray-600">Loading obituaries...</p>
+                    <p className="text-gray-300">Loading obituaries...</p>
                   ) : obituaries.length > 0 ? (
                     <div className="overflow-x-auto">
-                      <table className="w-full border-collapse border border-gray-300">
+                      <table className="w-full border-collapse border border-gray-700">
                         <thead>
                           <tr className="bg-gray-800">
                             <th className="border border-gray-700 px-4 py-2 text-left text-white">Name</th>
@@ -136,15 +136,15 @@ export default function Dashboard() {
                           {obituaries.map((obituary: any) => (
                             <tr key={obituary.id} className="hover:bg-gray-700">
                               <td className="border border-gray-700 px-4 py-2 text-gray-300">{obituary.fullName || obituary.full_name || 'Untitled'}</td>
-                              <td className="border border-gray-300 px-4 py-2">
+                              <td className="border border-gray-700 px-4 py-2">
                                 <Badge className={obituary.status === 'generated' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}>
                                   {obituary.status}
                                 </Badge>
                               </td>
-                              <td className="border border-gray-300 px-4 py-2">
+                              <td className="border border-gray-700 px-4 py-2 text-gray-300">
                                 {new Date(obituary.createdAt || obituary.created_at).toLocaleDateString()}
                               </td>
-                              <td className="border border-gray-300 px-4 py-2">
+                              <td className="border border-gray-700 px-4 py-2">
                                 <div className="flex gap-2">
                                   <Button 
                                     size="sm" 
@@ -168,7 +168,7 @@ export default function Dashboard() {
                       </table>
                     </div>
                   ) : (
-                    <p className="text-gray-600">No obituaries found. Create your first obituary to get started.</p>
+                    <p className="text-gray-300">No obituaries found. Create your first obituary to get started.</p>
                   )}
                 </CardContent>
               </Card>
@@ -188,17 +188,17 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                   {isFinalSpacesLoading ? (
-                    <p className="text-gray-600">Loading memorials...</p>
+                    <p className="text-gray-300">Loading memorials...</p>
                   ) : finalSpaces.length > 0 ? (
                     <div className="overflow-x-auto">
-                      <table className="w-full border-collapse border border-gray-300">
+                      <table className="w-full border-collapse border border-gray-700">
                         <thead>
-                          <tr className="bg-gray-50">
-                            <th className="border border-gray-300 px-4 py-2 text-left">Person Name</th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">Visibility</th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">Created</th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                          <tr className="bg-gray-800">
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Person Name</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Status</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Visibility</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Created</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
