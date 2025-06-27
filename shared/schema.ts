@@ -276,6 +276,35 @@ export const finalSpaceCollaborationSessions = pgTable("final_space_collaboratio
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Community Contributions
+export const communityContributions = pgTable("community_contributions", {
+  id: serial("id").primaryKey(),
+  finalSpaceId: integer("final_space_id").references(() => finalSpaces.id, { onDelete: "cascade" }).notNull(),
+  contributorId: integer("contributor_id").notNull(),
+  contributorType: varchar("contributor_type", { length: 50 }).notNull(), // admin, funeral_home, employee, individual
+  contributorName: varchar("contributor_name", { length: 255 }).notNull(),
+  contributorEmail: varchar("contributor_email", { length: 255 }).notNull(),
+  contributionType: varchar("contribution_type", { length: 20 }).notNull(), // image, audio, youtube, text
+  mediaPath: text("media_path"), // for image/audio files
+  youtubeUrl: text("youtube_url"), // for YouTube links
+  textContent: text("text_content"), // for text contributions
+  originalFileName: varchar("original_file_name", { length: 255 }),
+  position: jsonb("position").default({}), // x, y coordinates and styling for memorial layout
+  isVisible: boolean("is_visible").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Community Contribution Comments
+export const communityContributionComments = pgTable("community_contribution_comments", {
+  id: serial("id").primaryKey(),
+  contributionId: integer("contribution_id").references(() => communityContributions.id, { onDelete: "cascade" }).notNull(),
+  commenterName: varchar("commenter_name", { length: 255 }).notNull(),
+  commenterEmail: varchar("commenter_email", { length: 255 }).notNull(),
+  commentText: text("comment_text").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // User Types
 export const userTypes = pgTable("user_types", {
   id: serial("id").primaryKey(),
@@ -360,6 +389,7 @@ export const finalSpacesRelations = relations(finalSpaces, ({ one, many }) => ({
   comments: many(finalSpaceComments),
   collaborators: many(finalSpaceCollaborators),
   collaborationSessions: many(finalSpaceCollaborationSessions),
+  communityContributions: many(communityContributions),
 }));
 
 export const finalSpaceCollaboratorsRelations = relations(finalSpaceCollaborators, ({ one }) => ({
@@ -388,6 +418,21 @@ export const finalSpaceImagesRelations = relations(finalSpaceImages, ({ one }) =
   comment: one(finalSpaceComments, {
     fields: [finalSpaceImages.commentId],
     references: [finalSpaceComments.id],
+  }),
+}));
+
+export const communityContributionsRelations = relations(communityContributions, ({ one, many }) => ({
+  finalSpace: one(finalSpaces, {
+    fields: [communityContributions.finalSpaceId],
+    references: [finalSpaces.id],
+  }),
+  comments: many(communityContributionComments),
+}));
+
+export const communityContributionCommentsRelations = relations(communityContributionComments, ({ one }) => ({
+  contribution: one(communityContributions, {
+    fields: [communityContributionComments.contributionId],
+    references: [communityContributions.id],
   }),
 }));
 
@@ -557,6 +602,17 @@ export const insertCollaborationSessionSchema = createInsertSchema(collaboration
   createdAt: true,
 });
 
+export const insertCommunityContributionSchema = createInsertSchema(communityContributions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCommunityContributionCommentSchema = createInsertSchema(communityContributionComments).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type InsertAdminUser = z.infer<typeof insertAdminUserSchema>;
@@ -711,3 +767,9 @@ export type InsertApiCall = z.infer<typeof insertApiCallSchema>;
 export const insertApiPricingSchema = createInsertSchema(apiPricing);
 export type ApiPricing = typeof apiPricing.$inferSelect;
 export type InsertApiPricing = z.infer<typeof insertApiPricingSchema>;
+
+export type CommunityContribution = typeof communityContributions.$inferSelect;
+export type InsertCommunityContribution = z.infer<typeof insertCommunityContributionSchema>;
+
+export type CommunityContributionComment = typeof communityContributionComments.$inferSelect;
+export type InsertCommunityContributionComment = z.infer<typeof insertCommunityContributionCommentSchema>;

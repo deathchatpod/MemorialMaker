@@ -1,7 +1,7 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing, communityContributions, communityContributionComments,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
@@ -13,7 +13,7 @@ import {
   type ObituaryCollaborator, type InsertObituaryCollaborator,
   type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
-  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall, type ApiPricing, type InsertApiPricing
+  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall, type ApiPricing, type InsertApiPricing, type CommunityContribution, type InsertCommunityContribution, type CommunityContributionComment, type InsertCommunityContributionComment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
