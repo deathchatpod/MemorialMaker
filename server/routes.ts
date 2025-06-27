@@ -80,21 +80,24 @@ ${review.extractedText}
 Survey Context (if provided):
 ${JSON.stringify(review.surveyResponses, null, 2)}
 
-Please analyze the text and respond with a JSON object containing:
+Please analyze the original text and respond with a JSON object containing:
 {
-  "positivePhrases": ["phrase1", "phrase2"],
-  "phrasesToImprove": ["phrase3", "phrase4"],
-  "improvedVersion": "Full improved obituary text here",
-  "generalFeedback": "Overall assessment and suggestions"
+  "likedPhrases": ["exact phrase from original", "another exact phrase"],
+  "improvedPhrases": [
+    {"original": "exact phrase from original text", "improved": "your improved version"},
+    {"original": "another phrase", "improved": "improved version"}
+  ],
+  "improvedVersion": "Complete improved obituary text with NO JSON or formatting markup",
+  "generalFeedback": "Brief constructive assessment focusing on key improvements made"
 }
 
 Rules:
-- "positivePhrases": Up to 10 well-written phrases from the original text that work well
-- "phrasesToImprove": Up to 10 specific phrases from the original that need improvement
-- "improvedVersion": Complete rewritten obituary incorporating improvements
-- "generalFeedback": Overall constructive assessment
+- "likedPhrases": Extract 3-8 exact phrases from the original text that are well-written and should remain unchanged
+- "improvedPhrases": Identify 3-8 specific phrases that you changed, showing original vs improved
+- "improvedVersion": Clean, complete obituary text with all improvements - NO JSON, NO markdown, NO code blocks
+- "generalFeedback": 2-3 sentences summarizing your key improvements
 
-Respond ONLY with valid JSON, no other text.`;
+Respond ONLY with valid JSON, no other text or markup.`;
 
     // Call Claude API with reduced token limit for faster processing
     const response = await anthropic.messages.create({
@@ -121,6 +124,13 @@ Respond ONLY with valid JSON, no other text.`;
       }
       
       parsedResponse = JSON.parse(cleanResponse);
+      
+      // Ensure we have the expected structure
+      if (!parsedResponse.likedPhrases) parsedResponse.likedPhrases = [];
+      if (!parsedResponse.improvedPhrases) parsedResponse.improvedPhrases = [];
+      if (!parsedResponse.improvedVersion) parsedResponse.improvedVersion = review.extractedText;
+      if (!parsedResponse.generalFeedback) parsedResponse.generalFeedback = 'AI processing completed successfully.';
+      
     } catch (error) {
       console.error('Failed to parse JSON response, using fallback parsing:', error);
       // Fallback to old parsing method
@@ -128,8 +138,8 @@ Respond ONLY with valid JSON, no other text.`;
       parsedResponse = {
         improvedVersion: parts[0]?.replace('IMPROVED VERSION:', '').trim() || aiResponse,
         generalFeedback: parts[1]?.trim() || 'AI processing completed successfully.',
-        positivePhrases: [],
-        phrasesToImprove: []
+        likedPhrases: [],
+        improvedPhrases: []
       };
     }
 
@@ -138,8 +148,8 @@ Respond ONLY with valid JSON, no other text.`;
       status: 'completed',
       improvedContent: parsedResponse.improvedVersion || parsedResponse.editedText || aiResponse,
       additionalFeedback: parsedResponse.generalFeedback || parsedResponse.feedback || 'AI processing completed successfully.',
-      positivePhrases: JSON.stringify(parsedResponse.positivePhrases || []),
-      phrasesToImprove: JSON.stringify(parsedResponse.phrasesToImprove || []),
+      positivePhrases: JSON.stringify(parsedResponse.likedPhrases || []),
+      phrasesToImprove: JSON.stringify(parsedResponse.improvedPhrases || []),
       processedAt: new Date()
     });
 

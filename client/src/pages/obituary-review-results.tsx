@@ -443,14 +443,27 @@ export default function ObituaryReviewResults() {
                       <div>
                         <h4 className="text-orange-400 font-medium text-xs mb-2 flex items-center space-x-1">
                           <Edit3 className="h-3 w-3" />
-                          <span>We'd like to improve these phrases</span>
+                          <span>We improved these phrases</span>
                         </h4>
-                        <div className="space-y-1">
-                          {phrasesToImprove.map((phrase, index) => (
-                            <div key={index} className="p-2 bg-orange-900/20 border border-orange-700/30 rounded">
-                              <p className="text-gray-100 text-xs italic">"{phrase}"</p>
-                            </div>
-                          ))}
+                        <div className="space-y-2">
+                          {phrasesToImprove.map((phraseObj, index) => {
+                            // Handle both string and object formats for backward compatibility
+                            const isObject = typeof phraseObj === 'object' && phraseObj.original && phraseObj.improved;
+                            return (
+                              <div key={index} className="p-2 bg-orange-900/20 border border-orange-700/30 rounded space-y-1">
+                                {isObject ? (
+                                  <>
+                                    <div className="text-gray-400 text-xs">Original:</div>
+                                    <p className="text-gray-100 text-xs italic">"{phraseObj.original}"</p>
+                                    <div className="text-gray-400 text-xs">Improved:</div>
+                                    <p className="text-green-300 text-xs italic">"{phraseObj.improved}"</p>
+                                  </>
+                                ) : (
+                                  <p className="text-gray-100 text-xs italic">"{phraseObj}"</p>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -480,7 +493,7 @@ export default function ObituaryReviewResults() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Main Content Box - After Feedback */}
+        {/* Main Content Box with Tabs - After Feedback */}
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center space-x-2">
@@ -489,11 +502,32 @@ export default function ObituaryReviewResults() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
-              <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
-                {currentContent || "No content available"}
-              </div>
-            </ScrollArea>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 bg-gray-700">
+                <TabsTrigger value="original" className="data-[state=active]:bg-gray-600 data-[state=active]:text-white">
+                  Original Obituary Text
+                </TabsTrigger>
+                <TabsTrigger value="updated" className="data-[state=active]:bg-gray-600 data-[state=active]:text-white">
+                  Updated Obituary Text
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="original" className="mt-4">
+                <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
+                  <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
+                    {review.extractedText || "No original content available"}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+              
+              <TabsContent value="updated" className="mt-4">
+                <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
+                  <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
+                    {currentContent || "No updated content available"}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+            </Tabs>
             
             {/* Action Buttons under content - only show when completed */}
             {review.status === 'completed' && (
