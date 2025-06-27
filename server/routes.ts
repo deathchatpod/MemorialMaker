@@ -1226,7 +1226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Phase 4: Obituary Review Edit History endpoints
-  app.get('/api/obituary-reviews/:id/edits', requireAuth, async (req, res) => {
+  app.get('/api/obituary-reviews/:id/edits', async (req, res) => {
     try {
       const reviewId = parseInt(req.params.id);
       const edits = await storage.getObituaryReviewEdits(reviewId);
