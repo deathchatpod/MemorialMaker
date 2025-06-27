@@ -10,7 +10,7 @@ import { processDocument, deleteDocument } from "./services/document";
 import { generateObituaryPDF } from "./services/pdf";
 import { NotificationService } from "./services/notifications";
 import notificationRoutes from "./routes/notifications";
-import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions, questions as questionsTable } from "@shared/schema";
+import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions, questions as questionsTable, insertObituaryReviewSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -902,6 +902,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Document processing error:', error);
       res.status(500).json({ error: 'Failed to process document' });
+    }
+  });
+
+  // Obituary Review endpoints for Phase 2
+  app.post('/api/obituary-reviews', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const validatedData = insertObituaryReviewSchema.parse({
+        funeralHomeId: user.userType === 'admin' ? 1 : (user.userType === 'funeral_home' ? user.id : user.funeralHomeId),
+        createdById: user.id,
+        createdByType: user.userType,
+        originalFilename: req.body.originalFilename,
+        originalFileSize: req.body.originalFileSize,
+        extractedText: req.body.extractedText,
+        surveyResponses: req.body.surveyResponses,
+        status: 'pending'
+      });
+
+      const review = await storage.createObituaryReview(validatedData);
+      res.json(review);
+    } catch (error) {
+      console.error('Error creating obituary review:', error);
+      res.status(500).json({ error: 'Failed to create obituary review' });
+    }
+  });
+
+  app.get('/api/obituary-reviews', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      let funeralHomeId: number | undefined;
+
+      if (user.userType === 'funeral_home') {
+        funeralHomeId = user.id;
+      } else if (user.userType === 'employee') {
+        funeralHomeId = user.funeralHomeId;
+      }
+      // Admin users see all reviews (funeralHomeId = undefined)
+
+      const reviews = await storage.getObituaryReviews(funeralHomeId);
+      res.json(reviews);
+    } catch (error) {
+      console.error('Error fetching obituary reviews:', error);
+      res.status(500).json({ error: 'Failed to fetch obituary reviews' });
+    }
+  });
+
+  app.get('/api/obituary-reviews/:id', requireAuth, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const review = await storage.getObituaryReview(id);
+      
+      if (!review) {
+        return res.status(404).json({ error: 'Obituary review not found' });
+      }
+
+      res.json(review);
+    } catch (error) {
+      console.error('Error fetching obituary review:', error);
+      res.status(500).json({ error: 'Failed to fetch obituary review' });
     }
   });
 

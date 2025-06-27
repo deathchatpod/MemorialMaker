@@ -29,6 +29,7 @@ export default function ObituaryReviewUpload() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Get the "Obituary Feedback" survey questions
   const { data: surveys = [], isLoading: surveysLoading, error: surveysError } = useQuery<any[]>({
@@ -515,15 +516,10 @@ export default function ObituaryReviewUpload() {
                       </Button>
                       <Button 
                         className="bg-green-600 hover:bg-green-700"
-                        onClick={() => {
-                          // TODO: Implement confirmation and proceed to AI processing
-                          toast({
-                            title: "Feature Coming Soon",
-                            description: "AI processing will be implemented in the next phase.",
-                          });
-                        }}
+                        disabled={isSubmitting}
+                        onClick={handleConfirmSubmission}
                       >
-                        Confirm & Proceed
+                        {isSubmitting ? 'Submitting...' : 'Confirm & Submit for Review'}
                       </Button>
                     </div>
                   </div>
