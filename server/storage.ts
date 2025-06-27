@@ -333,6 +333,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createObituary(insertObituary: InsertObituary): Promise<Obituary> {
+    console.log('Storage createObituary received:', JSON.stringify(insertObituary, null, 2));
     const [obituary] = await db.insert(obituaries).values(insertObituary).returning();
     return obituary;
   }

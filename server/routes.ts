@@ -1919,7 +1919,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parents: []
         };
 
-        const obituaryData = {
+        const obituaryData: InsertObituary = {
           funeralHomeId: review.funeralHomeId || user.id,
           createdById: user.id,
           createdByType: user.userType,
@@ -1928,6 +1928,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'published'
         };
 
+        console.log('Creating obituary with formData:', JSON.stringify(formData, null, 2));
+        console.log('Full obituaryData:', JSON.stringify(obituaryData, null, 2));
         createdObituary = await storage.createObituary(obituaryData);
 
         // Create a generated obituary entry
