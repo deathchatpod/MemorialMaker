@@ -612,6 +612,9 @@ export const obituaryReviews = pgTable("obituary_reviews", {
   aiProvider: varchar("ai_provider", { length: 20 }), // 'claude' or 'chatgpt'
   improvedContent: text("improved_content"),
   additionalFeedback: text("additional_feedback"),
+  // New phrase feedback columns
+  positivePhrases: text("positive_phrases"), // JSON array of phrases that work well
+  phrasesToImprove: text("phrases_to_improve"), // JSON array of phrases needing improvement
   processedAt: timestamp("processed_at"),
   // Phase 4: Integration with main obituaries system
   finalObituaryId: integer("final_obituary_id").references(() => obituaries.id),

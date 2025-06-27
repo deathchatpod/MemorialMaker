@@ -71,16 +71,8 @@ async function processObituaryReviewAsync(reviewId: number) {
       throw new Error('Review not found');
     }
 
-    // Create AI prompt for obituary feedback
-    const prompt = `You are an expert obituary editor providing constructive feedback. Please review this obituary content and provide:
-
-1. IMPROVED VERSION: A refined version of the obituary with better flow, structure, and emotional resonance
-2. SPECIFIC FEEDBACK: Detailed suggestions for improvements in areas like:
-   - Writing style and tone
-   - Structure and organization  
-   - Emotional impact
-   - Completeness of information
-   - Grammar and clarity
+    // Create AI prompt for obituary feedback with structured response
+    const prompt = `You are an expert obituary editor providing constructive feedback. Please review this obituary content and provide structured feedback.
 
 Original Obituary Content:
 ${review.extractedText}
@@ -88,12 +80,21 @@ ${review.extractedText}
 Survey Context (if provided):
 ${JSON.stringify(review.surveyResponses, null, 2)}
 
-Please format your response as:
-IMPROVED VERSION:
-[Your improved obituary here]
+Please analyze the text and respond with a JSON object containing:
+{
+  "positivePhrases": ["phrase1", "phrase2"],
+  "phrasesToImprove": ["phrase3", "phrase4"],
+  "improvedVersion": "Full improved obituary text here",
+  "generalFeedback": "Overall assessment and suggestions"
+}
 
-FEEDBACK:
-[Your detailed feedback here]`;
+Rules:
+- "positivePhrases": Up to 10 well-written phrases from the original text that work well
+- "phrasesToImprove": Up to 10 specific phrases from the original that need improvement
+- "improvedVersion": Complete rewritten obituary incorporating improvements
+- "generalFeedback": Overall constructive assessment
+
+Respond ONLY with valid JSON, no other text.`;
 
     // Call Claude API
     const response = await anthropic.messages.create({
@@ -108,16 +109,29 @@ FEEDBACK:
     const contentBlock = response.content[0];
     const aiResponse = contentBlock.type === 'text' ? contentBlock.text : '';
     
-    // Parse the response to separate improved content and feedback
-    const parts = aiResponse.split('FEEDBACK:');
-    const improvedContent = parts[0]?.replace('IMPROVED VERSION:', '').trim() || aiResponse;
-    const additionalFeedback = parts[1]?.trim() || 'AI processing completed successfully.';
+    // Parse the structured JSON response
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(aiResponse);
+    } catch (error) {
+      console.error('Failed to parse JSON response, using fallback parsing:', error);
+      // Fallback to old parsing method
+      const parts = aiResponse.split('FEEDBACK:');
+      parsedResponse = {
+        improvedVersion: parts[0]?.replace('IMPROVED VERSION:', '').trim() || aiResponse,
+        generalFeedback: parts[1]?.trim() || 'AI processing completed successfully.',
+        positivePhrases: [],
+        phrasesToImprove: []
+      };
+    }
 
-    // Update review with AI results
+    // Update review with AI results including structured phrase feedback
     await storage.updateObituaryReview(reviewId, {
       status: 'completed',
-      improvedContent,
-      additionalFeedback,
+      improvedContent: parsedResponse.improvedVersion || parsedResponse.editedText || aiResponse,
+      additionalFeedback: parsedResponse.generalFeedback || parsedResponse.feedback || 'AI processing completed successfully.',
+      positivePhrases: JSON.stringify(parsedResponse.positivePhrases || []),
+      phrasesToImprove: JSON.stringify(parsedResponse.phrasesToImprove || []),
       processedAt: new Date()
     });
 

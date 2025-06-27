@@ -9,8 +9,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle } from "lucide-react";
 
 interface ObituaryReview {
   id: number;
@@ -18,6 +19,8 @@ interface ObituaryReview {
   extractedText: string;
   improvedContent?: string;
   additionalFeedback?: string;
+  positivePhrases?: string; // JSON array
+  phrasesToImprove?: string; // JSON array
   surveyResponses: Record<string, any>;
   status: string;
   aiProvider?: string;
@@ -48,6 +51,19 @@ export default function ObituaryReviewResults() {
   const [editedContent, setEditedContent] = useState("");
   const [editComment, setEditComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  
+  // State persistence for feedback section
+  useEffect(() => {
+    const savedState = localStorage.getItem(`obituary-feedback-${id}`);
+    if (savedState) {
+      setFeedbackOpen(JSON.parse(savedState));
+    }
+  }, [id]);
+  
+  useEffect(() => {
+    localStorage.setItem(`obituary-feedback-${id}`, JSON.stringify(feedbackOpen));
+  }, [feedbackOpen, id]);
 
   // Fetch obituary review with polling for processing status
   const { data: review, isLoading: reviewLoading, error: reviewError } = useQuery<ObituaryReview>({
