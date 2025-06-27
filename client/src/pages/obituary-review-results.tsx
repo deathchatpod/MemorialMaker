@@ -160,9 +160,12 @@ export default function ObituaryReviewResults() {
     },
     refetchInterval: (data) => {
       // Poll every 500ms if status is pending or processing for faster updates
-      return data?.status === 'pending' || data?.status === 'processing' ? 500 : false;
+      // Continue polling for a few more cycles after completion to ensure UI updates
+      return data?.status === 'pending' || data?.status === 'processing' ? 500 : 2000;
     },
     refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0, // Always consider data stale to ensure fresh fetches
   });
 
 
@@ -188,6 +191,21 @@ export default function ObituaryReviewResults() {
       setEditedContent(latestEdit?.editedContent || review.improvedContent || review.extractedText);
     }
   }, [review, edits, editedContent]);
+
+  // Handle status changes and force UI updates
+  useEffect(() => {
+    if (review?.status === 'completed' && (review.improvedContent || review.additionalFeedback)) {
+      // Force a re-render when processing completes by invalidating queries
+      queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}/edits`] });
+      
+      // Show success notification
+      toast({
+        title: "Processing Complete",
+        description: "Your obituary review has been completed and feedback is now available.",
+      });
+    }
+  }, [review?.status, review?.improvedContent, review?.additionalFeedback, id, queryClient, toast]);
 
   // Enhanced save edit mutation with comprehensive validation
   const saveEditMutation = useMutation({
@@ -455,6 +473,12 @@ export default function ObituaryReviewResults() {
               <Badge variant={review.status === 'completed' ? 'default' : 'secondary'}>
                 {review.status}
               </Badge>
+              {review.status === 'processing' && (
+                <div className="flex items-center space-x-2 text-sm text-yellow-400">
+                  <Clock className="h-4 w-4 animate-spin" />
+                  <span>Processing your obituary review...</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
