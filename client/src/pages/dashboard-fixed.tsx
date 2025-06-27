@@ -350,7 +350,7 @@ export default function Dashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setLocation(`/obituary/${row.id}/edit`)}
+                          onClick={() => setLocation(`/obituary/${row.id}/generated`)}
                           title="Edit obituary"
                         >
                           <Edit className="w-4 h-4" />

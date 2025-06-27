@@ -122,6 +122,8 @@ export const generatedObituaries = pgTable("generated_obituaries", {
   tone: text("tone"),
   isRevision: boolean("is_revision").notNull().default(false),
   revisionPrompt: text("revision_prompt"),
+  createdById: integer("created_by_id"),
+  createdByType: varchar("created_by_type", { length: 50 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
