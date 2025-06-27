@@ -50,13 +50,19 @@ export default function ObituaryReviewResults() {
   const [isEditing, setIsEditing] = useState(false);
 
   // Fetch obituary review with polling for processing status
-  const { data: review, isLoading: reviewLoading } = useQuery<ObituaryReview>({
+  const { data: review, isLoading: reviewLoading, error: reviewError } = useQuery<ObituaryReview>({
     queryKey: [`/api/obituary-reviews/${id}`],
     refetchInterval: (data) => {
       // Poll every 2 seconds if status is pending or processing
       return data?.status === 'pending' || data?.status === 'processing' ? 2000 : false;
     },
   });
+
+  // Debug logging
+  console.log('Review ID:', id);
+  console.log('Review data:', review);
+  console.log('Review loading:', reviewLoading);
+  console.log('Review error:', reviewError);
 
   // Fetch edit history
   const { data: edits = [], isLoading: editsLoading } = useQuery<ObituaryReviewEdit[]>({
