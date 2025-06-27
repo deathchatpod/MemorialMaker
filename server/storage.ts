@@ -19,6 +19,10 @@ import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
+  // Universal User Methods
+  getUserByUsername(username: string): Promise<any | undefined>;
+  createUser(user: any): Promise<any>;
+
   // Admin Users
   getAdminUser(id: number): Promise<AdminUser | undefined>;
   getAdminUserByEmail(email: string): Promise<AdminUser | undefined>;
