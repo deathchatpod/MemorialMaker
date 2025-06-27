@@ -75,8 +75,28 @@ export default function ObituaryReviewResults() {
     }
   };
 
+  // Fetch questions to map IDs to question text
+  const { data: questions = [] } = useQuery({
+    queryKey: ['/api/questions'],
+    queryFn: async () => {
+      const response = await fetch('/api/questions', {
+        credentials: 'include'
+      });
+      return response.json();
+    },
+  });
+
   const getSurveyQuestionText = (key: string): string => {
-    // Map response keys to readable question text
+    // First try to find by question ID
+    const questionId = parseInt(key);
+    if (!isNaN(questionId)) {
+      const question = questions.find((q: any) => q.id === questionId);
+      if (question) {
+        return question.questionText;
+      }
+    }
+    
+    // Fallback to text-based mapping
     const questionMap: Record<string, string> = {
       'Full Name': 'Full Name of Deceased',
       'Date of Death': 'Date of Death',
