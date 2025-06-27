@@ -173,7 +173,7 @@ export const questions = pgTable("questions", {
   options: jsonb("options"), // For radio/checkbox options
   orderIndex: integer("order_index").notNull().default(0),
   // Conditional logic fields
-  conditionalQuestionId: integer("conditional_question_id").references(() => questions.id),
+  conditionalQuestionId: integer("conditional_question_id"),
   conditionalValue: text("conditional_value"), // The value that triggers this question to show
   conditionalOperator: varchar("conditional_operator", { length: 10 }).default("equals"), // equals, contains, not_equals
   createdAt: timestamp("created_at").notNull().defaultNow(),

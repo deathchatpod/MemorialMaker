@@ -347,27 +347,8 @@ export default function Dashboard() {
             )}
 
             {/* Prompt Templates Section */}
-            {activeSection === 'templates' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <FileText className="w-5 h-5 mr-2" />
-                    Prompt Templates
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4">
-                    <Button 
-                      onClick={() => setLocation(`/admin/templates/new?userType=${userTypeParam}&userId=${userIdParam}`)}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Template
-                    </Button>
-                  </div>
-                  <p className="text-gray-300">Prompt template management coming soon.</p>
-                </CardContent>
-              </Card>
+            {activeSection === 'templates' && isAdmin && (
+              <PromptTemplates />
             )}
 
             {/* Team Management Section */}
