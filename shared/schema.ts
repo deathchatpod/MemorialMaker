@@ -156,7 +156,8 @@ export const surveys = pgTable("surveys", {
   name: text("name").notNull(),
   description: text("description"),
   status: varchar("status", { length: 20 }).notNull().default("draft"), // draft, active
-  createdById: integer("created_by_id").notNull().references(() => adminUsers.id),
+  createdById: integer("created_by_id").notNull(),
+  createdByType: varchar("created_by_type", { length: 50 }).notNull().default("admin"), // admin, funeral_home, employee
   version: integer("version").notNull().default(1),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

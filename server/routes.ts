@@ -4,7 +4,7 @@ import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import passport from "./auth";
 import { storage } from "./storage";
-import { hashPassword } from "./auth";
+import { hashPassword, requireAuth, requireAdmin } from "./auth";
 import { generateObituariesWithClaude, generateObituariesWithChatGPT, generateRevisedObituary } from "./services/ai";
 import { processDocument, deleteDocument } from "./services/document";
 import { generateObituaryPDF } from "./services/pdf";
@@ -835,7 +835,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Survey routes
-  app.get("/api/surveys", async (req, res) => {
+  app.get("/api/surveys", requireAuth, async (req: any, res) => {
     try {
       const surveys = await storage.getSurveys();
       res.json(surveys);
@@ -845,7 +845,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/surveys/:id", async (req, res) => {
+  app.get("/api/surveys/:id", requireAuth, async (req: any, res) => {
     try {
       const survey = await storage.getSurvey(parseInt(req.params.id));
       if (!survey) {
@@ -858,9 +858,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/surveys", async (req, res) => {
+  app.post("/api/surveys", requireAuth, async (req: any, res) => {
     try {
-      const survey = await storage.createSurvey(req.body);
+      const surveyData = {
+        ...req.body,
+        createdById: req.user.id,
+        version: 1
+      };
+      const survey = await storage.createSurvey(surveyData);
       res.status(201).json(survey);
     } catch (error) {
       console.error("Error creating survey:", error);
