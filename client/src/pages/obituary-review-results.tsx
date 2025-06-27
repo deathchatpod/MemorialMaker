@@ -52,21 +52,35 @@ export default function ObituaryReviewResults() {
   // Fetch obituary review with polling for processing status
   const { data: review, isLoading: reviewLoading, error: reviewError } = useQuery<ObituaryReview>({
     queryKey: [`/api/obituary-reviews/${id}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/obituary-reviews/${id}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
     refetchInterval: (data) => {
       // Poll every 2 seconds if status is pending or processing
       return data?.status === 'pending' || data?.status === 'processing' ? 2000 : false;
     },
   });
 
-  // Debug logging
-  console.log('Review ID:', id);
-  console.log('Review data:', review);
-  console.log('Review loading:', reviewLoading);
-  console.log('Review error:', reviewError);
+
 
   // Fetch edit history
   const { data: edits = [], isLoading: editsLoading } = useQuery<ObituaryReviewEdit[]>({
     queryKey: [`/api/obituary-reviews/${id}/edits`],
+    queryFn: async () => {
+      const response = await fetch(`/api/obituary-reviews/${id}/edits`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
   });
 
   // Initialize edited content
