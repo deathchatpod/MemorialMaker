@@ -34,10 +34,14 @@ export function CommunityContribution({ finalSpaceId, currentUser }: CommunityCo
 
   const createContributionMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return await apiRequest(`/api/final-spaces/${finalSpaceId}/community-contributions`, {
+      const response = await fetch(`/api/final-spaces/${finalSpaceId}/community-contributions`, {
         method: 'POST',
         body: data,
       });
+      if (!response.ok) {
+        throw new Error('Failed to create contribution');
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({

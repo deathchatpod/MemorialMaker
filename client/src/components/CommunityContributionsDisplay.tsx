@@ -53,16 +53,26 @@ export function CommunityContributionsDisplay({ finalSpaceId, currentUser }: Com
 
   const { data: contributions = [], isLoading } = useQuery({
     queryKey: [`/api/final-spaces/${finalSpaceId}/community-contributions`],
-    queryFn: () => apiRequest(`/api/final-spaces/${finalSpaceId}/community-contributions`),
+    queryFn: async () => {
+      const response = await fetch(`/api/final-spaces/${finalSpaceId}/community-contributions`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch contributions');
+      }
+      return response.json();
+    },
   });
 
   const addCommentMutation = useMutation({
     mutationFn: async ({ contributionId, commentData }: { contributionId: number; commentData: any }) => {
-      return await apiRequest(`/api/community-contributions/${contributionId}/comments`, {
+      const response = await fetch(`/api/community-contributions/${contributionId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(commentData),
       });
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({

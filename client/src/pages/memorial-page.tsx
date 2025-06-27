@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import MediaGallery from "@/components/MediaGallery";
 import ObituaryIntegration from "@/components/ObituaryIntegration";
 import SocialMediaDisplay from "@/components/SocialMediaDisplay";
+import { CommunityContribution } from "@/components/CommunityContribution";
+import { CommunityContributionsDisplay } from "@/components/CommunityContributionsDisplay";
 import { 
   Heart, 
   Calendar, 
@@ -431,6 +433,18 @@ export default function MemorialPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Community Contributions Section */}
+        <div className="space-y-6">
+          <CommunityContribution
+            finalSpaceId={memorial.id}
+            currentUser={currentUser}
+          />
+          <CommunityContributionsDisplay
+            finalSpaceId={memorial.id}
+            currentUser={currentUser}
+          />
+        </div>
       </div>
     </div>
   );
