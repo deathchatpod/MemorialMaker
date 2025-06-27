@@ -168,7 +168,7 @@ export default function ObituaryReviewResults() {
       queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}`] });
 
     } catch (error) {
-      console.error('Error saving obituary text:', error);
+
       toast({
         title: "Error saving changes",
         description: "Please try again.",
@@ -221,7 +221,7 @@ export default function ObituaryReviewResults() {
         const parsed = JSON.parse(cleanString);
         return Array.isArray(parsed) ? parsed : [];
       } catch (error) {
-        console.log('Error parsing phrases array:', error, 'Input:', data);
+
         return [];
       }
     }

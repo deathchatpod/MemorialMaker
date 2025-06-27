@@ -99,7 +99,7 @@ export default function AccountInformation() {
       additionalAddresses
     };
     
-    console.log('Saving account data:', accountData);
+
     
     toast({
       title: 'Account updated',

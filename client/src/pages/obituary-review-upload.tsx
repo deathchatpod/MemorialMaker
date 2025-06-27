@@ -96,7 +96,7 @@ export default function ObituaryReviewUpload() {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Upload failed:', response.status, errorText);
+
         throw new Error(`Upload failed: ${response.status} ${errorText}`);
       }
 
@@ -108,7 +108,7 @@ export default function ObituaryReviewUpload() {
         description: "Document text has been extracted.",
       });
     } catch (error) {
-      console.error('Document upload error:', error);
+
       toast({
         title: "Upload Failed",
         description: error instanceof Error ? error.message : "Failed to process the document. Please try again.",
@@ -191,7 +191,7 @@ export default function ObituaryReviewUpload() {
       setLocation(`/obituary-review/${result.id}/results`);
 
     } catch (error) {
-      console.error('Submission error:', error);
+
       toast({
         title: "Submission Failed",
         description: error instanceof Error ? error.message : "Failed to submit review. Please try again.",
@@ -224,7 +224,7 @@ export default function ObituaryReviewUpload() {
       try {
         return JSON.parse(question.options);
       } catch (e) {
-        console.error('Failed to parse options:', e);
+
         return question.answerOptions || [];
       }
     }

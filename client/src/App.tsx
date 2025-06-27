@@ -104,7 +104,7 @@ function GlobalHeader() {
       await fetch('/auth/logout', { method: 'POST' });
       setLocation('/login');
     } catch (error) {
-      console.error('Logout failed:', error);
+
     }
   };
 

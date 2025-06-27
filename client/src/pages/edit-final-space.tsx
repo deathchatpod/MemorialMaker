@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, ArrowLeft, Save, Palette, Settings, FileText, Image as ImageIcon } from "lucide-react";
-import SimpleMemorialEditor from "@/components/SimpleMemorialEditorFixed";
+import SimpleMemorialEditor from "@/components/SimpleMemorialEditor";
 import MediaManager from "@/components/MediaManager";
 import CollaborationManager from "@/components/CollaborationManager";
 import CollaboratorConfirmationModal from "@/components/CollaboratorConfirmationModal";
