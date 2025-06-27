@@ -143,6 +143,11 @@ export interface IStorage {
   createObituaryReview(review: InsertObituaryReview): Promise<ObituaryReview>;
   updateObituaryReview(id: number, updates: Partial<ObituaryReview>): Promise<ObituaryReview>;
   
+  // API Calls
+  getApiCalls(userId?: number, timeRange?: { start: Date; end: Date }): Promise<ApiCall[]>;
+  createApiCall(apiCall: InsertApiCall): Promise<number>;
+  updateApiCall(id: number, updates: Partial<ApiCall>): Promise<ApiCall>;
+  
   // Collaboration queries for unified table
   getObituaryCollaborationsByEmail(email: string): Promise<any[]>;
   getFinalSpaceCollaborationsByEmail(email: string): Promise<any[]>;
@@ -861,6 +866,39 @@ export class DatabaseStorage implements IStorage {
     const [updatedReview] = await db.update(obituaryReviews)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(obituaryReviews.id, id))
+      .returning();
+    return updatedReview;
+  }
+
+  // API Calls methods
+  async getApiCalls(userId?: number, timeRange?: { start: Date; end: Date }): Promise<ApiCall[]> {
+    let query = db.select().from(apiCalls);
+    
+    if (userId) {
+      query = query.where(eq(apiCalls.userId, userId));
+    }
+    
+    if (timeRange) {
+      query = query.where(
+        and(
+          gte(apiCalls.createdAt, timeRange.start),
+          lte(apiCalls.createdAt, timeRange.end)
+        )
+      );
+    }
+    
+    return query.orderBy(desc(apiCalls.createdAt));
+  }
+
+  async createApiCall(apiCall: InsertApiCall): Promise<number> {
+    const [newCall] = await db.insert(apiCalls).values(apiCall).returning({ id: apiCalls.id });
+    return newCall.id;
+  }
+
+  async updateApiCall(id: number, updates: Partial<ApiCall>): Promise<ApiCall> {
+    const [updatedCall] = await db.update(apiCalls)
+      .set(updates)
+      .where(eq(apiCalls.id, id))
       .returning();
     return updatedReview;
   }

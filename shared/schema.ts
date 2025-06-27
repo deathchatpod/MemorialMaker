@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, uuid } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, varchar, uuid, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
@@ -611,6 +611,26 @@ export const obituaryReviews = pgTable("obituary_reviews", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// API Usage tracking table
+export const apiCalls = pgTable("api_calls", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  userType: varchar("user_type", { length: 50 }).notNull(),
+  obituaryReviewId: integer("obituary_review_id").references(() => obituaryReviews.id),
+  provider: varchar("provider", { length: 50 }).notNull(), // 'claude', 'openai', etc
+  model: varchar("model", { length: 100 }).notNull(),
+  tokensUsed: integer("tokens_used"),
+  estimatedCost: decimal("estimated_cost", { precision: 10, scale: 4 }),
+  status: varchar("status", { length: 50 }).notNull(), // 'success', 'error', 'rate_limited'
+  errorMessage: text("error_message"),
+  responseTime: integer("response_time"), // milliseconds
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertObituaryReviewSchema = createInsertSchema(obituaryReviews);
 export type ObituaryReview = typeof obituaryReviews.$inferSelect;
 export type InsertObituaryReview = z.infer<typeof insertObituaryReviewSchema>;
+
+export const insertApiCallSchema = createInsertSchema(apiCalls);
+export type ApiCall = typeof apiCalls.$inferSelect;
+export type InsertApiCall = z.infer<typeof insertApiCallSchema>;
