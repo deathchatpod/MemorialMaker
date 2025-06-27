@@ -668,7 +668,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(obituary);
     } catch (error) {
       console.error('Error creating obituary:', error);
-      res.status(400).json({ message: "Failed to create obituary" });
+      
+      // Enhanced error handling with detailed user feedback
+      if (error instanceof Error) {
+        // Check for specific validation errors
+        if (error.message.includes('age')) {
+          return res.status(400).json({ 
+            message: "Age validation failed",
+            details: [
+              "Age must be between 0 and 150 years",
+              "If providing birth and death dates, age will be calculated automatically",
+              "Please verify your date entries are correct"
+            ]
+          });
+        }
+        
+        if (error.message.includes('date')) {
+          return res.status(400).json({ 
+            message: "Date validation failed",
+            details: [
+              "Birth date must be before death date",
+              "Death date cannot be in the future",
+              "Please use valid date formats (YYYY-MM-DD)"
+            ]
+          });
+        }
+        
+        if (error.message.includes('required') || error.message.includes('fullName')) {
+          return res.status(400).json({ 
+            message: "Required field validation failed",
+            details: [
+              "Full name is required and must be at least 2 characters",
+              "Please ensure all required fields are completed",
+              "Check that tone and age category are selected"
+            ]
+          });
+        }
+      }
+      
+      res.status(500).json({ 
+        message: "Unable to create obituary due to server error",
+        details: [
+          "Please try again in a few moments",
+          "If the problem persists, contact support",
+          "Your form data has not been lost - you can try submitting again"
+        ]
+      });
     }
   });
 
