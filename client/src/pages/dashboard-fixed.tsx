@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList, Skull, UserCog, Settings, Book } from "lucide-react";
+import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList, Skull, UserCog, Settings, Book, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
@@ -77,6 +77,15 @@ export default function Dashboard() {
     }
   });
 
+  const { data: apiUsage, isLoading: isApiUsageLoading } = useQuery({
+    queryKey: ['/api/api-usage', userTypeParam, userIdParam],
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/api-usage?timeRange=24h`);
+      return res.json();
+    },
+    enabled: currentUser.userType === 'admin'
+  });
+
   // Menu items for all user types with Lucide icons
   const menuItems = [
     { id: 'obituaries', label: 'Obituaries', icon: FileText },
@@ -85,6 +94,7 @@ export default function Dashboard() {
     { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
     { id: 'pre-need', label: 'Pre Need Evaluation', icon: BarChart3 },
     ...(currentUser.userType === 'admin' ? [{ id: 'templates', label: 'Prompt Templates', icon: Settings }] : []),
+    ...(currentUser.userType === 'admin' ? [{ id: 'api-usage', label: 'API Usage', icon: Activity }] : []),
     ...(currentUser.userType === 'admin' || currentUser.userType === 'funeral_home' 
       ? [{ id: 'team-management', label: 'Team Management', icon: UserCog }] 
       : []),
@@ -461,6 +471,169 @@ export default function Dashboard() {
           {activeSection === 'templates' && currentUser.userType === 'admin' && (
             <div className="space-y-6">
               <PromptTemplates />
+            </div>
+          )}
+
+          {/* API Usage Section */}
+          {activeSection === 'api-usage' && currentUser.userType === 'admin' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground flex items-center">
+                    <Activity className="mr-3 w-6 h-6" />
+                    API Usage Dashboard
+                  </h2>
+                  <p className="text-muted-foreground mt-2">Monitor AI API calls and costs across the platform</p>
+                </div>
+              </div>
+
+              {/* Summary Cards */}
+              {apiUsage?.summary && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card className="bg-card border border-border">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Total Calls</p>
+                          <p className="text-2xl font-bold text-foreground">{apiUsage.summary.totalCalls}</p>
+                        </div>
+                        <Activity className="w-8 h-8 text-blue-500" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-card border border-border">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Total Cost</p>
+                          <p className="text-2xl font-bold text-foreground">${apiUsage.summary.totalCost}</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                          <span className="text-green-600 font-bold">$</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-card border border-border">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Total Tokens</p>
+                          <p className="text-2xl font-bold text-foreground">{apiUsage.summary.totalTokens.toLocaleString()}</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                          <span className="text-purple-600 font-bold">T</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-card border border-border">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Success Rate</p>
+                          <p className="text-2xl font-bold text-foreground">{(100 - parseFloat(apiUsage.summary.errorRate)).toFixed(1)}%</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                          <span className="text-orange-600 font-bold">%</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* API Calls Table */}
+              <DataTable
+                data={Array.isArray(apiUsage?.calls) ? apiUsage.calls : []}
+                columns={[
+                  {
+                    key: "createdAt",
+                    title: "Time",
+                    sortable: true,
+                    render: (value) => new Date(value).toLocaleString()
+                  },
+                  {
+                    key: "userType",
+                    title: "User Type",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "admin", label: "Admin" },
+                      { value: "funeral_home", label: "Funeral Home" },
+                      { value: "employee", label: "Employee" },
+                      { value: "individual", label: "Individual" }
+                    ],
+                    render: (value) => <span className="capitalize">{value.replace('_', ' ')}</span>
+                  },
+                  {
+                    key: "provider",
+                    title: "Provider",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "claude", label: "Claude" },
+                      { value: "openai", label: "OpenAI" }
+                    ],
+                    render: (value) => <span className="font-medium">{value}</span>
+                  },
+                  {
+                    key: "model",
+                    title: "Model",
+                    sortable: true,
+                    render: (value) => <span className="text-sm text-muted-foreground">{value}</span>
+                  },
+                  {
+                    key: "tokensUsed",
+                    title: "Tokens",
+                    sortable: true,
+                    render: (value) => value ? value.toLocaleString() : 'N/A'
+                  },
+                  {
+                    key: "estimatedCost",
+                    title: "Cost",
+                    sortable: true,
+                    render: (value) => value ? `$${parseFloat(value).toFixed(4)}` : 'N/A'
+                  },
+                  {
+                    key: "status",
+                    title: "Status",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "success", label: "Success" },
+                      { value: "error", label: "Error" },
+                      { value: "timeout", label: "Timeout" }
+                    ],
+                    render: createBadgeRenderer((status) => {
+                      switch (status?.toLowerCase()) {
+                        case 'success':
+                          return 'bg-green-100 text-green-800';
+                        case 'error':
+                          return 'bg-red-100 text-red-800';
+                        case 'timeout':
+                          return 'bg-yellow-100 text-yellow-800';
+                        default:
+                          return 'bg-gray-100 text-gray-800';
+                      }
+                    })
+                  },
+                  {
+                    key: "responseTime",
+                    title: "Response Time",
+                    sortable: true,
+                    render: (value) => value ? `${value}ms` : 'N/A'
+                  }
+                ]}
+                emptyState={{
+                  title: 'No API calls found',
+                  description: 'API usage data will appear here as users interact with AI features.'
+                }}
+                isLoading={isApiUsageLoading}
+              />
             </div>
           )}
 
