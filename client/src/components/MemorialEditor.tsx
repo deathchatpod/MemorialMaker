@@ -381,7 +381,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
               ))}
               
             {(elements as MemorialElement[]).length === 0 && (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-muted-foreground">
                 <div className="text-center">
                   <Plus className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p>Add elements to start designing your memorial</p>
@@ -395,7 +395,7 @@ export default function MemorialEditor({ memorial, onSave }: MemorialEditorProps
       {/* Status Bar */}
       {previewMode === 'edit' && (
         <div className="border-t bg-gray-50 px-4 py-2">
-          <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <div className="flex items-center gap-4">
               <span>{(elements as MemorialElement[]).length} elements</span>
               {selectedElementId && (

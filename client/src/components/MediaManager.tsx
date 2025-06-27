@@ -236,7 +236,7 @@ export default function MediaManager({ memorial, onMediaUpdate }: MediaManagerPr
                           <Volume2 className="w-5 h-5 text-gray-400" />
                           <div>
                             <p className="font-medium">{audio.title || audio.filename}</p>
-                            <p className="text-sm text-gray-500">{audio.filename}</p>
+                            <p className="text-sm text-muted-foreground">{audio.filename}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export default function MediaManager({ memorial, onMediaUpdate }: MediaManagerPr
                         <Share2 className="w-5 h-5 text-gray-400" />
                         <div>
                           <p className="font-medium">{getSocialPlatform(link)}</p>
-                          <p className="text-sm text-gray-500 truncate max-w-xs">{link}</p>
+                          <p className="text-sm text-muted-foreground truncate max-w-xs">{link}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -313,7 +313,7 @@ export default function MediaManager({ memorial, onMediaUpdate }: MediaManagerPr
                     onChange={(e) => updateMusicPlaylist(e.target.value)}
                     placeholder="https://open.spotify.com/playlist/... or YouTube Music, Apple Music, etc."
                   />
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     Add a link to a music playlist from Spotify, YouTube Music, Apple Music, or other streaming services
                   </p>
                 </div>
@@ -324,7 +324,7 @@ export default function MediaManager({ memorial, onMediaUpdate }: MediaManagerPr
                       <Music className="w-6 h-6 text-blue-600" />
                       <div>
                         <p className="font-medium">Music Playlist</p>
-                        <p className="text-sm text-gray-600 truncate">{mediaState.musicPlaylist}</p>
+                        <p className="text-sm text-muted-foreground truncate">{mediaState.musicPlaylist}</p>
                       </div>
                       <Button
                         variant="outline"
