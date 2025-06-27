@@ -51,7 +51,7 @@ export default function ObituaryReviewResults() {
   const [editedContent, setEditedContent] = useState("");
   const [editComment, setEditComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(true);
   
   // State persistence for feedback section
   useEffect(() => {
@@ -342,73 +342,19 @@ export default function ObituaryReviewResults() {
       <div className="max-w-4xl mx-auto space-y-6">
         
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setLocation("/dashboard")}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Obituary Review Results</h1>
-              <div className="flex items-center space-x-2 mt-1">
-                {getStatusIcon(review.status)}
-                <Badge variant={review.status === 'completed' ? 'default' : 'secondary'}>
-                  {review.status}
-                </Badge>
-                {review.aiProvider && (
-                  <Badge variant="outline" className="border-gray-600 text-gray-300">
-                    {review.aiProvider}
-                  </Badge>
-                )}
-              </div>
+        <div className="flex items-center space-x-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Obituary Review Results</h1>
+            <div className="flex items-center space-x-2 mt-1">
+              {getStatusIcon(review.status)}
+              <Badge variant={review.status === 'completed' ? 'default' : 'secondary'}>
+                {review.status}
+              </Badge>
             </div>
           </div>
         </div>
 
-        {/* Main Content Box */}
-        <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center space-x-2">
-              <FileText className="h-5 w-5" />
-              <span>Obituary Content</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
-              <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
-                {currentContent || "No content available"}
-              </div>
-            </ScrollArea>
-            
-            {/* Action Buttons under content */}
-            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-600">
-              <Button
-                variant="outline"
-                onClick={downloadAsDoc}
-                className="border-gray-600 text-gray-300 hover:bg-gray-700"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download
-              </Button>
-              {!review.isPublishedToSystem && (
-                <Button
-                  onClick={() => handlePublish()}
-                  disabled={publishMutation.isPending}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {publishMutation.isPending ? "Publishing..." : "Publish to System"}
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Collapsible Obituary Feedback Section */}
+        {/* Collapsible Obituary Feedback Section - Above Content */}
         <Collapsible open={feedbackOpen} onOpenChange={setFeedbackOpen}>
           <CollapsibleTrigger asChild>
             <Card className="bg-gray-800 border-gray-700 cursor-pointer hover:bg-gray-750 transition-colors">
@@ -510,6 +456,47 @@ export default function ObituaryReviewResults() {
             </Card>
           </CollapsibleContent>
         </Collapsible>
+
+        {/* Main Content Box - After Feedback */}
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center space-x-2">
+              <FileText className="h-5 w-5" />
+              <span>Obituary Content</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
+              <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
+                {currentContent || "No content available"}
+              </div>
+            </ScrollArea>
+            
+            {/* Action Buttons under content - only show when completed */}
+            {review.status === 'completed' && (
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-600">
+                <Button
+                  variant="outline"
+                  onClick={downloadAsDoc}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+                {!review.isPublishedToSystem && (
+                  <Button
+                    onClick={() => handlePublish()}
+                    disabled={publishMutation.isPending}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    {publishMutation.isPending ? "Publishing..." : "Publish to System"}
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
