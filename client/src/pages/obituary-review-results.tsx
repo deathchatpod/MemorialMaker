@@ -405,17 +405,28 @@ export default function ObituaryReviewResults() {
               <CardContent className="p-4 space-y-4 text-xs">
                 
                 {/* General Feedback */}
-                {review.additionalFeedback && (
-                  <div>
-                    <h4 className="text-blue-400 font-medium text-xs mb-2 flex items-center space-x-1">
-                      <MessageSquare className="h-3 w-3" />
-                      <span>General Feedback</span>
-                    </h4>
+                <div>
+                  <h4 className="text-blue-400 font-medium text-xs mb-2 flex items-center space-x-1">
+                    <MessageSquare className="h-3 w-3" />
+                    <span>General Feedback</span>
+                  </h4>
+                  {review.status === 'processing' ? (
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-3 w-3 text-yellow-400 animate-spin" />
+                      <p className="text-gray-100 text-xs leading-relaxed">
+                        Reviewing the obituary and feedback request. A response will be completed shortly.
+                      </p>
+                    </div>
+                  ) : review.additionalFeedback ? (
                     <p className="text-gray-100 text-xs leading-relaxed whitespace-pre-wrap">
-                      {review.additionalFeedback}
+                      {review.additionalFeedback === 'AI processing completed successfully.' 
+                        ? 'Obituary review and feedback preparation completed successfully.'
+                        : review.additionalFeedback}
                     </p>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-gray-400 text-xs">No feedback available yet.</p>
+                  )}
+                </div>
 
                 {/* Phrase Feedback */}
                 {(positivePhrases.length > 0 || phrasesToImprove.length > 0) && (
