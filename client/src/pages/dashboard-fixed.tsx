@@ -84,6 +84,7 @@ export default function Dashboard() {
     { id: 'collaborations', label: 'My Collaborations', icon: Users },
     { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
     { id: 'pre-need', label: 'Pre Need Evaluation', icon: BarChart3 },
+    ...(currentUser.userType === 'admin' ? [{ id: 'templates', label: 'Prompt Templates', icon: Settings }] : []),
     ...(currentUser.userType === 'admin' || currentUser.userType === 'funeral_home' 
       ? [{ id: 'team-management', label: 'Team Management', icon: UserCog }] 
       : []),
@@ -193,6 +194,12 @@ export default function Dashboard() {
               <>
                 <UserCog className="w-7 h-7 text-primary" />
                 Team Management
+              </>
+            )}
+            {activeSection === 'templates' && (
+              <>
+                <Settings className="w-7 h-7 text-primary" />
+                Prompt Templates
               </>
             )}
             {activeSection === 'account' && (

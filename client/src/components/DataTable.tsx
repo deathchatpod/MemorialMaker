@@ -27,6 +27,12 @@ interface DataTableProps {
     onClick: () => void;
     icon?: React.ComponentType<{ className?: string }>;
   };
+  createButtons?: {
+    label: string;
+    onClick: () => void;
+    icon?: React.ComponentType<{ className?: string }>;
+    variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
+  }[];
   emptyState?: {
     title: string;
     description: string;
@@ -43,6 +49,7 @@ export default function DataTable({
   isLoading = false,
   searchPlaceholder = "Search...",
   createButton,
+  createButtons,
   emptyState
 }: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -177,15 +184,34 @@ export default function DataTable({
                 ? ` of ${data.length} total` 
                 : ""})
             </CardTitle>
-            {createButton && (
-              <Button onClick={createButton.onClick} className="flex items-center gap-2">
-                {createButton.icon ? (
-                  <createButton.icon className="w-4 h-4" />
-                ) : (
-                  <Plus className="w-4 h-4" />
+            {(createButton || createButtons) && (
+              <div className="flex items-center gap-2">
+                {createButton && (
+                  <Button onClick={createButton.onClick} className="flex items-center gap-2">
+                    {createButton.icon ? (
+                      <createButton.icon className="w-4 h-4" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                    {createButton.label}
+                  </Button>
                 )}
-                {createButton.label}
-              </Button>
+                {createButtons && createButtons.map((button, index) => (
+                  <Button 
+                    key={index}
+                    onClick={button.onClick} 
+                    variant={button.variant || "default"}
+                    className="flex items-center gap-2"
+                  >
+                    {button.icon ? (
+                      <button.icon className="w-4 h-4" />
+                    ) : (
+                      <Plus className="w-4 h-4" />
+                    )}
+                    {button.label}
+                  </Button>
+                ))}
+              </div>
             )}
           </div>
         </CardHeader>
