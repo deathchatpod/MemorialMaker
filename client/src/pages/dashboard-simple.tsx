@@ -203,22 +203,22 @@ export default function Dashboard() {
                         </thead>
                         <tbody>
                           {finalSpaces.map((finalSpace: any) => (
-                            <tr key={finalSpace.id} className="hover:bg-gray-50">
-                              <td className="border border-gray-300 px-4 py-2">{finalSpace.personName || finalSpace.person_name || 'Untitled'}</td>
-                              <td className="border border-gray-300 px-4 py-2">
+                            <tr key={finalSpace.id} className="hover:bg-gray-700">
+                              <td className="border border-gray-700 px-4 py-2 text-gray-300">{finalSpace.personName || finalSpace.person_name || 'Untitled'}</td>
+                              <td className="border border-gray-700 px-4 py-2">
                                 <Badge className={finalSpace.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}>
                                   {finalSpace.status}
                                 </Badge>
                               </td>
-                              <td className="border border-gray-300 px-4 py-2">
+                              <td className="border border-gray-700 px-4 py-2">
                                 <Badge className={finalSpace.isPublic || finalSpace.is_public ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}>
                                   {finalSpace.isPublic || finalSpace.is_public ? 'Public' : 'Private'}
                                 </Badge>
                               </td>
-                              <td className="border border-gray-300 px-4 py-2">
+                              <td className="border border-gray-700 px-4 py-2 text-gray-300">
                                 {new Date(finalSpace.createdAt || finalSpace.created_at).toLocaleDateString()}
                               </td>
-                              <td className="border border-gray-300 px-4 py-2">
+                              <td className="border border-gray-700 px-4 py-2">
                                 <div className="flex gap-2">
                                   <Button 
                                     size="sm" 
@@ -242,7 +242,7 @@ export default function Dashboard() {
                       </table>
                     </div>
                   ) : (
-                    <p className="text-gray-600">No memorials found. Create your first memorial space to get started.</p>
+                    <p className="text-gray-300">No memorials found. Create your first memorial space to get started.</p>
                   )}
                 </CardContent>
               </Card>
