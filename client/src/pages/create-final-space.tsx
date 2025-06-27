@@ -51,7 +51,13 @@ function CreateFinalSpace() {
   });
 
   // Collaborators state
-  const [collaborators, setCollaborators] = useState([]);
+  const [collaborators, setCollaborators] = useState<Array<{
+    id: number;
+    email: string;
+    name: string;
+    status: string;
+    isTemporary: boolean;
+  }>>([]);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
@@ -61,15 +67,14 @@ function CreateFinalSpace() {
   const [dontAskAgain, setDontAskAgain] = useState(false);
   
   // Social media state
-  const [socialMediaLinks, setSocialMediaLinks] = useState({});
+  const [socialMediaLinks, setSocialMediaLinks] = useState<Record<string, string>>({});
   
   // Cemetery/grave plot state
   const [cemeteryData, setCemeteryData] = useState({
-    hasGravePlot: false,
     cemeteryName: "",
-    cemeteryUrl: "",
-    cemeteryAddress: "",
-    plotNumber: ""
+    cemeterySection: "",
+    plotNumber: "",
+    graveNotes: ""
   });
 
   // Get current user from URL params like other components
