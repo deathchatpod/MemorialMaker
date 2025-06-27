@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import ImageUpload from "@/components/image-upload";
@@ -82,6 +83,17 @@ export default function ObituaryForm() {
   const [childrenEntries, setChildrenEntries] = useState([
     { relation: 'son', name: '', spouse: '', deceased: false }
   ]);
+  const [errorDialog, setErrorDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    details?: string[];
+  }>({
+    open: false,
+    title: "",
+    description: "",
+    details: []
+  });
 
   const form = useForm<ObituaryFormData>({
     resolver: zodResolver(obituaryFormSchema),
@@ -107,7 +119,12 @@ export default function ObituaryForm() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create obituary');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(JSON.stringify({ 
+          status: response.status, 
+          message: errorData.message || 'Failed to create obituary',
+          details: errorData.details || []
+        }));
       }
 
       return response.json();
@@ -122,11 +139,34 @@ export default function ObituaryForm() {
       // Generate obituaries immediately
       generateObituariesMutation.mutate(obituary.id);
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create obituary. Please try again.",
-        variant: "destructive",
+    onError: (error: Error) => {
+      let errorInfo;
+      try {
+        errorInfo = JSON.parse(error.message);
+      } catch {
+        errorInfo = { message: error.message, details: [] };
+      }
+
+      const details = [];
+      if (errorInfo.status === 400) {
+        details.push("• Please check all required fields are filled out correctly");
+        details.push("• Make sure the age is a valid number between 0 and 150");
+        details.push("• Verify birth date is before death date");
+        details.push("• Ensure all dates are in the correct format");
+      } else if (errorInfo.status === 413) {
+        details.push("• The uploaded image is too large");
+        details.push("• Please use an image smaller than 10MB");
+      } else {
+        details.push("• Please try again in a few moments");
+        details.push("• Check your internet connection");
+        details.push("• Contact support if the problem persists");
+      }
+
+      setErrorDialog({
+        open: true,
+        title: "Failed to Create Obituary",
+        description: errorInfo.message || "We encountered an issue while creating the obituary. Please review the information below and try again.",
+        details: details
       });
     },
   });
@@ -142,16 +182,68 @@ export default function ObituaryForm() {
       });
       setLocation(`/obituary/${obituaryId}/generated`);
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to generate obituaries. Please try again.",
-        variant: "destructive",
+    onError: (error: Error) => {
+      const details = [
+        "• The AI service may be temporarily unavailable",
+        "• Your internet connection may be unstable",
+        "• The obituary data may contain formatting issues",
+        "• Try again in a few minutes or contact support if the issue persists"
+      ];
+
+      setErrorDialog({
+        open: true,
+        title: "Failed to Generate AI Obituaries",
+        description: "We couldn't generate the AI-powered obituary versions. This doesn't affect your saved obituary data.",
+        details: details
       });
     },
   });
 
   const onSubmit = (data: ObituaryFormData) => {
+    // Enhanced client-side validation with detailed error messages
+    const validationErrors = [];
+    
+    if (!data.fullName || data.fullName.trim().length < 2) {
+      validationErrors.push("Full name must be at least 2 characters long");
+    }
+    
+    if (data.dateOfBirth && data.dateOfDeath) {
+      const birthDate = new Date(data.dateOfBirth);
+      const deathDate = new Date(data.dateOfDeath);
+      if (birthDate >= deathDate) {
+        validationErrors.push("Date of birth must be before date of death");
+      }
+      if (deathDate > new Date()) {
+        validationErrors.push("Date of death cannot be in the future");
+      }
+    }
+    
+    if (data.age !== undefined && (data.age < 0 || data.age > 150)) {
+      validationErrors.push("Age must be between 0 and 150 years");
+    }
+    
+    if (data.hsGradYear && (data.hsGradYear < 1900 || data.hsGradYear > new Date().getFullYear())) {
+      validationErrors.push("High school graduation year must be between 1900 and current year");
+    }
+    
+    if (childrenEntries.length > 0) {
+      childrenEntries.forEach((child, index) => {
+        if (child.name && child.name.trim().length > 0 && child.name.trim().length < 2) {
+          validationErrors.push(`Child ${index + 1} name must be at least 2 characters long`);
+        }
+      });
+    }
+    
+    if (validationErrors.length > 0) {
+      setErrorDialog({
+        open: true,
+        title: "Form Validation Error",
+        description: "Please correct the following issues before submitting:",
+        details: validationErrors.map(error => `• ${error}`)
+      });
+      return;
+    }
+    
     const formDataWithChildren = {
       ...data,
       children: childrenEntries.filter(child => child.name.trim() !== ''),
@@ -1035,6 +1127,40 @@ export default function ObituaryForm() {
           </div>
         </form>
       </Form>
+
+      {/* Enhanced Error Dialog */}
+      <AlertDialog open={errorDialog.open} onOpenChange={(open) => setErrorDialog({...errorDialog, open})}>
+        <AlertDialogContent className="bg-gray-900 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white text-lg font-semibold">
+              {errorDialog.title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300 text-sm">
+              {errorDialog.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {errorDialog.details && errorDialog.details.length > 0 && (
+            <div className="my-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
+              <ul className="space-y-2 text-sm text-gray-300">
+                {errorDialog.details.map((detail, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-red-400 mr-2">•</span>
+                    <span>{detail.replace('• ', '')}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setErrorDialog({open: false, title: "", description: "", details: []})}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              I Understand
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
