@@ -7,6 +7,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList, Skull, UserCog, Settings, Book, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
 import PromptTemplates from "./prompt-templates";
@@ -352,19 +363,37 @@ export default function Dashboard() {
                           <Eye className="w-4 h-4" />
                         </Button>
                         {currentUser.userType === 'admin' && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              if (confirm('Are you sure you want to delete this obituary? This action cannot be undone.')) {
-                                deleteObituaryMutation.mutate(row.id);
-                              }
-                            }}
-                            title="Delete obituary"
-                            disabled={deleteObituaryMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                title="Delete obituary"
+                                disabled={deleteObituaryMutation.isPending}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-gray-800 border-gray-700">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-white">Delete Obituary?</AlertDialogTitle>
+                                <AlertDialogDescription className="text-gray-300">
+                                  Are you sure you want to delete this obituary? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteObituaryMutation.mutate(row.id)}
+                                  className="bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         )}
                       </div>
                     )
@@ -435,19 +464,37 @@ export default function Dashboard() {
                               <Badge variant="secondary">Processing...</Badge>
                             )}
                             {currentUser.userType === 'admin' && (
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => {
-                                  if (confirm('Are you sure you want to delete this obituary review? This action cannot be undone.')) {
-                                    deleteObituaryReviewMutation.mutate(row.id);
-                                  }
-                                }}
-                                title="Delete obituary review"
-                                disabled={deleteObituaryReviewMutation.isPending}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    title="Delete obituary review"
+                                    disabled={deleteObituaryReviewMutation.isPending}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent className="bg-gray-800 border-gray-700">
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle className="text-white">Delete Obituary Review?</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-gray-300">
+                                      Are you sure you want to delete this obituary review? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => deleteObituaryReviewMutation.mutate(row.id)}
+                                      className="bg-red-600 hover:bg-red-700 text-white"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             )}
                           </div>
                         )
