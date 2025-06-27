@@ -517,24 +517,6 @@ export default function ObituaryReviewResults() {
   const positivePhrases = parsePhrasesArray(review.positivePhrases);
   const phrasesToImprove = parsePhrasesArray(review.phrasesToImprove);
   
-  // Extract additional phrase feedback from improvedContent JSON structure
-  const contentFeedback = extractPhraseFeedbackFromContent(review.improvedContent);
-  
-  // Combine feedback from both sources
-  const allPositivePhrases = [...positivePhrases, ...contentFeedback.liked];
-  const allImprovedPhrases = [...phrasesToImprove, ...contentFeedback.improved];
-  
-  // Debug logging
-  console.log('Review data debug:', {
-    status: review.status,
-    positivePhrases: positivePhrases,
-    phrasesToImprove: phrasesToImprove,
-    allPositivePhrases: allPositivePhrases,
-    allImprovedPhrases: allImprovedPhrases,
-    rawPositive: review.positivePhrases,
-    rawImproved: review.phrasesToImprove
-  });
-  
   // Extract clean text from improvedContent (remove ALL JSON structure)
   const getCleanUpdatedText = (content: string): string => {
     if (!content) return "";
@@ -724,165 +706,92 @@ export default function ObituaryReviewResults() {
             <Card className="bg-gray-800 border-gray-700">
               <CardContent className="p-4 space-y-4 text-xs">
                 
-                {/* General Feedback */}
+                {/* Initial Request */}
                 <div>
-                  <h4 className="text-blue-400 font-medium text-xs mb-2 flex items-center space-x-1">
-                    <MessageCircle className="h-3 w-3" />
-                    <span>General Feedback</span>
-                  </h4>
-                  {review.status === 'processing' ? (
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-3 w-3 text-yellow-400 animate-spin" />
-                      <p className="text-gray-100 text-xs leading-relaxed">
-                        Reviewing the obituary and feedback request. A response will be completed shortly.
-                      </p>
-                    </div>
-                  ) : review.additionalFeedback ? (
-                    <p className="text-gray-100 text-xs leading-relaxed whitespace-pre-wrap">
-                      {review.additionalFeedback === 'AI processing completed successfully.' 
-                        ? 'Obituary review and feedback preparation completed successfully.'
-                        : review.additionalFeedback}
-                    </p>
-                  ) : (
-                    <p className="text-gray-400 text-xs">No feedback available yet.</p>
-                  )}
-                </div>
-
-                {/* Phrase Feedback */}
-                {review.status === 'completed' && (allPositivePhrases.length > 0 || allImprovedPhrases.length > 0) ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    
-                    {/* Positive Phrases */}
-                    {allPositivePhrases.length > 0 && (
-                      <div>
-                        <h4 className="text-green-400 font-medium text-xs mb-2 flex items-center space-x-1">
-                          <ThumbsUp className="h-3 w-3" />
-                          <span>We liked these phrases</span>
-                        </h4>
-                        <div className="space-y-1">
-                          {allPositivePhrases.map((phrase, index) => (
-                            <div key={index} className="p-2 bg-green-900/20 border border-green-700/30 rounded">
-                              <p className="text-gray-100 text-xs italic">"{phrase}"</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Phrases to Improve */}
-                    {allImprovedPhrases.length > 0 && (
-                      <div>
-                        <h4 className="text-orange-400 font-medium text-xs mb-2 flex items-center space-x-1">
-                          <Edit3 className="h-3 w-3" />
-                          <span>We improved these phrases</span>
-                        </h4>
-                        <div className="space-y-2">
-                          {allImprovedPhrases.map((phraseObj, index) => {
-                            // Handle both string and object formats for backward compatibility
-                            const isObject = typeof phraseObj === 'object' && phraseObj !== null && phraseObj.original && phraseObj.improved;
-                            return (
-                              <div key={index} className="p-2 bg-orange-900/20 border border-orange-700/30 rounded space-y-1">
-                                {isObject ? (
-                                  <>
-                                    <div className="text-gray-400 text-xs">Original:</div>
-                                    <p className="text-gray-100 text-xs italic">"{phraseObj.original}"</p>
-                                    <div className="text-gray-400 text-xs">Improved:</div>
-                                    <p className="text-green-300 text-xs italic">"{phraseObj.improved}"</p>
-                                  </>
-                                ) : (
-                                  <p className="text-gray-100 text-xs italic">"{phraseObj}"</p>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : review.status === 'completed' ? (
-                  <div className="p-3 bg-blue-900/20 border border-blue-700/30 rounded">
-                    <p className="text-blue-400 text-xs">
-                      Specific feedback will appear here shortly. Thank you for your patience.
-                    </p>
-                  </div>
-                ) : null}
-
-                {/* Initial Request (Survey Responses) */}
-                <div>
-                  <h4 className="text-purple-400 font-medium text-xs mb-2 flex items-center space-x-1">
-                    <FileText className="h-3 w-3" />
+                  <h4 className="text-purple-400 font-medium text-sm mb-2 flex items-center space-x-1">
+                    <FileText className="h-4 w-4" />
                     <span>Initial Request</span>
                   </h4>
                   <div className="space-y-2">
                     {Object.entries(review.surveyResponses).map(([key, value]) => (
-                      <div key={key} className="pb-2 border-b border-gray-600 last:border-b-0 last:pb-0">
-                        <p className="font-medium text-gray-300 mb-1 text-xs">
-                          {getSurveyQuestionText(key)}
-                        </p>
-                        <p className="text-gray-100 text-xs">{String(value)}</p>
+                      <div key={key} className="space-y-1">
+                        <p className="text-gray-400 text-sm">{getSurveyQuestionText(key)}</p>
+                        <p className="text-gray-100 text-sm">{String(value)}</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Specific Content Feedback - Only show if we have phrase feedback */}
-                {(positivePhrases.length > 0 || phrasesToImprove.length > 0) && review.status === 'completed' && (
+                {/* General Feedback */}
+                <div>
+                  <h4 className="text-blue-400 font-medium text-sm mb-2 flex items-center space-x-1">
+                    <MessageCircle className="h-4 w-4" />
+                    <span>General Feedback</span>
+                  </h4>
+                  {review.status === 'processing' ? (
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-4 w-4 text-yellow-400 animate-spin" />
+                      <p className="text-gray-100 text-sm leading-relaxed">
+                        Reviewing the obituary and feedback request. A response will be completed shortly.
+                      </p>
+                    </div>
+                  ) : review.additionalFeedback ? (
+                    <p className="text-gray-100 text-sm leading-relaxed whitespace-pre-wrap">
+                      {review.additionalFeedback === 'AI processing completed successfully.' 
+                        ? 'Obituary review and feedback preparation completed successfully.'
+                        : review.additionalFeedback}
+                    </p>
+                  ) : (
+                    <p className="text-gray-400 text-sm">No feedback available yet.</p>
+                  )}
+                </div>
+
+                {/* We Liked These Phrases */}
+                {review.status === 'completed' && positivePhrases.length > 0 && (
                   <div>
-                    <h4 className="text-orange-400 font-medium text-xs mb-2 flex items-center space-x-1">
-                      <AlertTriangle className="h-3 w-3" />
-                      <span>Specific Content Feedback</span>
+                    <h4 className="text-green-400 font-medium text-sm mb-3 flex items-center space-x-1">
+                      <ThumbsUp className="h-4 w-4" />
+                      <span>We Liked These Phrases</span>
+                    </h4>
+                    <div className="space-y-2">
+                      {positivePhrases.map((phrase, index) => (
+                        <div key={index} className="p-3 bg-green-900/20 border border-green-700/30 rounded">
+                          <p className="text-gray-100 text-sm italic">"{phrase}"</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* We Improved These Phrases */}
+                {review.status === 'completed' && phrasesToImprove.length > 0 && (
+                  <div>
+                    <h4 className="text-orange-400 font-medium text-sm mb-3 flex items-center space-x-1">
+                      <Edit3 className="h-4 w-4" />
+                      <span>We Improved These Phrases</span>
                     </h4>
                     <div className="space-y-3">
-                      
-                      {/* Phrases Claude Liked */}
-                      {positivePhrases.length > 0 && (
-                        <div className="space-y-2">
-                          <h5 className="text-green-400 font-medium text-xs flex items-center space-x-1">
-                            <ThumbsUp className="h-3 w-3" />
-                            <span>Phrases Kept (up to 10)</span>
-                          </h5>
-                          <div className="space-y-1">
-                            {positivePhrases.slice(0, 10).map((phrase, index) => (
-                              <div key={index} className="bg-green-900/20 border border-green-700/30 rounded px-2 py-1">
-                                <p className="text-green-200 text-xs">"{phrase}"</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Phrases Claude Improved */}
-                      {phrasesToImprove.length > 0 && (
-                        <div className="space-y-2">
-                          <h5 className="text-yellow-400 font-medium text-xs flex items-center space-x-1">
-                            <AlertTriangle className="h-3 w-3" />
-                            <span>Phrases Improved (up to 10)</span>
-                          </h5>
-                          <div className="space-y-2">
-                            {phrasesToImprove.slice(0, 10).map((phraseData, index) => {
-                              // Handle both string and object formats
-                              const original = typeof phraseData === 'string' ? phraseData : phraseData.original || phraseData;
-                              const improved = typeof phraseData === 'object' ? phraseData.improved : null;
-                              
-                              return (
-                                <div key={index} className="bg-yellow-900/20 border border-yellow-700/30 rounded p-2 space-y-1">
-                                  <div>
-                                    <span className="text-yellow-300 text-xs font-medium">Original: </span>
-                                    <span className="text-yellow-200 text-xs">"{original}"</span>
-                                  </div>
-                                  {improved && (
-                                    <div>
-                                      <span className="text-yellow-300 text-xs font-medium">Improved: </span>
-                                      <span className="text-yellow-100 text-xs">"{improved}"</span>
-                                    </div>
-                                  )}
+                      {phrasesToImprove.map((phraseObj, index) => {
+                        const isObject = typeof phraseObj === 'object' && phraseObj !== null && phraseObj.original && phraseObj.improved;
+                        return (
+                          <div key={index} className="p-3 bg-orange-900/20 border border-orange-700/30 rounded space-y-2">
+                            {isObject ? (
+                              <>
+                                <div>
+                                  <div className="text-gray-400 text-sm font-medium">Original:</div>
+                                  <p className="text-gray-100 text-sm italic mt-1">"{phraseObj.original}"</p>
                                 </div>
-                              );
-                            })}
+                                <div>
+                                  <div className="text-gray-400 text-sm font-medium">Improved:</div>
+                                  <p className="text-green-300 text-sm italic mt-1">"{phraseObj.improved}"</p>
+                                </div>
+                              </>
+                            ) : (
+                              <p className="text-gray-100 text-sm italic">"{phraseObj}"</p>
+                            )}
                           </div>
-                        </div>
-                      )}
-                      
+                        );
+                      })}
                     </div>
                   </div>
                 )}
