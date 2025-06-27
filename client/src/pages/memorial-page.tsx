@@ -314,6 +314,18 @@ export default function MemorialPage() {
           </Card>
         )}
 
+        {/* Social Media Links */}
+        {memorial.socialMediaLinks && Object.keys(memorial.socialMediaLinks).length > 0 && (
+          <div className="mb-8">
+            <SocialMediaDisplay
+              socialMediaLinks={memorial.socialMediaLinks}
+              memorialTitle={memorial.personName}
+              memorialUrl={window.location.href}
+              className="flex justify-center"
+            />
+          </div>
+        )}
+
         {/* Media Gallery */}
         {(memorial.images?.length > 0 || memorial.audioFiles?.length > 0 || memorial.youtubeLinks?.length > 0) && (
           <div className="mb-8">
