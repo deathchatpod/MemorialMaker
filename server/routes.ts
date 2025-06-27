@@ -1976,7 +1976,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('Error publishing obituary review:', error);
-      res.status(500).json({ error: 'Failed to publish content' });
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        reviewId,
+        publishToSystem,
+        createMemorial
+      });
+      res.status(500).json({ 
+        error: 'Failed to publish content',
+        details: error.message 
+      });
     }
   });
 
