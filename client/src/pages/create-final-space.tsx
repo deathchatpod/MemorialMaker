@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import CollaboratorConfirmationModal from "@/components/CollaboratorConfirmationModal";
 import SocialMediaForm from "@/components/SocialMediaForm";
+import CemeteryForm from "@/components/CemeteryForm";
 
 const createFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
@@ -29,6 +30,11 @@ const createFinalSpaceSchema = z.object({
   musicPlaylist: z.string().default(""),
   isPublic: z.boolean().default(true),
   allowComments: z.boolean().default(true),
+  hasGravePlot: z.boolean().default(false),
+  cemeteryName: z.string().optional(),
+  cemeteryUrl: z.string().optional(),
+  cemeteryAddress: z.string().optional(),
+  plotNumber: z.string().optional(),
   userId: z.number().optional()
 });
 
@@ -56,6 +62,15 @@ export default function CreateFinalSpace() {
   
   // Social media state
   const [socialMediaLinks, setSocialMediaLinks] = useState({});
+  
+  // Cemetery/grave plot state
+  const [cemeteryData, setCemeteryData] = useState({
+    hasGravePlot: false,
+    cemeteryName: "",
+    cemeteryUrl: "",
+    cemeteryAddress: "",
+    plotNumber: ""
+  });
 
   // Get current user from URL params like other components
   const urlParams = new URLSearchParams(window.location.search);

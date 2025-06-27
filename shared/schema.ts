@@ -218,6 +218,12 @@ export const finalSpaces = pgTable("final_spaces", {
   customStyles: jsonb("custom_styles"), // Additional styling options
   status: varchar("status", { length: 50 }).default("draft"), // draft, published, private
   viewCount: integer("view_count").default(0),
+  // Cemetery/Grave Plot Information
+  hasGravePlot: boolean("has_grave_plot").default(false),
+  cemeteryName: text("cemetery_name"),
+  cemeteryUrl: text("cemetery_url"),
+  cemeteryAddress: text("cemetery_address"),
+  plotNumber: text("plot_number"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
