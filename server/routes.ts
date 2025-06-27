@@ -1928,8 +1928,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'published'
         };
 
-        console.log('Creating obituary with formData:', JSON.stringify(formData, null, 2));
-        console.log('Full obituaryData:', JSON.stringify(obituaryData, null, 2));
         createdObituary = await storage.createObituary(obituaryData);
 
         // Create a generated obituary entry

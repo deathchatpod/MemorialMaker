@@ -333,7 +333,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createObituary(insertObituary: InsertObituary): Promise<Obituary> {
-    console.log('Storage createObituary received:', JSON.stringify(insertObituary, null, 2));
     const [obituary] = await db.insert(obituaries).values(insertObituary).returning();
     return obituary;
   }
@@ -917,8 +916,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async publishObituaryReviewToSystem(reviewId: number, userId: number, userType: string): Promise<Obituary> {
-    console.log('publishObituaryReviewToSystem called with:', { reviewId, userId, userType });
-    
     // Get the review and its latest version
     const review = await this.getObituaryReview(reviewId);
     if (!review) {
@@ -957,7 +954,7 @@ export class DatabaseStorage implements IStorage {
       status: 'completed'
     };
 
-    console.log('Storage publishObituaryReviewToSystem sending:', JSON.stringify(obituaryData, null, 2));
+
 
     const newObituary = await this.createObituary(obituaryData);
 
