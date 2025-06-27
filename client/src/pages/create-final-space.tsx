@@ -16,6 +16,8 @@ import { ArrowLeft, Heart, UserPlus, Mail, Trash2 } from "lucide-react";
 import MediaUploader from "@/components/MediaUploader";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import CollaboratorConfirmationModal from "@/components/CollaboratorConfirmationModal";
+import SocialMediaForm from "@/components/SocialMediaForm";
 
 const createFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
@@ -47,6 +49,13 @@ export default function CreateFinalSpace() {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteName, setInviteName] = useState("");
+  
+  // Collaboration modal state
+  const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
+  
+  // Social media state
+  const [socialMediaLinks, setSocialMediaLinks] = useState({});
 
   // Get current user from URL params like other components
   const urlParams = new URLSearchParams(window.location.search);
@@ -120,6 +129,12 @@ export default function CreateFinalSpace() {
   });
 
   const onSubmit = async (data: CreateFinalSpaceForm) => {
+    // Check if collaborators are attached and show modal if needed
+    if (collaborators.length === 0 && !dontAskAgain) {
+      setShowCollaboratorModal(true);
+      return;
+    }
+
     try {
       // Start form submission process
       
@@ -130,10 +145,11 @@ export default function CreateFinalSpace() {
         dateOfDeath: data.dateOfDeath || null,
         description: data.description || null,
         obituaryId: data.obituaryId || null,
-        socialMediaLinks: data.socialMediaLinks || [],
+        socialMediaLinks: socialMediaLinks,
         musicPlaylist: data.musicPlaylist || null,
         isPublic: data.isPublic !== false,
         allowComments: data.allowComments !== false,
+        collaboratorPromptDisabled: dontAskAgain,
         // Server will handle these fields
         funeralHomeId: userTypeParam === 'funeral_home' ? userIdParam : null,
         createdById: userIdParam,

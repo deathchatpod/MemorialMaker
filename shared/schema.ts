@@ -201,7 +201,8 @@ export const finalSpaces = pgTable("final_spaces", {
   dateOfBirth: text("date_of_birth"),
   dateOfDeath: text("date_of_death"),
   description: text("description"),
-  socialMediaLinks: jsonb("social_media_links"),
+  socialMediaLinks: jsonb("social_media_links").default({}), // Object with platform keys: {pinterest: "url", instagram: "url", etc}
+  collaboratorPromptDisabled: boolean("collaborator_prompt_disabled").default(false), // Per-memorial setting
   musicPlaylist: text("music_playlist"),
   images: jsonb("images").default([]), // Array of image objects with url, filename, isPrimary
   audioFiles: jsonb("audio_files").default([]), // Array of audio objects with url, filename, title, isPrimary
