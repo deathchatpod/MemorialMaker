@@ -23,6 +23,8 @@ interface GeneratedObituary {
   content: string;
   tone: string;
   isRevision: boolean;
+  createdAt?: string;
+  obituaryId: number;
 }
 
 interface TextFeedback {
@@ -309,16 +311,49 @@ export default function GeneratedObituaries() {
     return (
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <i className="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
-          <p className="text-lg text-gray-600">Loading generated obituaries...</p>
+          <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+          <p className="text-lg text-foreground">Loading generated obituaries...</p>
         </div>
       </main>
     );
   }
 
+  // Show processing message when obituaries are being generated
+  if (isGenerating) {
+    return (
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card className="bg-card border-border">
+          <CardContent className="py-12">
+            <div className="text-center space-y-4">
+              <Clock className="w-16 h-16 text-muted-foreground mx-auto mb-6 animate-spin" />
+              <h2 className="text-2xl font-semibold text-foreground">Generating Your Obituaries</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Our AI is creating 6 personalized obituary versions using Claude and ChatGPT. 
+                The new obituaries will be displayed shortly.
+              </p>
+              <div className="mt-8 space-y-2">
+                <div className="text-sm text-muted-foreground">Processing with:</div>
+                <div className="flex justify-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm">Claude AI (3 versions)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm">ChatGPT (3 versions)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
   // Check if we have both providers with feedback for revision button
-  const claudeVersions = generatedObituaries.filter((o: any) => o.aiProvider === 'claude');
-  const chatgptVersions = generatedObituaries.filter((o: any) => o.aiProvider === 'chatgpt');
+  const claudeVersions = generatedObituaries.filter((o: GeneratedObituary) => o.aiProvider === 'claude');
+  const chatgptVersions = generatedObituaries.filter((o: GeneratedObituary) => o.aiProvider === 'chatgpt');
   const canRevise = claudeVersions.length > 0 && chatgptVersions.length > 0;
 
   if (editingObituary) {
@@ -350,10 +385,30 @@ export default function GeneratedObituaries() {
         </p>
       </div>
 
-      {/* Collaboration Manager */}
-      <div className="mb-8">
-        <CollaborationManager obituaryId={obituaryId} />
-      </div>
+      {/* Collaborative Features Section */}
+      <Card className="bg-card border-border mb-8">
+        <CardHeader>
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Collaboration & Feedback
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Select text you like or dislike to provide feedback for revisions
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green-500 rounded"></div>
+              <span className="text-sm text-muted-foreground">Liked text</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-red-500 rounded"></div>
+              <span className="text-sm text-muted-foreground">Disliked text</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Generated Obituaries with Version Management */}
       <Card className="bg-card border-border">
