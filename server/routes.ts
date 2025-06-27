@@ -8,6 +8,8 @@ import { hashPassword, requireAuth, requireAdmin } from "./auth";
 import { generateObituariesWithClaude, generateObituariesWithChatGPT, generateRevisedObituary } from "./services/ai";
 import { processDocument, deleteDocument } from "./services/document";
 import { generateObituaryPDF } from "./services/pdf";
+import { DocumentProcessor } from "./services/documentProcessor";
+import { ExportService } from "./services/exportService";
 import { NotificationService } from "./services/notifications";
 import notificationRoutes from "./routes/notifications";
 import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions, questions as questionsTable, insertObituaryReviewSchema } from "@shared/schema";
@@ -1623,6 +1625,324 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Search failed' });
     }
   });
+
+  // PHASE 5: Enhanced Obituary Review API Endpoints
+
+  // Enhanced save with comprehensive validation and version tracking
+  app.post('/api/obituary-reviews/:id/save', requireAuth, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const { editedContent, editComment } = req.body;
+      const user = req.user as any;
+
+      // Validate input
+      if (!editedContent || editedContent.trim().length === 0) {
+        return res.status(400).json({ error: 'Content cannot be empty' });
+      }
+
+      if (editedContent.length > 10000) {
+        return res.status(400).json({ error: 'Content exceeds maximum length of 10,000 characters' });
+      }
+
+      // Check if review exists and user has permission
+      const existingReview = await storage.getObituaryReview(reviewId);
+      if (!existingReview) {
+        return res.status(404).json({ error: 'Review not found' });
+      }
+
+      // Verify user has permission to edit this review
+      const hasPermission = existingReview.uploadedBy === user.id || 
+                           (user.userType === 'admin') ||
+                           (user.userType === 'funeral_home' && existingReview.funeralHomeId === user.id);
+
+      if (!hasPermission) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      // Create edit history entry with incremented version
+      const newVersion = (existingReview.currentVersion || 1) + 1;
+      
+      const edit = await storage.createObituaryReviewEdit({
+        reviewId,
+        version: newVersion,
+        editedContent,
+        editType: 'user_edited',
+        editedBy: user.id,
+        editedByType: user.userType,
+        editedByName: user.name || user.username,
+        changesSummary: editComment || `Version ${newVersion} - User edit`
+      });
+
+      // Update the main review record
+      const updatedReview = await storage.updateObituaryReview(reviewId, {
+        improvedContent: editedContent,
+        currentVersion: newVersion,
+        status: 'edited',
+        updatedAt: new Date()
+      });
+
+      res.json({ 
+        success: true, 
+        edit, 
+        review: updatedReview,
+        message: 'Changes saved successfully',
+        version: newVersion
+      });
+
+    } catch (error) {
+      console.error('Error saving obituary review edit:', error);
+      res.status(500).json({ error: 'Failed to save changes' });
+    }
+  });
+
+  // Publish reviewed obituary to main system
+  app.post('/api/obituary-reviews/:id/publish', requireAuth, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const { publishToSystem, createMemorial } = req.body;
+      const user = req.user as any;
+
+      // Get the review
+      const review = await storage.getObituaryReview(reviewId);
+      if (!review) {
+        return res.status(404).json({ error: 'Review not found' });
+      }
+
+      // Verify user has permission
+      const hasPermission = review.uploadedBy === user.id || 
+                           (user.userType === 'admin') ||
+                           (user.userType === 'funeral_home' && review.funeralHomeId === user.id);
+
+      if (!hasPermission) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      const finalContent = review.improvedContent || review.originalContent;
+
+      let createdObituary = null;
+      let createdMemorial = null;
+
+      // Create obituary in main system if requested
+      if (publishToSystem) {
+        const obituaryData = {
+          funeralHomeId: review.funeralHomeId || user.id,
+          createdById: user.id,
+          createdByType: user.userType,
+          formData: JSON.stringify({ reviewContent: finalContent }),
+          fullName: extractNameFromContent(finalContent),
+          status: 'published'
+        };
+
+        createdObituary = await storage.createObituary(obituaryData);
+
+        // Create a generated obituary entry
+        const generatedData = {
+          obituaryId: createdObituary.id,
+          aiProvider: 'review_edit',
+          version: review.currentVersion || 1,
+          content: finalContent
+        };
+
+        await storage.createGeneratedObituary(generatedData);
+      }
+
+      // Create memorial if requested
+      if (createMemorial && createdObituary) {
+        const memorialData = {
+          funeralHomeId: review.funeralHomeId,
+          createdById: user.id,
+          createdByType: user.userType,
+          obituaryId: createdObituary.id,
+          slug: generateSlugFromName(createdObituary.fullName),
+          personName: createdObituary.fullName,
+          description: finalContent,
+          isPublic: true,
+          allowComments: true,
+          status: 'published',
+          theme: 'classic',
+          viewCount: 0
+        };
+
+        createdMemorial = await storage.createFinalSpace(memorialData);
+      }
+
+      // Update review status
+      await storage.updateObituaryReview(reviewId, {
+        status: 'published',
+        publishedAt: new Date()
+      });
+
+      res.json({
+        success: true,
+        message: 'Content published successfully',
+        obituary: createdObituary,
+        memorial: createdMemorial
+      });
+
+    } catch (error) {
+      console.error('Error publishing obituary review:', error);
+      res.status(500).json({ error: 'Failed to publish content' });
+    }
+  });
+
+  // Export obituary review in various formats
+  app.post('/api/obituary-reviews/:id/export', requireAuth, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const { format = 'docx', includeHistory = false } = req.body;
+      const user = req.user as any;
+
+      // Validate format
+      if (!['docx', 'pdf'].includes(format)) {
+        return res.status(400).json({ error: 'Invalid format. Use "docx" or "pdf"' });
+      }
+
+      // Get the review
+      const review = await storage.getObituaryReview(reviewId);
+      if (!review) {
+        return res.status(404).json({ error: 'Review not found' });
+      }
+
+      // Verify user has permission
+      const hasPermission = review.uploadedBy === user.id || 
+                           (user.userType === 'admin') ||
+                           (user.userType === 'funeral_home' && review.funeralHomeId === user.id);
+
+      if (!hasPermission) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      const finalContent = review.improvedContent || review.originalContent;
+      let exportContent = finalContent;
+
+      // Include edit history if requested
+      if (includeHistory) {
+        const edits = await storage.getObituaryReviewEdits(reviewId);
+        
+        if (edits.length > 0) {
+          exportContent += '\n\n--- EDIT HISTORY ---\n\n';
+          edits.forEach((edit, index) => {
+            exportContent += `Version ${edit.version} (${edit.createdAt?.toLocaleDateString()}):\n`;
+            exportContent += `Edited by: ${edit.editedByName}\n`;
+            if (edit.changesSummary) {
+              exportContent += `Changes: ${edit.changesSummary}\n`;
+            }
+            exportContent += '\n';
+          });
+        }
+      }
+
+      // Generate export
+      const exportOptions = {
+        format: format as 'docx' | 'pdf',
+        content: exportContent,
+        title: extractNameFromContent(finalContent) || 'Obituary',
+        metadata: {
+          author: user.name || user.username,
+          subject: 'Reviewed Obituary',
+          keywords: ['obituary', 'memorial', 'review'],
+          createdAt: new Date()
+        }
+      };
+
+      const buffer = await ExportService.exportDocument(exportOptions);
+      const filename = ExportService.generateFilename(format, exportOptions.title);
+
+      // Set response headers
+      res.setHeader('Content-Type', format === 'docx' 
+        ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        : 'application/pdf'
+      );
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', buffer.length);
+
+      res.send(buffer);
+
+    } catch (error) {
+      console.error('Error exporting obituary review:', error);
+      res.status(500).json({ error: 'Failed to export document' });
+    }
+  });
+
+  // Get comprehensive audit trail for a review
+  app.get('/api/obituary-reviews/:id/audit', requireAuth, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const user = req.user as any;
+
+      // Get the review
+      const review = await storage.getObituaryReview(reviewId);
+      if (!review) {
+        return res.status(404).json({ error: 'Review not found' });
+      }
+
+      // Verify user has permission
+      const hasPermission = review.uploadedBy === user.id || 
+                           (user.userType === 'admin') ||
+                           (user.userType === 'funeral_home' && review.funeralHomeId === user.id);
+
+      if (!hasPermission) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      // Get all edit history
+      const edits = await storage.getObituaryReviewEdits(reviewId);
+
+      // Build comprehensive audit trail
+      const auditTrail = {
+        review: {
+          id: review.id,
+          status: review.status,
+          createdAt: review.createdAt,
+          updatedAt: review.updatedAt,
+          uploadedBy: review.uploadedByName,
+          currentVersion: review.currentVersion,
+          documentMetadata: review.documentMetadata ? JSON.parse(review.documentMetadata) : null
+        },
+        timeline: [
+          {
+            action: 'uploaded',
+            timestamp: review.createdAt,
+            user: review.uploadedByName,
+            version: 1,
+            details: 'Document uploaded for review'
+          },
+          ...edits.map(edit => ({
+            action: edit.editType,
+            timestamp: edit.createdAt,
+            user: edit.editedByName,
+            version: edit.version,
+            details: edit.changesSummary
+          }))
+        ].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
+        versions: edits.length + 1,
+        totalEdits: edits.length
+      };
+
+      res.json(auditTrail);
+
+    } catch (error) {
+      console.error('Error fetching audit trail:', error);
+      res.status(500).json({ error: 'Failed to fetch audit trail' });
+    }
+  });
+
+  // Helper methods
+  const extractNameFromContent = (content: string): string => {
+    // Simple name extraction from obituary content
+    const lines = content.split('\n');
+    const firstLine = lines[0]?.trim();
+    
+    // Look for patterns like "John Doe" or "In memory of John Doe"
+    const nameMatch = firstLine?.match(/(?:In memory of |)([A-Z][a-z]+ [A-Z][a-z]+)/);
+    return nameMatch?.[1] || 'Unknown';
+  };
+
+  const generateSlugFromName = (name: string): string => {
+    return name.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') + '-' + Date.now();
+  };
 
   const httpServer = createServer(app);
   return httpServer;
