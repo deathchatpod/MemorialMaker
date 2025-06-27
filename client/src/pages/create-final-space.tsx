@@ -220,6 +220,23 @@ export default function CreateFinalSpace() {
     }
   };
 
+  // Collaboration modal handlers
+  const handleAddCollaborator = () => {
+    setShowCollaboratorModal(false);
+    setIsInviteOpen(true);
+  };
+
+  const handleDoItLater = () => {
+    setShowCollaboratorModal(false);
+    // Proceed with form submission by calling onSubmit again
+    const currentData = form.getValues();
+    onSubmit(currentData);
+  };
+
+  const handleDontAskAgain = (checked: boolean) => {
+    setDontAskAgain(checked);
+  };
+
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto max-w-4xl px-6">
@@ -344,33 +361,21 @@ export default function CreateFinalSpace() {
                 />
               </div>
 
-              {/* Music and Social */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="musicPlaylist">Music Playlist Link</Label>
-                  <Input
-                    id="musicPlaylist"
-                    {...form.register("musicPlaylist")}
-                    placeholder="Spotify, Pandora, or other music service URL"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="socialMediaLinks">Social Media Links</Label>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Add social media links to share memories (one per line)
-                  </p>
-                  <Textarea
-                    id="socialMediaLinks"
-                    placeholder="https://facebook.com/memorial-page&#10;https://instagram.com/memories"
-                    onChange={(e) => {
-                      const links = e.target.value.split('\n').filter(link => link.trim());
-                      form.setValue("socialMediaLinks", links);
-                    }}
-                    rows={3}
-                    className="resize-none"
-                  />
-                </div>
+              {/* Music Playlist */}
+              <div>
+                <Label htmlFor="musicPlaylist">Music Playlist Link</Label>
+                <Input
+                  id="musicPlaylist"
+                  {...form.register("musicPlaylist")}
+                  placeholder="Spotify, Pandora, or other music service URL"
+                />
               </div>
+
+              {/* Social Media Section */}
+              <SocialMediaForm
+                socialMediaLinks={socialMediaLinks}
+                onChange={setSocialMediaLinks}
+              />
 
               {/* Media Upload Section */}
               <div className="space-y-4">
@@ -533,6 +538,16 @@ export default function CreateFinalSpace() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Collaboration Confirmation Modal */}
+        <CollaboratorConfirmationModal
+          isOpen={showCollaboratorModal}
+          onClose={() => setShowCollaboratorModal(false)}
+          onAddCollaborator={handleAddCollaborator}
+          onDoItLater={handleDoItLater}
+          onDontAskAgain={handleDontAskAgain}
+          dontAskAgain={dontAskAgain}
+        />
       </div>
     </div>
   );

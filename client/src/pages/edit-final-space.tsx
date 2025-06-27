@@ -16,6 +16,8 @@ import { Heart, ArrowLeft, Save, Palette, Settings, FileText, Image as ImageIcon
 import SimpleMemorialEditor from "@/components/SimpleMemorialEditor";
 import MediaManager from "@/components/MediaManager";
 import CollaborationManager from "@/components/CollaborationManager";
+import CollaboratorConfirmationModal from "@/components/CollaboratorConfirmationModal";
+import SocialMediaForm from "@/components/SocialMediaForm";
 
 const editFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
@@ -40,6 +42,14 @@ export default function EditFinalSpace() {
   // Get current user from global state/context if needed
   const userTypeParam = 'admin'; // Default for testing
   const userIdParam = 1; // Default for testing
+
+  // Collaboration modal state
+  const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
+  
+  // Social media state
+  const [socialMediaLinks, setSocialMediaLinks] = useState({});
+  const [collaborators, setCollaborators] = useState([]);
 
   // Route parameters loaded
 
@@ -114,11 +124,47 @@ export default function EditFinalSpace() {
         isPublic: finalSpace.isPublic !== false,
         allowComments: finalSpace.allowComments !== false,
       });
+      
+      // Set social media links
+      setSocialMediaLinks(finalSpace.socialMediaLinks || {});
+      
+      // Set collaboration modal preference
+      setDontAskAgain(finalSpace.collaboratorPromptDisabled || false);
     }
   }, [finalSpace, form]);
 
   const onSubmit = async (data: EditFinalSpaceForm) => {
-    await updateFinalSpace.mutateAsync(data);
+    // Check if collaborators are attached and show modal if needed
+    if (collaborators.length === 0 && !dontAskAgain) {
+      setShowCollaboratorModal(true);
+      return;
+    }
+
+    // Prepare update data with social media links
+    const updateData = {
+      ...data,
+      socialMediaLinks,
+      collaboratorPromptDisabled: dontAskAgain
+    };
+
+    await updateFinalSpace.mutateAsync(updateData);
+  };
+
+  // Collaboration modal handlers
+  const handleAddCollaborator = () => {
+    setShowCollaboratorModal(false);
+    setActiveTab("collaboration"); // Switch to collaboration tab
+  };
+
+  const handleDoItLater = () => {
+    setShowCollaboratorModal(false);
+    // Proceed with form submission by calling onSubmit again
+    const currentData = form.getValues();
+    onSubmit(currentData);
+  };
+
+  const handleDontAskAgain = (checked: boolean) => {
+    setDontAskAgain(checked);
   };
 
   if (isLoading) {
