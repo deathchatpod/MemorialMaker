@@ -115,16 +115,16 @@ Respond ONLY with valid JSON, no other text or markup.`;
     const response = await Promise.race([
       anthropic.messages.create({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 4000,
+        max_tokens: 2000, // Reduced for faster processing
         messages: [{
           role: "user",
           content: prompt
         }]
       }),
       new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Claude API timeout after 60 seconds')), 60000)
+        setTimeout(() => reject(new Error('Claude API timeout after 30 seconds')), 30000)
       )
-    ]);
+    ]) as any;
     
     const processingTime = Date.now() - startTime;
     console.log(`Claude API call completed in ${processingTime}ms for review ${reviewId}`);
