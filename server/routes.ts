@@ -1903,12 +1903,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create obituary in main system if requested
       if (publishToSystem) {
+        // Create proper form data structure based on review content
+        const extractedName = extractNameFromContent(finalContent);
+        const formData = {
+          fullName: extractedName,
+          reviewContent: finalContent,
+          originalFilename: review.originalFilename,
+          extractedFromReview: true,
+          tone: "respectful",
+          traits: [],
+          hobbies: [],
+          children: [],
+          grandchildren: [],
+          siblings: [],
+          parents: []
+        };
+
         const obituaryData = {
           funeralHomeId: review.funeralHomeId || user.id,
           createdById: user.id,
           createdByType: user.userType,
-          formData: JSON.stringify({ reviewContent: finalContent }),
-          fullName: extractNameFromContent(finalContent),
+          formData: formData,
+          fullName: extractedName,
           status: 'published'
         };
 
@@ -1948,7 +1964,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update review status
       await storage.updateObituaryReview(reviewId, {
         status: 'published',
-        publishedAt: new Date()
+        isPublishedToSystem: true
       });
 
       res.json({
