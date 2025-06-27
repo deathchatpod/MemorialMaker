@@ -962,6 +962,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteObituaryReview(id: number): Promise<void> {
+    // First delete related API calls to avoid foreign key constraint violation
+    await db.delete(apiCalls).where(eq(apiCalls.obituaryReviewId, id));
+    
+    // Then delete the obituary review
     await db.delete(obituaryReviews).where(eq(obituaryReviews.id, id));
   }
 }
