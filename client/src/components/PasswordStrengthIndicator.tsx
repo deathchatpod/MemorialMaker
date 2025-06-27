@@ -57,7 +57,7 @@ export default function PasswordStrengthIndicator({ password, onValidityChange }
   const getStrengthColor = () => {
     if (strength <= 40) return "bg-red-500";
     if (strength <= 60) return "bg-orange-500";
-    if (strength <= 80) return "bg-yellow-500";
+    if (strength <= 80) return "bg-orange-500";
     return "bg-green-500";
   };
 

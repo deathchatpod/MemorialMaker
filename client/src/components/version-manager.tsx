@@ -67,7 +67,7 @@ export default function VersionManager({
               <Badge variant="outline">Revision</Badge>
             )}
             {!isHistorical && (
-              <Star className="w-4 h-4 text-yellow-500" />
+              <Star className="w-4 h-4 text-orange-500" />
             )}
           </div>
           <span className="text-sm text-gray-500">

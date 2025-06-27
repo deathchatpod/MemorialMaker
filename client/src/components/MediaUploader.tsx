@@ -222,7 +222,7 @@ export default function MediaUploader({
                       {media.title || media.filename}
                     </span>
                     {primaryMedia?.id === media.id && (
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <Star className="w-4 h-4 fill-orange-400 text-orange-400" />
                     )}
                   </div>
                 </div>

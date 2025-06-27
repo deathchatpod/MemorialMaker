@@ -120,7 +120,7 @@ export function DeploymentReadiness() {
       case 'fail':
         return <Badge variant="destructive">Fail</Badge>;
       case 'warning':
-        return <Badge className="bg-yellow-100 text-yellow-800">Warning</Badge>;
+        return <Badge className="bg-orange-100 text-orange-800">Warning</Badge>;
       default:
         return null;
     }

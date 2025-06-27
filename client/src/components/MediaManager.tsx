@@ -227,7 +227,7 @@ export default function MediaManager({ memorial, onMediaUpdate }: MediaManagerPr
               <div>
                 <h4 className="font-medium mb-3">Audio Files</h4>
                 {mediaState.audioFiles.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No audio files uploaded yet</p>
+                  <p className="text-muted-foreground text-center py-8">No audio files uploaded yet</p>
                 ) : (
                   <div className="space-y-3">
                     {mediaState.audioFiles.map((audio: any) => (

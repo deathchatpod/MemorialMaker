@@ -127,7 +127,7 @@ export default function CollaborationManager({ entityId, entityType, currentUser
       case "accepted":
         return <CheckCircle className="w-4 h-4 text-green-600" />;
       case "pending":
-        return <Clock className="w-4 h-4 text-yellow-600" />;
+        return <Clock className="w-4 h-4 text-orange-600" />;
       case "declined":
         return <XCircle className="w-4 h-4 text-red-600" />;
       default:
@@ -140,7 +140,7 @@ export default function CollaborationManager({ entityId, entityType, currentUser
       case "accepted":
         return "bg-green-100 text-green-800";
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-orange-100 text-orange-800";
       case "declined":
         return "bg-red-100 text-red-800";
       default:
