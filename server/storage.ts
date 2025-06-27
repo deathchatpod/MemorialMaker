@@ -145,6 +145,7 @@ export interface IStorage {
   getObituaryReview(id: number): Promise<ObituaryReview | undefined>;
   createObituaryReview(review: InsertObituaryReview): Promise<ObituaryReview>;
   updateObituaryReview(id: number, updates: Partial<ObituaryReview>): Promise<ObituaryReview>;
+  deleteObituaryReview(id: number): Promise<void>;
   
   // Obituary Review Edit History (Phase 4)
   getObituaryReviewEdits(reviewId: number): Promise<ObituaryReviewEdit[]>;
@@ -958,6 +959,10 @@ export class DatabaseStorage implements IStorage {
     });
 
     return newObituary;
+  }
+
+  async deleteObituaryReview(id: number): Promise<void> {
+    await db.delete(obituaryReviews).where(eq(obituaryReviews.id, id));
   }
 }
 

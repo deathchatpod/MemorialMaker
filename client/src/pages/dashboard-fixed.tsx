@@ -14,6 +14,9 @@ import MyCollaborations from "./my-collaborations";
 import { PreNeedEvaluationTab } from "@/components/pre-need-evaluation-tab";
 import DataTable, { createBadgeRenderer, formatDate, createActionButtons } from "@/components/DataTable";
 import { apiRequest } from "@/lib/queryClient";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 interface User {
   id: number;
@@ -23,6 +26,8 @@ interface User {
 
 export default function Dashboard() {
   const [location, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Get URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -113,6 +118,47 @@ export default function Dashboard() {
     setActiveSection(section);
     localStorage.setItem('dashboard-active-tab', section);
   };
+
+  // Delete mutations for admin users
+  const deleteObituaryMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest('DELETE', `/api/obituaries/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/obituaries'] });
+      toast({
+        title: "Success",
+        description: "Obituary deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete obituary",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteObituaryReviewMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest('DELETE', `/api/obituary-reviews/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/obituary-reviews'] });
+      toast({
+        title: "Success",
+        description: "Obituary review deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete obituary review",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Helper functions for table rendering
   const getStatusColor = (status: string) => {

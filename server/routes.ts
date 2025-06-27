@@ -1202,6 +1202,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Delete Endpoints
+  app.delete('/api/obituaries/:id', requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const obituaryId = parseInt(req.params.id);
+      await storage.deleteObituary(obituaryId);
+      res.json({ message: 'Obituary deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting obituary:', error);
+      res.status(500).json({ error: 'Failed to delete obituary' });
+    }
+  });
+
+  app.delete('/api/obituary-reviews/:id', requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      await storage.deleteObituaryReview(reviewId);
+      res.json({ message: 'Obituary review deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting obituary review:', error);
+      res.status(500).json({ error: 'Failed to delete obituary review' });
+    }
+  });
+
   // Phase 4: Obituary Review Edit History endpoints
   app.get('/api/obituary-reviews/:id/edits', requireAuth, async (req, res) => {
     try {
