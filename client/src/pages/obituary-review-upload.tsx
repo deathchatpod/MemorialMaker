@@ -124,6 +124,28 @@ export default function ObituaryReviewUpload() {
     }));
   };
 
+  // Helper function to safely parse options
+  const parseOptions = (question: any) => {
+    if (!question.options) {
+      return question.answerOptions || [];
+    }
+    
+    if (Array.isArray(question.options)) {
+      return question.options;
+    }
+    
+    if (typeof question.options === 'string') {
+      try {
+        return JSON.parse(question.options);
+      } catch (e) {
+        console.error('Failed to parse options:', e);
+        return question.answerOptions || [];
+      }
+    }
+    
+    return question.answerOptions || [];
+  };
+
   // Render question input based on type
   const renderQuestionInput = (question: any) => {
     const currentValue = surveyAnswers[question.id] || '';
@@ -151,7 +173,7 @@ export default function ObituaryReviewUpload() {
         );
 
       case 'select':
-        const selectOptions = question.options ? JSON.parse(question.options) : (question.answerOptions || []);
+        const selectOptions = parseOptions(question);
         return (
           <Select value={currentValue} onValueChange={(value) => handleAnswerChange(question.id, value)}>
             <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
@@ -172,7 +194,7 @@ export default function ObituaryReviewUpload() {
         );
 
       case 'radio':
-        const radioOptions = question.options ? JSON.parse(question.options) : (question.answerOptions || []);
+        const radioOptions = parseOptions(question);
         return (
           <RadioGroup value={currentValue} onValueChange={(value) => handleAnswerChange(question.id, value)}>
             {radioOptions.map((option: any, index: number) => {
@@ -191,7 +213,7 @@ export default function ObituaryReviewUpload() {
         );
 
       case 'checkbox':
-        const checkboxOptions = question.options ? JSON.parse(question.options) : (question.answerOptions || []);
+        const checkboxOptions = parseOptions(question);
         const checkedValues = Array.isArray(currentValue) ? currentValue : [];
         return (
           <div className="space-y-2">
