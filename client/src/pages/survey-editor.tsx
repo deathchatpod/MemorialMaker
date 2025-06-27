@@ -512,22 +512,24 @@ export default function SurveyEditor() {
                   Add Question
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+                <DialogHeader className="flex-shrink-0">
                   <DialogTitle>
                     {editingQuestion ? 'Edit Question' : 'Add New Question'}
                   </DialogTitle>
                 </DialogHeader>
-                <QuestionForm
-                  form={form}
-                  onSubmit={onSubmit}
-                  needsOptions={needsOptions}
-                  isLoading={createQuestionMutation.isPending || updateQuestionMutation.isPending}
-                  onCancel={() => {
-                    setIsAddQuestionOpen(false);
-                    setEditingQuestion(null);
-                  }}
-                />
+                <div className="flex-1 overflow-y-auto pr-2">
+                  <QuestionForm
+                    form={form}
+                    onSubmit={onSubmit}
+                    needsOptions={needsOptions}
+                    isLoading={createQuestionMutation.isPending || updateQuestionMutation.isPending}
+                    onCancel={() => {
+                      setIsAddQuestionOpen(false);
+                      setEditingQuestion(null);
+                    }}
+                  />
+                </div>
               </DialogContent>
             </Dialog>
           </div>
