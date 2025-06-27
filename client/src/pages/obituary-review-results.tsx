@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageCircle } from "lucide-react";
+import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageCircle, RefreshCw } from "lucide-react";
 
 interface ObituaryReview {
   id: number;
@@ -885,27 +885,38 @@ export default function ObituaryReviewResults() {
               </TabsContent>
             </Tabs>
             
-            {/* Action Buttons under content - only show when completed */}
+            {/* Action Buttons under content */}
             {review.status === 'completed' && (
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-600">
+              <div className="flex items-center justify-between pt-4 border-t border-gray-600">
                 <Button
                   variant="outline"
-                  onClick={handleDownloadClick}
-                  className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                  onClick={() => reprocessMutation.mutate()}
+                  disabled={reprocessMutation.isPending}
+                  className="border-orange-600 text-orange-400 hover:bg-orange-600 hover:text-white"
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
+                  <RefreshCw className={`h-4 w-4 mr-2 ${reprocessMutation.isPending ? 'animate-spin' : ''}`} />
+                  {reprocessMutation.isPending ? "Reprocessing..." : "Reprocess"}
                 </Button>
-                {!review.isPublishedToSystem && (
+                <div className="flex items-center space-x-3">
                   <Button
-                    onClick={handlePublishClick}
-                    disabled={publishMutation.isPending}
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    variant="outline"
+                    onClick={handleDownloadClick}
+                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
                   >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {publishMutation.isPending ? "Publishing..." : "Publish to System"}
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
                   </Button>
-                )}
+                  {!review.isPublishedToSystem && (
+                    <Button
+                      onClick={handlePublishClick}
+                      disabled={publishMutation.isPending}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      {publishMutation.isPending ? "Publishing..." : "Publish to System"}
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
