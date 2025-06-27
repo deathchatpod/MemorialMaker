@@ -827,6 +827,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const collaborator = await storage.createObituaryCollaborator({
         obituaryId,
         email: email,
+        collaboratorEmail: email,
+        invitedBy: req.user?.id || 0,
+        invitedByType: req.user?.userType || 'unknown',
         name: null
       });
 
@@ -2185,8 +2188,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate export
       const exportOptions = {
         format: format as 'docx' | 'pdf',
-        content: exportContent,
-        title: extractNameFromContent(finalContent) || 'Obituary',
+        content: exportContent || 'No content available',
+        title: extractNameFromContent(finalContent || '') || 'Obituary',
         metadata: {
           author: user.name || user.username,
           subject: 'Reviewed Obituary',

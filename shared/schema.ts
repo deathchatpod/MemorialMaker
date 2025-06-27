@@ -97,6 +97,9 @@ export const obituaries = pgTable("obituaries", {
   createdById: integer("created_by_id").notNull(), // Can be funeral home or employee ID
   createdByType: varchar("created_by_type", { length: 20 }).notNull(), // 'funeral_home' or 'employee'
   fullName: text("full_name").notNull(),
+  deceasedName: text("deceased_name"), // Add missing field
+  personalityTraits: jsonb("personality_traits").default([]), // Add missing field
+  biography: text("biography"), // Add missing field
   age: integer("age"),
   dateOfBirth: text("date_of_birth"),
   dateOfDeath: text("date_of_death"),
@@ -119,6 +122,8 @@ export const generatedObituaries = pgTable("generated_obituaries", {
   tone: text("tone"),
   isRevision: boolean("is_revision").notNull().default(false),
   revisionPrompt: text("revision_prompt"),
+  createdById: integer("created_by_id"),
+  createdByType: varchar("created_by_type", { length: 50 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -136,7 +141,11 @@ export const obituaryCollaborators = pgTable("obituary_collaborators", {
   id: serial("id").primaryKey(),
   obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
+  collaboratorEmail: text("collaborator_email").notNull(),
   name: text("name"),
+  status: varchar("status", { length: 20 }).default("pending").notNull(),
+  invitedBy: integer("invited_by").notNull(),
+  invitedByType: varchar("invited_by_type", { length: 50 }).notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
