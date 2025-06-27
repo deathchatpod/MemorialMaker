@@ -2026,6 +2026,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update obituary review text (original or updated)
+  app.put("/api/obituary-reviews/:id/text", requireAuth, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const { textType, content } = req.body;
+      const user = req.user as any;
+
+      // Get the review
+      const review = await storage.getObituaryReview(reviewId);
+      if (!review) {
+        return res.status(404).json({ error: 'Review not found' });
+      }
+
+      // Verify user has permission
+      const hasPermission = review.createdById === user.id || 
+                           (user.userType === 'admin') ||
+                           (user.userType === 'funeral_home' && review.funeralHomeId === user.id);
+
+      if (!hasPermission) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      // Update the appropriate text field
+      const updateData: any = {};
+      if (textType === 'original') {
+        updateData.extractedText = content;
+      } else if (textType === 'updated') {
+        updateData.improvedContent = content;
+      } else {
+        return res.status(400).json({ error: 'Invalid text type. Must be "original" or "updated"' });
+      }
+
+      // Update the review
+      const updatedReview = await storage.updateObituaryReview(reviewId, updateData);
+
+      res.json({
+        success: true,
+        message: `${textType === 'original' ? 'Original' : 'Updated'} obituary text saved successfully`,
+        review: updatedReview
+      });
+
+    } catch (error) {
+      console.error('Error updating obituary review text:', error);
+      res.status(500).json({ 
+        error: 'Failed to save obituary text',
+        details: error instanceof Error ? error.message : 'Unknown error occurred'
+      });
+    }
+  });
+
   // Export obituary review in various formats
   app.post('/api/obituary-reviews/:id/export', requireAuth, async (req, res) => {
     try {

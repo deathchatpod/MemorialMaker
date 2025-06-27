@@ -126,8 +126,29 @@ export default function ObituaryReviewResults() {
 
   const confirmSave = async () => {
     try {
+      const textType = pendingAction?.includes('original') ? 'original' : 'updated';
+      const content = textType === 'original' ? originalEditText : updatedEditText;
+
+      const response = await fetch(`/api/obituary-reviews/${id}/text`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          textType,
+          content
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save obituary text');
+      }
+
+      const result = await response.json();
+
+      // Update local state and reset editing mode
       if (pendingAction === 'save-original') {
-        // Save original text changes
         setIsEditingOriginal(false);
         setHasUnsavedOriginal(false);
         toast({
@@ -135,7 +156,6 @@ export default function ObituaryReviewResults() {
           description: "Your changes have been saved successfully.",
         });
       } else if (pendingAction === 'save-updated') {
-        // Save updated text changes
         setIsEditingUpdated(false);
         setHasUnsavedUpdated(false);
         toast({
@@ -143,7 +163,12 @@ export default function ObituaryReviewResults() {
           description: "Your changes have been saved successfully.",
         });
       }
+
+      // Refetch the review data to show updated content
+      queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}`] });
+
     } catch (error) {
+      console.error('Error saving obituary text:', error);
       toast({
         title: "Error saving changes",
         description: "Please try again.",
@@ -1125,6 +1150,78 @@ export default function ObituaryReviewResults() {
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               Confirm Publish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Confirmation Modal */}
+      <AlertDialog open={showEditConfirm} onOpenChange={setShowEditConfirm}>
+        <AlertDialogContent className="bg-gray-800 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Edit Confirmation</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              You're editing the {pendingAction?.includes('original') ? 'Original' : 'Updated'} Obituary Text.
+              This will switch to edit mode and disable editing the other tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmEdit}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Start Editing
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Save Confirmation Modal */}
+      <AlertDialog open={showSaveConfirm} onOpenChange={setShowSaveConfirm}>
+        <AlertDialogContent className="bg-gray-800 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Save Confirmation</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              You're saving the {pendingAction?.includes('original') ? 'Original' : 'Updated'} Obituary Text.
+              Your changes will be saved to the database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmSave}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Save Changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unsaved Changes Warning Modal */}
+      <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
+        <AlertDialogContent className="bg-gray-800 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              You have unsaved changes in the {hasUnsavedOriginal ? 'Original' : 'Updated'} Obituary Text.
+              You cannot edit both tabs simultaneously. Please save or cancel your current changes first.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600">
+              Continue Editing Current Tab
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmEdit}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Discard Changes and Switch
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
