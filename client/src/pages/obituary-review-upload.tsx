@@ -91,10 +91,13 @@ export default function ObituaryReviewUpload() {
       const response = await fetch('/api/process-document', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies for session-based auth
       });
 
       if (!response.ok) {
-        throw new Error('Failed to process document');
+        const errorText = await response.text();
+        console.error('Upload failed:', response.status, errorText);
+        throw new Error(`Upload failed: ${response.status} ${errorText}`);
       }
 
       const result = await response.json();
@@ -105,9 +108,10 @@ export default function ObituaryReviewUpload() {
         description: "Document text has been extracted.",
       });
     } catch (error) {
+      console.error('Document upload error:', error);
       toast({
         title: "Upload Failed",
-        description: "Failed to process the document. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to process the document. Please try again.",
         variant: "destructive",
       });
       setUploadedFile(null);
