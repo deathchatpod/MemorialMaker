@@ -213,6 +213,7 @@ export default function Dashboard() {
           {/* Obituaries Section */}
           {activeSection === 'obituaries' && (
             <DataTable
+              title="Obituaries"
               data={Array.isArray(obituaries) ? obituaries : []}
               columns={[
                 {
