@@ -21,6 +21,7 @@ import FinalSpaces from "./pages/final-spaces";
 import CreateFinalSpace from "./pages/create-final-space";
 import CreateSurvey from "./pages/create-survey";
 import ObituaryReviewUpload from "./pages/obituary-review-upload";
+import ObituaryReviewResults from "./pages/obituary-review-results";
 import Collaborate from "./pages/collaborate";
 import NotFound from "./pages/not-found";
 import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";

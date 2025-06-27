@@ -917,7 +917,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         improvedContent: result.editedText,
         additionalFeedback: result.feedback,
         aiProvider: 'claude',
-        processingStatus: 'completed',
+        status: 'completed',
         processedAt: new Date()
       });
 
@@ -1081,6 +1081,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching obituary review:', error);
       res.status(500).json({ error: 'Failed to fetch obituary review' });
+    }
+  });
+
+  // Phase 4: Obituary Review Edit History endpoints
+  app.get('/api/obituary-reviews/:id/edits', requireAuth, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const edits = await storage.getObituaryReviewEdits(reviewId);
+      res.json(edits);
+    } catch (error) {
+      console.error('Error fetching obituary review edits:', error);
+      res.status(500).json({ error: 'Failed to fetch obituary review edits' });
+    }
+  });
+
+  app.post('/api/obituary-reviews/:id/edits', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const reviewId = parseInt(req.params.id);
+      const { editedContent, editComment } = req.body;
+
+      // Get current version number
+      const existingEdits = await storage.getObituaryReviewEdits(reviewId);
+      const nextVersion = existingEdits.length + 1;
+
+      const editData = {
+        reviewId,
+        version: nextVersion,
+        editedContent,
+        editType: 'manual_edit',
+        editComment,
+        editedBy: user.id,
+        editedByType: user.userType,
+      };
+
+      const newEdit = await storage.createObituaryReviewEdit(editData);
+      res.json(newEdit);
+    } catch (error) {
+      console.error('Error creating obituary review edit:', error);
+      res.status(500).json({ error: 'Failed to save obituary review edit' });
+    }
+  });
+
+  app.post('/api/obituary-reviews/:id/publish', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const reviewId = parseInt(req.params.id);
+
+      const newObituary = await storage.publishObituaryReviewToSystem(reviewId, user.id, user.userType);
+      res.json(newObituary);
+    } catch (error) {
+      console.error('Error publishing obituary review:', error);
+      res.status(500).json({ error: 'Failed to publish obituary review to system' });
     }
   });
 
