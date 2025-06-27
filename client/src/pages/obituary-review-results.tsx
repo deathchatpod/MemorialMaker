@@ -233,15 +233,24 @@ export default function ObituaryReviewResults() {
   // Handle status changes and force UI updates
   useEffect(() => {
     if (review?.status === 'completed' && (review.improvedContent || review.additionalFeedback)) {
-      // Force a re-render when processing completes by invalidating queries
-      queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}/edits`] });
+      // Check if we've already shown the completion notification for this review
+      const notificationKey = `obituary-completion-notified-${id}`;
+      const hasBeenNotified = localStorage.getItem(notificationKey);
       
-      // Show success notification
-      toast({
-        title: "Processing Complete",
-        description: "Your obituary review has been completed and feedback is now available.",
-      });
+      if (!hasBeenNotified) {
+        // Force a re-render when processing completes by invalidating queries
+        queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}/edits`] });
+        
+        // Show success notification only once
+        toast({
+          title: "Processing Complete",
+          description: "Your obituary review has been completed and feedback is now available.",
+        });
+        
+        // Mark as notified to prevent showing again
+        localStorage.setItem(notificationKey, 'true');
+      }
     }
   }, [review?.status, review?.improvedContent, review?.additionalFeedback, id, queryClient, toast]);
 
