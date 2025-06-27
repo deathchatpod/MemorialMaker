@@ -91,9 +91,10 @@ export class ClaudeService {
       });
 
       // Get prompt template
-      const promptTemplate = await storage.getPromptTemplate(1); // Default obituary review template
+      const promptTemplates = await storage.getPromptTemplates();
+      const promptTemplate = promptTemplates.find(t => t.promptType === 'base' && t.platform === 'claude');
       if (!promptTemplate) {
-        throw new Error('Obituary Review prompt template not found');
+        throw new Error('Claude base prompt template not found');
       }
 
       // Build prompt with survey responses and original text

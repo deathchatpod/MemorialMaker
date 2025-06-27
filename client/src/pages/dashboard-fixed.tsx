@@ -757,6 +757,25 @@ export default function Dashboard() {
                     render: (value) => new Date(value).toLocaleString()
                   },
                   {
+                    key: "platformFunction",
+                    title: "Function",
+                    sortable: true,
+                    filterable: true,
+                    filterOptions: [
+                      { value: "obituary_generation", label: "Obituary Generation" },
+                      { value: "obituary_revision", label: "Obituary Revision" },
+                      { value: "obituary_review", label: "Obituary Review" },
+                      { value: "content_feedback", label: "Content Feedback" }
+                    ],
+                    render: (value) => <span className="text-sm font-medium text-blue-600">{value?.replace('_', ' ') || 'N/A'}</span>
+                  },
+                  {
+                    key: "promptTemplate",
+                    title: "Template",
+                    sortable: true,
+                    render: (value) => <span className="text-xs text-muted-foreground">{value || 'Default'}</span>
+                  },
+                  {
                     key: "userType",
                     title: "User Type",
                     sortable: true,
@@ -767,7 +786,7 @@ export default function Dashboard() {
                       { value: "employee", label: "Employee" },
                       { value: "individual", label: "Individual" }
                     ],
-                    render: (value) => <span className="capitalize">{value.replace('_', ' ')}</span>
+                    render: (value) => <span className="capitalize text-xs">{value?.replace('_', ' ') || 'N/A'}</span>
                   },
                   {
                     key: "provider",
@@ -778,23 +797,35 @@ export default function Dashboard() {
                       { value: "claude", label: "Claude" },
                       { value: "openai", label: "OpenAI" }
                     ],
-                    render: (value) => <span className="font-medium">{value}</span>
+                    render: (value) => <span className="font-medium text-xs">{value}</span>
                   },
                   {
-                    key: "model",
-                    title: "Model",
-                    sortable: true,
-                    render: (value) => <span className="text-sm text-muted-foreground">{value}</span>
-                  },
-                  {
-                    key: "tokensUsed",
-                    title: "Tokens",
+                    key: "inputTokens",
+                    title: "Input Tokens",
                     sortable: true,
                     render: (value) => value ? value.toLocaleString() : 'N/A'
                   },
                   {
+                    key: "outputTokens", 
+                    title: "Output Tokens",
+                    sortable: true,
+                    render: (value) => value ? value.toLocaleString() : 'N/A'
+                  },
+                  {
+                    key: "inputCost",
+                    title: "Input Cost",
+                    sortable: true,
+                    render: (value) => value ? `$${parseFloat(value).toFixed(4)}` : 'N/A'
+                  },
+                  {
+                    key: "outputCost",
+                    title: "Output Cost", 
+                    sortable: true,
+                    render: (value) => value ? `$${parseFloat(value).toFixed(4)}` : 'N/A'
+                  },
+                  {
                     key: "estimatedCost",
-                    title: "Cost",
+                    title: "Total Cost",
                     sortable: true,
                     render: (value) => value ? `$${parseFloat(value).toFixed(4)}` : 'N/A'
                   },
@@ -820,12 +851,6 @@ export default function Dashboard() {
                           return 'bg-gray-100 text-gray-800';
                       }
                     })
-                  },
-                  {
-                    key: "responseTime",
-                    title: "Response Time",
-                    sortable: true,
-                    render: (value) => value ? `${value}ms` : 'N/A'
                   }
                 ]}
                 emptyState={{

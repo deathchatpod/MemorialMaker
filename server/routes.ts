@@ -2254,6 +2254,9 @@ async function initializeDefaultData() {
     // Initialize default questions
     await initializeDefaultQuestions();
     
+    // Initialize default API pricing
+    await initializeDefaultApiPricing();
+    
     console.log("Default data initialized successfully");
   } catch (error) {
     console.error("Error initializing default data:", error);
@@ -2358,3 +2361,4 @@ async function initializeDefaultApiPricing() {
     console.error("Error initializing API pricing:", error);
   }
 }
+
