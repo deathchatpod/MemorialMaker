@@ -1830,7 +1830,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify user has permission to edit this review
-      const hasPermission = existingReview.uploadedBy === user.id || 
+      const hasPermission = existingReview.createdById === user.id || 
                            (user.userType === 'admin') ||
                            (user.userType === 'funeral_home' && existingReview.funeralHomeId === user.id);
 
@@ -1888,7 +1888,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify user has permission
-      const hasPermission = review.uploadedBy === user.id || 
+      const hasPermission = review.createdById === user.id || 
                            (user.userType === 'admin') ||
                            (user.userType === 'funeral_home' && review.funeralHomeId === user.id);
 
@@ -1896,7 +1896,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: 'Permission denied' });
       }
 
-      const finalContent = review.improvedContent || review.originalContent;
+      const finalContent = review.improvedContent || review.extractedText;
 
       let createdObituary = null;
       let createdMemorial = null;
