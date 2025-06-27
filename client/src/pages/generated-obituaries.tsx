@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import TextHighlighter from "@/components/text-highlighter";
@@ -39,6 +40,8 @@ export default function GeneratedObituaries() {
   const [selectedTexts, setSelectedTexts] = useState<{ [key: number]: TextFeedback[] }>({});
   const [editingObituary, setEditingObituary] = useState<GeneratedObituary | null>(null);
   const [feedbackInclusion, setFeedbackInclusion] = useState<{ [key: string]: boolean }>({});
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
   const { data: generatedObituaries = [], isLoading } = useQuery<GeneratedObituary[]>({
     queryKey: ["/api/obituaries", obituaryId, "generated"],
@@ -68,6 +71,32 @@ export default function GeneratedObituaries() {
     enabled: generatedObituaries.length > 0,
   });
 
+  // Save feedback mutation
+  const saveFeedbackMutation = useMutation({
+    mutationFn: async ({ generatedObituaryId, selectedText, feedbackType }: { 
+      generatedObituaryId: number, 
+      selectedText: string, 
+      feedbackType: 'liked' | 'disliked' 
+    }) => {
+      const response = await fetch(`/api/generated-obituaries/${generatedObituaryId}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selectedText, feedbackType })
+      });
+      if (!response.ok) throw new Error('Failed to save feedback');
+      return response.json();
+    },
+    onSuccess: () => {
+      setShowFeedbackDialog(true);
+      setFeedbackMessage('Your feedback has been saved successfully.');
+      queryClient.invalidateQueries({ queryKey: ["/api/obituaries", obituaryId, "feedback"] });
+    },
+    onError: () => {
+      setShowFeedbackDialog(true);
+      setFeedbackMessage('Failed to save feedback. Please try again.');
+    }
+  });
+
   // Revision mutation
   const createRevision = useMutation({
     mutationFn: async ({ aiProvider }: { aiProvider: string }) => {
@@ -81,17 +110,12 @@ export default function GeneratedObituaries() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/obituaries", obituaryId, "generated"] });
-      toast({
-        title: "Revision Created",
-        description: "New version generated based on feedback"
-      });
+      setShowFeedbackDialog(true);
+      setFeedbackMessage('New revision generated based on feedback.');
     },
     onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create revision",
-        variant: "destructive"
-      });
+      setShowFeedbackDialog(true);
+      setFeedbackMessage('Failed to create revision. Please try again.');
     }
   });
 
@@ -365,6 +389,25 @@ export default function GeneratedObituaries() {
           />
         </CardContent>
       </Card>
+
+      <AlertDialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>
+        <AlertDialogContent className="bg-gray-800 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Feedback Notification</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              {feedbackMessage}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => setShowFeedbackDialog(false)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              I Understand
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
