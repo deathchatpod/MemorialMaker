@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageCircle } from "lucide-react";
 
@@ -52,6 +53,10 @@ export default function ObituaryReviewResults() {
   const [editComment, setEditComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [feedbackOpen, setFeedbackOpen] = useState(true);
+  
+  // Confirmation modal states
+  const [showDownloadConfirm, setShowDownloadConfirm] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   
   // State persistence for feedback section
   useEffect(() => {
@@ -354,9 +359,7 @@ export default function ObituaryReviewResults() {
   };
 
   const handlePublish = (options: { publishToSystem?: boolean; createMemorial?: boolean } = {}) => {
-    if (window.confirm("Are you sure you want to publish this obituary? This action cannot be undone.")) {
-      publishMutation.mutate(options);
-    }
+    publishMutation.mutate(options);
   };
 
   const handleExport = (format: 'docx' | 'pdf', includeHistory: boolean = false) => {
@@ -364,7 +367,9 @@ export default function ObituaryReviewResults() {
   };
 
   const downloadAsDoc = () => {
-    const content = editedContent || review?.improvedContent || review?.extractedText || "";
+    const content = activeTab === "updated" 
+      ? getCleanUpdatedText(review?.improvedContent || "")
+      : review?.extractedText || "";
     const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -372,6 +377,25 @@ export default function ObituaryReviewResults() {
     a.download = `obituary-review-${id}.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Confirmation modal handlers
+  const handleDownloadClick = () => {
+    setShowDownloadConfirm(true);
+  };
+
+  const handlePublishClick = () => {
+    setShowPublishConfirm(true);
+  };
+
+  const confirmDownload = () => {
+    downloadAsDoc();
+    setShowDownloadConfirm(false);
+  };
+
+  const confirmPublish = () => {
+    handlePublish({ publishToSystem: true });
+    setShowPublishConfirm(false);
   };
 
   const formatSurveyResponses = (responses: Record<string, any>) => {
@@ -796,7 +820,7 @@ export default function ObituaryReviewResults() {
               <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-600">
                 <Button
                   variant="outline"
-                  onClick={downloadAsDoc}
+                  onClick={handleDownloadClick}
                   className="border-gray-600 text-gray-300 hover:bg-gray-700"
                 >
                   <Download className="h-4 w-4 mr-2" />
@@ -804,7 +828,7 @@ export default function ObituaryReviewResults() {
                 </Button>
                 {!review.isPublishedToSystem && (
                   <Button
-                    onClick={() => handlePublish()}
+                    onClick={handlePublishClick}
                     disabled={publishMutation.isPending}
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
@@ -817,6 +841,57 @@ export default function ObituaryReviewResults() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Download Confirmation Modal */}
+      <AlertDialog open={showDownloadConfirm} onOpenChange={setShowDownloadConfirm}>
+        <AlertDialogContent className="bg-gray-800 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Download Confirmation</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              You are downloading the {activeTab === "updated" ? "Updated" : "Original"} Obituary Text.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDownload}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Confirm Download
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Publish Confirmation Modal */}
+      <AlertDialog open={showPublishConfirm} onOpenChange={setShowPublishConfirm}>
+        <AlertDialogContent className="bg-gray-800 border-gray-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Publish Confirmation</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
+              You are publishing the {activeTab === "updated" ? "Updated" : "Original"} Obituary Text.
+              {review?.isPublishedToSystem && (
+                <div className="mt-2 text-yellow-400">
+                  You are also overwriting an earlier version of this obituary.
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmPublish}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Confirm Publish
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
