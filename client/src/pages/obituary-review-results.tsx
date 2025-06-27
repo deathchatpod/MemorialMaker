@@ -82,16 +82,6 @@ export default function ObituaryReviewResults() {
     localStorage.setItem(`obituary-feedback-${id}`, JSON.stringify(feedbackOpen));
   }, [feedbackOpen, id]);
 
-
-
-  // Initialize edit text when review data loads
-  useEffect(() => {
-    if (review) {
-      setOriginalEditText(review.extractedText || '');
-      setUpdatedEditText(review.improvedContent || '');
-    }
-  }, [review]);
-
   // Edit/Save handler functions
   const handleEditClick = (textType: 'original' | 'updated') => {
     const hasUnsaved = textType === 'original' ? hasUnsavedUpdated : hasUnsavedOriginal;
@@ -353,7 +343,13 @@ export default function ObituaryReviewResults() {
     staleTime: 0, // Always consider data stale to ensure fresh fetches
   });
 
-
+  // Initialize edit text when review data loads
+  useEffect(() => {
+    if (review) {
+      setOriginalEditText(review.extractedText || '');
+      setUpdatedEditText(review.improvedContent || '');
+    }
+  }, [review]);
 
   // Fetch edit history
   const { data: edits = [], isLoading: editsLoading } = useQuery<ObituaryReviewEdit[]>({

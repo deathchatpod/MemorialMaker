@@ -107,7 +107,9 @@ export default function Dashboard() {
       const res = await apiRequest('GET', `/api/api-usage?timeRange=24h`);
       return res.json();
     },
-    enabled: currentUser.userType === 'admin'
+    enabled: currentUser.userType === 'admin',
+    refetchInterval: 5000, // Refresh every 5 seconds to show new API calls
+    staleTime: 0 // Always consider data stale to ensure fresh fetches
   });
 
   // Menu items for all user types with Lucide icons
