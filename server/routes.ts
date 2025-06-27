@@ -2630,7 +2630,3 @@ async function initializeDefaultApiPricing() {
     console.error("Error initializing API pricing:", error);
   }
 }
-
-  return server;
-}
-
