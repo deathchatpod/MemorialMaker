@@ -791,14 +791,6 @@ export class DatabaseStorage implements IStorage {
     const query = db.select().from(surveyResponses).where(eq(surveyResponses.responseType, responseType));
     return query.orderBy(desc(surveyResponses.createdAt));
   }
-              eq(surveyResponses.completedByType, 'employee')
-            )
-          )
-        );
-    }
-
-    return await query.orderBy(desc(surveyResponses.createdAt));
-  }
 
   // Obituary Reviews
   async getObituaryReviews(funeralHomeId?: number): Promise<ObituaryReview[]> {
