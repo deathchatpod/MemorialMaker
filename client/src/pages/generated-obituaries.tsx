@@ -58,7 +58,10 @@ export default function GeneratedObituaries() {
       return response.json();
     },
     enabled: !!obituaryId,
-    refetchInterval: 3000, // Poll every 3 seconds
+    refetchInterval: (data) => {
+      // Stop polling once we have obituaries (3 versions from each AI tool = 6 total)
+      return data && data.length >= 6 ? false : 3000;
+    },
   });
 
   // Check if obituaries are still being generated

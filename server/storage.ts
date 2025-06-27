@@ -1004,8 +1004,6 @@ export class DatabaseStorage implements IStorage {
       content: finalContent,
       aiProvider: review.aiProvider || 'claude',
       version: 1,
-      createdById: userId,
-      createdByType: userType,
     });
 
     // Update review to mark as published
