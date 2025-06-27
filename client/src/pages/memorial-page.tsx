@@ -364,7 +364,7 @@ export default function MemorialPage() {
             </CardHeader>
             <CardContent>
               {/* Comment Form */}
-              <form onSubmit={handleCommentSubmit} className={`mb-8 p-4 bg-gray-50 rounded-lg`}>
+              <form onSubmit={handleCommentSubmit} className={`mb-8 p-4 bg-gray-800 rounded-lg`}>
                 <h4 className="font-medium mb-4">Share a memory or message</h4>
                 <div className={`${isMobile ? 'grid grid-cols-1 gap-4 mb-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'}`}>
                   <Input

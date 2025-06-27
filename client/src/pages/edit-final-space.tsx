@@ -123,7 +123,7 @@ export default function EditFinalSpace() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading memorial...</p>
@@ -134,7 +134,7 @@ export default function EditFinalSpace() {
 
   if (!finalSpace) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <Card className="max-w-md mx-auto">
           <CardContent className="text-center py-12">
             <Heart className="w-16 h-16 mx-auto text-gray-400 mb-4" />
@@ -152,7 +152,7 @@ export default function EditFinalSpace() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-900 py-8">
       <div className="container mx-auto max-w-4xl px-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
