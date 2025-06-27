@@ -18,6 +18,7 @@ import MediaManager from "@/components/MediaManager";
 import CollaborationManager from "@/components/CollaborationManager";
 import CollaboratorConfirmationModal from "@/components/CollaboratorConfirmationModal";
 import SocialMediaForm from "@/components/SocialMediaForm";
+import CemeteryForm from "@/components/CemeteryForm";
 
 const editFinalSpaceSchema = z.object({
   personName: z.string().min(1, "Person name is required"),
@@ -50,6 +51,15 @@ export default function EditFinalSpace() {
   // Social media state
   const [socialMediaLinks, setSocialMediaLinks] = useState({});
   const [collaborators, setCollaborators] = useState([]);
+  
+  // Cemetery/grave plot state
+  const [cemeteryData, setCemeteryData] = useState({
+    hasGravePlot: false,
+    cemeteryName: "",
+    cemeteryUrl: "",
+    cemeteryAddress: "",
+    plotNumber: ""
+  });
 
   // Route parameters loaded
 

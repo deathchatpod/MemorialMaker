@@ -165,6 +165,12 @@ export default function CreateFinalSpace() {
         isPublic: data.isPublic !== false,
         allowComments: data.allowComments !== false,
         collaboratorPromptDisabled: dontAskAgain,
+        // Cemetery/grave plot data
+        hasGravePlot: cemeteryData.hasGravePlot,
+        cemeteryName: cemeteryData.cemeteryName || null,
+        cemeteryUrl: cemeteryData.cemeteryUrl || null,
+        cemeteryAddress: cemeteryData.cemeteryAddress || null,
+        plotNumber: cemeteryData.plotNumber || null,
         // Server will handle these fields
         funeralHomeId: userTypeParam === 'funeral_home' ? userIdParam : null,
         createdById: userIdParam,
@@ -390,6 +396,12 @@ export default function CreateFinalSpace() {
               <SocialMediaForm
                 socialMediaLinks={socialMediaLinks}
                 onChange={setSocialMediaLinks}
+              />
+
+              {/* Cemetery/Grave Plot Section */}
+              <CemeteryForm
+                data={cemeteryData}
+                onChange={setCemeteryData}
               />
 
               {/* Media Upload Section */}
