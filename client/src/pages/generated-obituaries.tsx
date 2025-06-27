@@ -58,7 +58,7 @@ export default function GeneratedObituaries() {
       return response.json();
     },
     enabled: !!obituaryId,
-    refetchInterval: (data) => (data && data.length === 0) ? 3000 : false, // Poll only when no obituaries exist
+    refetchInterval: 3000, // Poll every 3 seconds
   });
 
   // Check if obituaries are still being generated
@@ -472,11 +472,16 @@ export default function GeneratedObituaries() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <TextHighlighter 
-                      content={obituary.content}
-                      onTextSelect={(text, type) => handleTextSelection(obituary.id, text, type)}
-                      className="text-gray-300 leading-relaxed"
-                    />
+                    <div className="text-gray-300 leading-relaxed">
+                      <TextHighlighter 
+                        content={obituary.content}
+                        selectedTexts={(selectedTexts[obituary.id] || []).map(feedback => ({
+                          selectedText: feedback.selectedText,
+                          feedbackType: feedback.feedbackType
+                        }))}
+                        onTextSelect={(text, type) => handleTextSelection(obituary.id, text, type)}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
               ))}
