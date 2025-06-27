@@ -215,14 +215,18 @@ function SortableQuestionItem({
 }
 
 export default function SurveyEditor() {
-  const [, params] = useRoute("/admin/surveys/:id/edit");
-  const [, setLocation] = useLocation();
+  const [, paramsEdit] = useRoute("/admin/surveys/:id/edit");
+  const [, paramsNew] = useRoute("/admin/surveys/new");
+  const [, paramsView] = useRoute("/admin/surveys/:id");
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddQuestionOpen, setIsAddQuestionOpen] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
-  const surveyId = params?.id ? parseInt(params.id) : null;
+  // Determine if this is a new survey or editing existing
+  const isNewSurvey = location === '/admin/surveys/new' || !!paramsNew;
+  const surveyId = paramsEdit?.id ? parseInt(paramsEdit.id) : (paramsView?.id ? parseInt(paramsView.id) : null);
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -232,14 +236,14 @@ export default function SurveyEditor() {
     })
   );
 
-  const { data: survey } = useQuery<Survey>({
+  const { data: survey, isLoading: surveyLoading } = useQuery<Survey>({
     queryKey: [`/api/surveys/${surveyId}`],
     queryFn: async () => {
       const response = await fetch(`/api/surveys/${surveyId}`);
       if (!response.ok) throw new Error('Failed to fetch survey');
       return response.json();
     },
-    enabled: !!surveyId,
+    enabled: !!surveyId && !isNewSurvey,
   });
 
   const { data: questions = [] } = useQuery<Question[]>({
@@ -249,7 +253,7 @@ export default function SurveyEditor() {
       if (!response.ok) throw new Error('Failed to fetch questions');
       return response.json();
     },
-    enabled: !!surveyId,
+    enabled: !!surveyId && !isNewSurvey,
   });
 
   const updateSurveyMutation = useMutation({
@@ -423,16 +427,39 @@ export default function SurveyEditor() {
   };
 
   const toggleSurveyStatus = () => {
-    const newStatus = survey?.status === 'active' ? 'draft' : 'active';
+    if (isNewSurvey) return; // Can't toggle status for new surveys
+    const newStatus = displaySurvey.status === 'active' ? 'draft' : 'active';
     updateSurveyMutation.mutate({ status: newStatus });
   };
 
-  if (!survey) {
+  // Show loading only when we're trying to load an existing survey
+  if (!isNewSurvey && surveyLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
           <i className="fas fa-spinner fa-spin mr-2"></i>
           Loading survey...
+        </div>
+      </div>
+    );
+  }
+
+  // For new surveys, create a default survey object
+  const displaySurvey = isNewSurvey ? {
+    id: 0,
+    name: "New Survey",
+    description: "Create a new survey",
+    status: "draft",
+    version: 1,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  } : survey;
+
+  if (!displaySurvey) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <p className="text-red-600">Survey not found</p>
         </div>
       </div>
     );
@@ -452,14 +479,14 @@ export default function SurveyEditor() {
         
         <div className="flex justify-between items-start">
           <div>
-            <h2 className="text-2xl font-semibold text-gray-900">{survey.name}</h2>
-            <p className="text-gray-600 mt-1">{survey.description || "No description"}</p>
+            <h2 className="text-2xl font-semibold text-gray-900">{displaySurvey.name}</h2>
+            <p className="text-gray-600 mt-1">{displaySurvey.description || "No description"}</p>
             <div className="flex items-center mt-2 space-x-4">
-              <Badge variant={survey.status === 'active' ? 'default' : 'secondary'}>
-                {survey.status}
+              <Badge variant={displaySurvey.status === 'active' ? 'default' : 'secondary'}>
+                {displaySurvey.status}
               </Badge>
               <span className="text-sm text-gray-500">
-                Version {survey.version}
+                Version {displaySurvey.version}
               </span>
             </div>
           </div>
