@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageSquare } from "lucide-react";
 
 interface ObituaryReview {
   id: number;
@@ -380,78 +380,81 @@ export default function ObituaryReviewResults() {
               </CardHeader>
             </Card>
           </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-4">
-            
-            {/* Phrase Feedback */}
-            {(positivePhrases.length > 0 || phrasesToImprove.length > 0) && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* Positive Phrases */}
-                {positivePhrases.length > 0 && (
-                  <Card className="bg-gray-800 border-gray-700">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-green-400 flex items-center space-x-2 text-lg">
-                        <ThumbsUp className="h-4 w-4" />
-                        <span>We liked these phrases</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      {positivePhrases.map((phrase, index) => (
-                        <div key={index} className="p-3 bg-green-900/20 border border-green-700/30 rounded-lg">
-                          <p className="text-gray-100 text-sm italic">"{phrase}"</p>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
-                
-                {/* Phrases to Improve */}
-                {phrasesToImprove.length > 0 && (
-                  <Card className="bg-gray-800 border-gray-700">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-orange-400 flex items-center space-x-2 text-lg">
-                        <Edit3 className="h-4 w-4" />
-                        <span>We'd like to improve these phrases</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      {phrasesToImprove.map((phrase, index) => (
-                        <div key={index} className="p-3 bg-orange-900/20 border border-orange-700/30 rounded-lg">
-                          <p className="text-gray-100 text-sm italic">"{phrase}"</p>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
-
-            {/* General Feedback */}
-            {review.additionalFeedback && (
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white">General Feedback</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-100 leading-relaxed">{review.additionalFeedback}</p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Survey Responses */}
+          <CollapsibleContent>
             <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Survey Responses</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {Object.entries(review.surveyResponses).map(([key, value]) => (
-                  <div key={key} className="border-b border-gray-600 pb-3 last:border-b-0">
-                    <p className="text-sm font-medium text-gray-300 mb-1">
-                      {getSurveyQuestionText(key)}
+              <CardContent className="p-4 space-y-4 text-xs">
+                
+                {/* General Feedback */}
+                {review.additionalFeedback && (
+                  <div>
+                    <h4 className="text-blue-400 font-medium text-xs mb-2 flex items-center space-x-1">
+                      <MessageSquare className="h-3 w-3" />
+                      <span>General Feedback</span>
+                    </h4>
+                    <p className="text-gray-100 text-xs leading-relaxed whitespace-pre-wrap">
+                      {review.additionalFeedback}
                     </p>
-                    <p className="text-gray-100">{String(value)}</p>
                   </div>
-                ))}
+                )}
+
+                {/* Phrase Feedback */}
+                {(positivePhrases.length > 0 || phrasesToImprove.length > 0) && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    
+                    {/* Positive Phrases */}
+                    {positivePhrases.length > 0 && (
+                      <div>
+                        <h4 className="text-green-400 font-medium text-xs mb-2 flex items-center space-x-1">
+                          <ThumbsUp className="h-3 w-3" />
+                          <span>We liked these phrases</span>
+                        </h4>
+                        <div className="space-y-1">
+                          {positivePhrases.map((phrase, index) => (
+                            <div key={index} className="p-2 bg-green-900/20 border border-green-700/30 rounded">
+                              <p className="text-gray-100 text-xs italic">"{phrase}"</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Phrases to Improve */}
+                    {phrasesToImprove.length > 0 && (
+                      <div>
+                        <h4 className="text-orange-400 font-medium text-xs mb-2 flex items-center space-x-1">
+                          <Edit3 className="h-3 w-3" />
+                          <span>We'd like to improve these phrases</span>
+                        </h4>
+                        <div className="space-y-1">
+                          {phrasesToImprove.map((phrase, index) => (
+                            <div key={index} className="p-2 bg-orange-900/20 border border-orange-700/30 rounded">
+                              <p className="text-gray-100 text-xs italic">"{phrase}"</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Initial Request (Survey Responses) */}
+                <div>
+                  <h4 className="text-purple-400 font-medium text-xs mb-2 flex items-center space-x-1">
+                    <FileText className="h-3 w-3" />
+                    <span>Initial Request</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {Object.entries(review.surveyResponses).map(([key, value]) => (
+                      <div key={key} className="pb-2 border-b border-gray-600 last:border-b-0 last:pb-0">
+                        <p className="font-medium text-gray-300 mb-1 text-xs">
+                          {getSurveyQuestionText(key)}
+                        </p>
+                        <p className="text-gray-100 text-xs">{String(value)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </CardContent>
             </Card>
           </CollapsibleContent>
