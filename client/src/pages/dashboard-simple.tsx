@@ -54,12 +54,12 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-900">
       {/* Sidebar */}
-      <nav className="w-64 bg-white shadow-sm border-r border-gray-200" role="navigation" aria-label="Main navigation">
+      <nav className="w-64 bg-gray-800 shadow-sm border-r border-gray-700" role="navigation" aria-label="Main navigation">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-gray-900">Dashboard</h2>
-          <p className="text-sm text-gray-600 mt-1">
+          <h2 className="text-xl font-bold text-white">Dashboard</h2>
+          <p className="text-sm text-gray-300 mt-1">
             {currentUser.userType === 'admin' ? 'System Admin' : 
              currentUser.userType === 'funeral_home' ? 'Funeral Home' : 
              currentUser.userType === 'employee' ? 'Employee' : 
@@ -79,7 +79,7 @@ export default function Dashboard() {
                       "w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                       activeSection === item.id
                         ? "bg-blue-600 text-white"
-                        : "text-gray-700 hover:bg-gray-100"
+                        : "text-gray-300 hover:bg-gray-700"
                     )}
                   >
                     <Icon className="w-5 h-5 mr-3" />
@@ -96,7 +96,7 @@ export default function Dashboard() {
       <main className="flex-1 overflow-auto" role="main">
         <div className="p-6">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">
+            <h1 className="text-2xl font-bold text-white mb-6">
               {activeSection === 'obituaries' && 'Obituaries'}
               {activeSection === 'collaborations' && 'My Collaborations'}
               {activeSection === 'finalspaces' && 'FinalSpaces'}
@@ -125,17 +125,17 @@ export default function Dashboard() {
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse border border-gray-300">
                         <thead>
-                          <tr className="bg-gray-50">
-                            <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">Status</th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">Created</th>
-                            <th className="border border-gray-300 px-4 py-2 text-left">Actions</th>
+                          <tr className="bg-gray-800">
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Name</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Status</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Created</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {obituaries.map((obituary: any) => (
-                            <tr key={obituary.id} className="hover:bg-gray-50">
-                              <td className="border border-gray-300 px-4 py-2">{obituary.fullName || obituary.full_name || 'Untitled'}</td>
+                            <tr key={obituary.id} className="hover:bg-gray-700">
+                              <td className="border border-gray-700 px-4 py-2 text-gray-300">{obituary.fullName || obituary.full_name || 'Untitled'}</td>
                               <td className="border border-gray-300 px-4 py-2">
                                 <Badge className={obituary.status === 'generated' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'}>
                                   {obituary.status}
