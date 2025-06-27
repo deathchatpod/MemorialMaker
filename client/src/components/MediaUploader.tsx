@@ -244,6 +244,9 @@ export default function MediaUploader({
           <div className="space-y-4">
             <div>
               <Label htmlFor="image-upload">Upload Images</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Some of the most common pictures people like to use include baby pictures, friend groups, especially on favorite trips, high school or college graduation photos, professional headshots, or family parties.
+              </p>
               <Input
                 id="image-upload"
                 type="file"

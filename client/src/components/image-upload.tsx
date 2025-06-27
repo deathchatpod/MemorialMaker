@@ -146,6 +146,9 @@ export default function ImageUpload({
 
   return (
     <div className="space-y-4">
+      <p className="text-sm text-muted-foreground mb-2">
+        Some of the most common pictures people like to use include baby pictures, friend groups, especially on favorite trips, high school or college graduation photos, professional headshots, or family parties.
+      </p>
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
           isDragging
