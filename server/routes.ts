@@ -835,7 +835,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Survey routes
-  app.get("/api/surveys", requireAuth, async (req: any, res) => {
+  app.get("/api/surveys", async (req: any, res) => {
     try {
       const surveys = await storage.getSurveys();
       res.json(surveys);

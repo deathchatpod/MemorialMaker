@@ -30,18 +30,28 @@ export default function ObituaryReviewUpload() {
   const [isUploading, setIsUploading] = useState(false);
 
   // Get the "Obituary Feedback" survey questions
-  const { data: surveys = [] } = useQuery<any[]>({
-    queryKey: ['/api/surveys']
+  const { data: surveys = [], isLoading: surveysLoading, error: surveysError } = useQuery<any[]>({
+    queryKey: ['/api/surveys'],
+    retry: 1
   });
 
   const obituaryFeedbackSurvey = surveys.find(survey => survey.name === "Obituary Feedback");
 
-  const { data: questions = [] } = useQuery<any[]>({
+  const { data: questions = [], isLoading: questionsLoading, error: questionsError } = useQuery<any[]>({
     queryKey: ['/api/questions'],
-    enabled: !!obituaryFeedbackSurvey
+    enabled: !!obituaryFeedbackSurvey,
+    retry: 1
   });
 
   const surveyQuestions = questions.filter(q => q.surveyId === obituaryFeedbackSurvey?.id);
+
+  // Debug logging
+  console.log("Surveys:", surveys);
+  console.log("Obituary Feedback Survey:", obituaryFeedbackSurvey);
+  console.log("Questions:", questions);
+  console.log("Survey Questions:", surveyQuestions);
+  console.log("Surveys Error:", surveysError);
+  console.log("Questions Error:", questionsError);
 
   // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,28 +248,69 @@ export default function ObituaryReviewUpload() {
           <CardContent className="space-y-8">
             
             {/* Survey Questions Section */}
-            {obituaryFeedbackSurvey && (
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Feedback Survey: {obituaryFeedbackSurvey.name}
-                </h3>
-                <div className="space-y-6">
-                  {surveyQuestions
-                    .sort((a, b) => a.orderIndex - b.orderIndex)
-                    .map((question) => (
-                      <div key={question.id} className="space-y-2">
-                        <Label className="text-gray-300 font-medium">
-                          {question.questionText}
-                          {question.isRequired && (
-                            <span className="text-red-400 ml-1">*</span>
-                          )}
-                        </Label>
-                        {renderQuestionInput(question)}
-                      </div>
-                    ))}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4">
+                Obituary Feedback Survey
+              </h3>
+              
+              {surveysLoading && (
+                <div className="text-gray-400">Loading survey questions...</div>
+              )}
+              
+              {surveysError && (
+                <div className="text-red-400">
+                  Error loading survey: {surveysError instanceof Error ? surveysError.message : "Unknown error"}
                 </div>
-              </div>
-            )}
+              )}
+              
+              {!surveysLoading && !surveysError && !obituaryFeedbackSurvey && (
+                <div className="text-yellow-400">
+                  "Obituary Feedback" survey not found. Please ensure the survey exists.
+                </div>
+              )}
+              
+              {obituaryFeedbackSurvey && (
+                <div>
+                  <p className="text-gray-300 mb-4">
+                    Please answer these questions about the obituary you're uploading:
+                  </p>
+                  
+                  {questionsLoading && (
+                    <div className="text-gray-400">Loading questions...</div>
+                  )}
+                  
+                  {questionsError && (
+                    <div className="text-red-400">
+                      Error loading questions: {questionsError instanceof Error ? questionsError.message : "Unknown error"}
+                    </div>
+                  )}
+                  
+                  {!questionsLoading && !questionsError && surveyQuestions.length === 0 && (
+                    <div className="text-yellow-400">
+                      No questions found for this survey.
+                    </div>
+                  )}
+                  
+                  {surveyQuestions.length > 0 && (
+                    <div className="space-y-6">
+                      {surveyQuestions
+                        .sort((a, b) => a.orderIndex - b.orderIndex)
+                        .map((question) => (
+                          <div key={question.id} className="space-y-2">
+                            <Label className="text-gray-300 font-medium">
+                              {question.questionText}
+                              {question.isRequired && (
+                                <span className="text-red-400 ml-1">*</span>
+                              )}
+                            </Label>
+                            {renderQuestionInput(question)}
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Document Upload Section */}
             <div>
