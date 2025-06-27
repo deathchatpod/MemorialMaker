@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList } from "lucide-react";
+import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
@@ -41,6 +41,10 @@ export default function Dashboard() {
 
   const { data: finalSpaces = [], isLoading: isFinalSpacesLoading } = useQuery<any[]>({
     queryKey: ['/api/final-spaces']
+  });
+
+  const { data: surveys = [], isLoading: isLoadingSurveys } = useQuery<any[]>({
+    queryKey: ['/api/surveys']
   });
 
   const menuItems = [
@@ -258,7 +262,10 @@ export default function Dashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
-                    <span>Platform Surveys</span>
+                    <div className="flex items-center">
+                      <FileText className="w-5 h-5 mr-2" />
+                      Platform Surveys
+                    </div>
                     <Button onClick={() => setLocation(`/admin/surveys/new?userType=${userTypeParam}&userId=${userIdParam}`)}>
                       <Plus className="w-4 h-4 mr-2" />
                       Create New Survey
@@ -266,21 +273,62 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-600">Manage platform surveys here.</p>
+                  {isLoadingSurveys ? (
+                    <p className="text-gray-300">Loading surveys...</p>
+                  ) : surveys && surveys.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse border border-gray-700">
+                        <thead>
+                          <tr className="bg-gray-800">
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Survey Name</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Questions</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Created</th>
+                            <th className="border border-gray-700 px-4 py-2 text-left text-white">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {surveys.map((survey: any) => (
+                            <tr key={survey.id} className="hover:bg-gray-700">
+                              <td className="border border-gray-700 px-4 py-2 text-gray-300">{survey.name}</td>
+                              <td className="border border-gray-700 px-4 py-2 text-gray-300">
+                                {survey.questions?.length || 0} questions
+                              </td>
+                              <td className="border border-gray-700 px-4 py-2 text-gray-300">
+                                {new Date(survey.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="border border-gray-700 px-4 py-2">
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setLocation(`/admin/surveys/${survey.id}/edit?userType=${userTypeParam}&userId=${userIdParam}`)}
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setLocation(`/admin/surveys/${survey.id}/questions?userType=${userTypeParam}&userId=${userIdParam}`)}
+                                  >
+                                    <Settings className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-gray-300">No surveys found. Create your first survey to get started.</p>
+                  )}
                 </CardContent>
               </Card>
             )}
 
             {/* Pre Need Evaluation Section */}
             {activeSection === 'evaluations' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pre Need Evaluation</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">View and manage pre-need evaluations.</p>
-                </CardContent>
-              </Card>
+              <PreNeedEvaluationTab />
             )}
 
             {/* Team Management Section */}
