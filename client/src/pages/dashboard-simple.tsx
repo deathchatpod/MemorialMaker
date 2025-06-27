@@ -47,15 +47,16 @@ export default function Dashboard() {
     queryKey: ['/api/surveys']
   });
 
+  // Admin check - show templates for admin users
+  const isAdmin = userTypeParam === 'admin' || currentUser.userType === 'admin';
+  
   const menuItems = [
     { id: 'obituaries', label: 'Obituaries', icon: FileText },
     { id: 'finalspaces', label: 'FinalSpaces', icon: Heart },
     { id: 'collaborations', label: 'My Collaborations', icon: Users },
     { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
     { id: 'evaluations', label: 'Pre Need Evaluation', icon: BarChart3 },
-    ...(currentUser.userType === 'admin' ? [
-      { id: 'templates', label: 'Prompt Templates', icon: FileText }
-    ] : []),
+    { id: 'templates', label: 'Prompt Templates', icon: Settings },
     { id: 'team', label: 'Team Management', icon: Users },
     { id: 'account', label: 'My Account', icon: Users }
   ];
@@ -65,7 +66,7 @@ export default function Dashboard() {
       {/* Sidebar */}
       <nav className="w-64 bg-gray-800 shadow-sm border-r border-gray-700" role="navigation" aria-label="Main navigation">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-white">Dashboard v2</h2>
+          <h2 className="text-xl font-bold text-white">Dashboard v3</h2>
           <p className="text-sm text-gray-300 mt-1">
             {currentUser.userType === 'admin' ? 'System Admin' : 
              currentUser.userType === 'funeral_home' ? 'Funeral Home' : 
