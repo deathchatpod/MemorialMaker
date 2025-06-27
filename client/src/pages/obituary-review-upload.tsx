@@ -45,14 +45,6 @@ export default function ObituaryReviewUpload() {
 
   const surveyQuestions = questions.filter(q => q.surveyId === obituaryFeedbackSurvey?.id);
 
-  // Debug logging
-  console.log("Surveys:", surveys);
-  console.log("Obituary Feedback Survey:", obituaryFeedbackSurvey);
-  console.log("Questions:", questions);
-  console.log("Survey Questions:", surveyQuestions);
-  console.log("Surveys Error:", surveysError);
-  console.log("Questions Error:", questionsError);
-
   // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
