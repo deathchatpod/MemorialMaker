@@ -498,14 +498,11 @@ export default function ObituaryReviewResults() {
         return "Unable to extract clean obituary text from response.";
         
       } catch (parseError) {
-        console.log('JSON parse failed:', parseError);
-        console.log('Attempting to extract improvedVersion with regex...');
+        // JSON parsing failed, try regex extraction
         
         // Try to extract improvedVersion using regex as fallback
         const improvedVersionMatch = cleanContent.match(/"improvedVersion":\s*"([^"]*(?:\\.[^"]*)*)"/s);
-        console.log('Regex match result:', improvedVersionMatch ? 'Found' : 'Not found');
         if (improvedVersionMatch) {
-          console.log('Extracted improvedVersion:', improvedVersionMatch[1].substring(0, 200));
           return improvedVersionMatch[1]
             .replace(/\\n/g, '\n')
             .replace(/\\"/g, '"')
