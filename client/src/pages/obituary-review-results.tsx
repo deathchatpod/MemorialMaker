@@ -270,15 +270,6 @@ export default function ObituaryReviewResults() {
     URL.revokeObjectURL(url);
   };
 
-  // Helper function to get readable question text
-  const getSurveyQuestionText = (key: string): string => {
-    // Convert camelCase keys to readable text
-    return key
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/^./, str => str.toUpperCase())
-      .trim();
-  };
-
   const formatSurveyResponses = (responses: Record<string, any>) => {
     return Object.entries(responses).map(([question, answer]) => (
       <div key={question} className="mb-3">
@@ -520,5 +511,6 @@ export default function ObituaryReviewResults() {
           </CollapsibleContent>
         </Collapsible>
       </div>
-    );
-  }
+    </div>
+  );
+}
