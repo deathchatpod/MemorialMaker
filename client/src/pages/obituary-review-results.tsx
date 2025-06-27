@@ -74,9 +74,15 @@ export default function ObituaryReviewResults() {
   const parsePhrasesArray = (jsonString: string | undefined): any[] => {
     if (!jsonString) return [];
     try {
-      const parsed = JSON.parse(jsonString);
+      // Handle double-encoded JSON strings
+      let cleanString = jsonString;
+      if (typeof jsonString === 'string' && jsonString.startsWith('"') && jsonString.endsWith('"')) {
+        cleanString = JSON.parse(jsonString);
+      }
+      const parsed = JSON.parse(cleanString);
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
+    } catch (error) {
+      console.log('Error parsing phrases array:', error, 'Input:', jsonString);
       return [];
     }
   };
