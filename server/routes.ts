@@ -634,12 +634,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/obituaries", upload.single('photo'), async (req, res) => {
     try {
       const formData = JSON.parse(req.body.formData);
+      
+      // Calculate age from dates if available, otherwise use provided age
+      let calculatedAge = formData.age;
+      if (formData.dateOfBirth && formData.dateOfDeath) {
+        const birthDate = new Date(formData.dateOfBirth);
+        const deathDate = new Date(formData.dateOfDeath);
+        if (!isNaN(birthDate.getTime()) && !isNaN(deathDate.getTime()) && deathDate >= birthDate) {
+          calculatedAge = Math.floor((deathDate.getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+        }
+      }
+      
+      // Ensure age is valid
+      if (calculatedAge !== undefined) {
+        calculatedAge = Math.max(0, Math.min(150, calculatedAge));
+      }
+      
       const validatedData = insertObituarySchema.parse({
         funeralHomeId: 1, // Default for testing
         createdById: 1,
         createdByType: 'funeral_home',
         fullName: formData.fullName,
-        age: formData.age ? parseInt(formData.age) : undefined,
+        age: calculatedAge,
         dateOfBirth: formData.dateOfBirth,
         dateOfDeath: formData.dateOfDeath,
         location: formData.location,
