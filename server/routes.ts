@@ -884,6 +884,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Document processing endpoint for obituary reviews
+  app.post('/api/process-document', requireAuth, upload.single('document'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      // Validate file type
+      const allowedTypes = ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/pdf'];
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ error: 'Invalid file type. Only .docx and .pdf files are allowed.' });
+      }
+
+      const result = await processDocument(req.file);
+      res.json({ text: result.text, filename: result.filename });
+    } catch (error) {
+      console.error('Document processing error:', error);
+      res.status(500).json({ error: 'Failed to process document' });
+    }
+  });
+
   app.delete("/api/surveys/:id", async (req, res) => {
     try {
       await storage.deleteSurvey(parseInt(req.params.id));
