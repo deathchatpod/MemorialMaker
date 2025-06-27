@@ -66,13 +66,45 @@ export default function ObituaryReviewResults() {
   }, [feedbackOpen, id]);
 
   // Helper functions for phrase feedback
-  const parsePhrasesArray = (jsonString: string | undefined): string[] => {
+  const parsePhrasesArray = (jsonString: string | undefined): any[] => {
     if (!jsonString) return [];
     try {
-      return JSON.parse(jsonString);
+      const parsed = JSON.parse(jsonString);
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
     }
+  };
+
+  // Enhanced function to extract phrase feedback from improvedContent JSON structure
+  const extractPhraseFeedbackFromContent = (content: string | undefined): { liked: any[], improved: any[] } => {
+    if (!content) return { liked: [], improved: [] };
+    
+    try {
+      // Check if content contains structured phrase feedback
+      if (content.trim().startsWith('[') && content.includes('"original"') && content.includes('"improved"')) {
+        const parsed = JSON.parse(content);
+        if (Array.isArray(parsed)) {
+          return {
+            liked: [], // Array structure doesn't contain liked phrases
+            improved: parsed.filter(item => item.original && item.improved)
+          };
+        }
+      }
+      
+      // Check for full structured response
+      if (content.trim().startsWith('{') && content.includes('improvedPhrases')) {
+        const parsed = JSON.parse(content);
+        return {
+          liked: parsed.likedPhrases || [],
+          improved: parsed.improvedPhrases || []
+        };
+      }
+    } catch {
+      // If parsing fails, return empty arrays
+    }
+    
+    return { liked: [], improved: [] };
   };
 
   // Fetch questions to map IDs to question text
@@ -127,9 +159,10 @@ export default function ObituaryReviewResults() {
       return response.json();
     },
     refetchInterval: (data) => {
-      // Poll every 1 second if status is pending or processing for faster updates
-      return data?.status === 'pending' || data?.status === 'processing' ? 1000 : false;
+      // Poll every 500ms if status is pending or processing for faster updates
+      return data?.status === 'pending' || data?.status === 'processing' ? 500 : false;
     },
+    refetchOnWindowFocus: true,
   });
 
 
@@ -353,26 +386,58 @@ export default function ObituaryReviewResults() {
   const latestEdit = edits[0];
   const currentContent = latestEdit?.editedContent || review.improvedContent || review.extractedText;
   
-  // Parse phrase feedback arrays
+  // Parse phrase feedback arrays from database fields first
   const positivePhrases = parsePhrasesArray(review.positivePhrases);
   const phrasesToImprove = parsePhrasesArray(review.phrasesToImprove);
+  
+  // Extract additional phrase feedback from improvedContent JSON structure
+  const contentFeedback = extractPhraseFeedbackFromContent(review.improvedContent);
+  
+  // Combine feedback from both sources
+  const allPositivePhrases = [...positivePhrases, ...contentFeedback.liked];
+  const allImprovedPhrases = [...phrasesToImprove, ...contentFeedback.improved];
   
   // Extract clean text from improvedContent (remove JSON structure if present)
   const getCleanUpdatedText = (content: string): string => {
     if (!content) return "";
     
-    try {
-      // Try to parse as JSON and extract improvedVersion
-      const parsed = JSON.parse(content);
-      if (parsed.improvedVersion) {
-        return parsed.improvedVersion;
+    // Check if content looks like JSON structure (starts with { and contains "original"/"improved")
+    if (content.trim().startsWith('{') && (content.includes('"original"') || content.includes('"improved"'))) {
+      try {
+        const parsed = JSON.parse(content);
+        
+        // Handle structured feedback with improved phrases
+        if (parsed.improvedVersion) {
+          return parsed.improvedVersion;
+        }
+        
+        // Handle array of phrase comparisons
+        if (Array.isArray(parsed)) {
+          // Extract improved text from phrase comparison structure
+          return parsed.map((item: any) => item.improved || item.original || '').join(' ');
+        }
+        
+        // Handle simple object with improved field
+        if (parsed.improved) {
+          return parsed.improved;
+        }
+        
+        // Fallback to original content
+        return content;
+      } catch {
+        // If JSON parsing fails, clean up visible JSON artifacts
+        return content
+          .replace(/\{"original":\s*"/g, '')
+          .replace(/",\s*"improved":\s*"/g, ' → ')
+          .replace(/"\}/g, '')
+          .replace(/^\{/, '')
+          .replace(/\}$/, '')
+          .trim();
       }
-      // If it's structured data but no improvedVersion, return original
-      return content;
-    } catch {
-      // If not JSON, return as is
-      return content;
     }
+    
+    // If not JSON, return as is
+    return content;
   };
   
   const cleanUpdatedText = getCleanUpdatedText(review.improvedContent || "");
@@ -449,18 +514,18 @@ export default function ObituaryReviewResults() {
                 </div>
 
                 {/* Phrase Feedback */}
-                {(positivePhrases.length > 0 || phrasesToImprove.length > 0) && (
+                {(allPositivePhrases.length > 0 || allImprovedPhrases.length > 0) && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     
                     {/* Positive Phrases */}
-                    {positivePhrases.length > 0 && (
+                    {allPositivePhrases.length > 0 && (
                       <div>
                         <h4 className="text-green-400 font-medium text-xs mb-2 flex items-center space-x-1">
                           <ThumbsUp className="h-3 w-3" />
                           <span>We liked these phrases</span>
                         </h4>
                         <div className="space-y-1">
-                          {positivePhrases.map((phrase, index) => (
+                          {allPositivePhrases.map((phrase, index) => (
                             <div key={index} className="p-2 bg-green-900/20 border border-green-700/30 rounded">
                               <p className="text-gray-100 text-xs italic">"{phrase}"</p>
                             </div>
@@ -470,16 +535,16 @@ export default function ObituaryReviewResults() {
                     )}
                     
                     {/* Phrases to Improve */}
-                    {phrasesToImprove.length > 0 && (
+                    {allImprovedPhrases.length > 0 && (
                       <div>
                         <h4 className="text-orange-400 font-medium text-xs mb-2 flex items-center space-x-1">
                           <Edit3 className="h-3 w-3" />
                           <span>We improved these phrases</span>
                         </h4>
                         <div className="space-y-2">
-                          {phrasesToImprove.map((phraseObj, index) => {
+                          {allImprovedPhrases.map((phraseObj, index) => {
                             // Handle both string and object formats for backward compatibility
-                            const isObject = typeof phraseObj === 'object' && phraseObj.original && phraseObj.improved;
+                            const isObject = typeof phraseObj === 'object' && phraseObj !== null && phraseObj.original && phraseObj.improved;
                             return (
                               <div key={index} className="p-2 bg-orange-900/20 border border-orange-700/30 rounded space-y-1">
                                 {isObject ? (
