@@ -72,7 +72,7 @@ async function processObituaryReviewAsync(reviewId: number) {
     }
 
     // Create AI prompt for obituary feedback with structured response
-    const prompt = `You are an expert obituary editor providing constructive feedback. Please review this obituary content and provide structured feedback.
+    const prompt = `You are an expert obituary editor providing constructive feedback. Your role is to improve ONLY the writing quality, tone, grammar, and flow - you must NOT add any new facts, details, or information that wasn't in the original.
 
 Original Obituary Content:
 ${review.extractedText}
@@ -81,29 +81,30 @@ Survey Context (if provided):
 ${JSON.stringify(review.surveyResponses, null, 2)}
 
 CRITICAL REQUIREMENTS:
-1. The improved version MUST contain ALL information from the original obituary
-2. MUST include all memorial service details, dates, times, locations if present in original
-3. MUST preserve all family member names, relationships, and biographical details
-4. MUST maintain the complete life story without cutting any sections
-5. The improved version should be COMPLETE and COMPREHENSIVE
+1. DO NOT ADD any new facts, anecdotes, details, or information not present in the original
+2. DO NOT invent specific activities, places, or experiences (like "visiting beaches" or "vending machines")
+3. ONLY improve: writing style, tone, grammar, sentence structure, flow, and readability
+4. PRESERVE every fact, name, date, location, and detail from the original exactly as written
+5. Focus improvements on: clarity, emotional resonance, better word choice, smoother transitions
+6. If information seems incomplete, note it in feedback but do NOT fill in missing details
 
 Please analyze the original text and respond with a JSON object containing:
 {
   "likedPhrases": ["exact phrase from original", "another exact phrase"],
   "improvedPhrases": [
-    {"original": "exact phrase from original text", "improved": "your improved version"},
-    {"original": "another phrase", "improved": "improved version"}
+    {"original": "exact phrase from original text", "improved": "your improved version using ONLY original facts"},
+    {"original": "another phrase", "improved": "improved version with NO new details"}
   ],
-  "improvedVersion": "COMPLETE improved obituary text with ALL original information preserved - NO JSON or formatting markup",
-  "generalFeedback": "Brief constructive assessment focusing on key improvements made"
+  "improvedVersion": "COMPLETE improved obituary text with ONLY original facts presented with better writing",
+  "generalFeedback": "Brief assessment focusing on writing improvements made (grammar, tone, flow, clarity)"
 }
 
 Rules:
-- "likedPhrases": Extract 3-8 exact phrases from the original text that are well-written and should remain unchanged
-- "improvedPhrases": Identify 3-8 specific phrases that you changed, showing original vs improved
-- "improvedVersion": COMPLETE obituary text with all improvements AND all original information - NO JSON, NO markdown, NO code blocks, NO truncation
-- "generalFeedback": 2-3 sentences summarizing your key improvements
-- ENSURE the improvedVersion includes ALL memorial service details, family information, and biographical content from the original
+- "likedPhrases": Extract 3-8 exact phrases from the original text that are well-written
+- "improvedPhrases": Show original vs improved versions that enhance ONLY the writing, not the facts
+- "improvedVersion": All original information with improved writing quality - NO new facts added
+- "generalFeedback": Focus on writing improvements, not content additions
+- NEVER add fictional details, specific activities, or embellishments not in the original
 
 Respond ONLY with valid JSON, no other text or markup.`;
 
