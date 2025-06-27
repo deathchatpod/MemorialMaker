@@ -11,7 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageSquare } from "lucide-react";
+import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageCircle } from "lucide-react";
 
 interface ObituaryReview {
   id: number;
@@ -427,7 +427,7 @@ export default function ObituaryReviewResults() {
                 {/* General Feedback */}
                 <div>
                   <h4 className="text-blue-400 font-medium text-xs mb-2 flex items-center space-x-1">
-                    <MessageSquare className="h-3 w-3" />
+                    <MessageCircle className="h-3 w-3" />
                     <span>General Feedback</span>
                   </h4>
                   {review.status === 'processing' ? (

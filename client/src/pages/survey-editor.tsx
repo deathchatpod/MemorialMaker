@@ -428,7 +428,7 @@ export default function SurveyEditor() {
 
   const toggleSurveyStatus = () => {
     if (isNewSurvey) return; // Can't toggle status for new surveys
-    const newStatus = displaySurvey.status === 'active' ? 'draft' : 'active';
+    const newStatus = displaySurvey?.status === 'active' ? 'draft' : 'active';
     updateSurveyMutation.mutate({ status: newStatus });
   };
 
