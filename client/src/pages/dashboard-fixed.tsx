@@ -501,8 +501,8 @@ export default function Dashboard() {
                       }
                     ]}
                     emptyState={{
-                      title: 'No obituary reviews found',
-                      description: 'Upload an obituary document for AI review to get started.'
+                      title: 'There are no Obituaries uploaded for review yet.',
+                      description: ''
                     }}
                     isLoading={isObituaryReviewsLoading}
                   />
