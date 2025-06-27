@@ -1,7 +1,7 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, apiCalls,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
@@ -10,7 +10,7 @@ import {
   type FinalSpaceComment, type InsertFinalSpaceComment, type FinalSpaceImage, type InsertFinalSpaceImage,
   type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
-  type ObituaryReview, type InsertObituaryReview, type ApiCall, type InsertApiCall
+  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
@@ -142,6 +142,11 @@ export interface IStorage {
   getObituaryReview(id: number): Promise<ObituaryReview | undefined>;
   createObituaryReview(review: InsertObituaryReview): Promise<ObituaryReview>;
   updateObituaryReview(id: number, updates: Partial<ObituaryReview>): Promise<ObituaryReview>;
+  
+  // Obituary Review Edit History (Phase 4)
+  getObituaryReviewEdits(reviewId: number): Promise<ObituaryReviewEdit[]>;
+  createObituaryReviewEdit(edit: InsertObituaryReviewEdit): Promise<ObituaryReviewEdit>;
+  publishObituaryReviewToSystem(reviewId: number, userId: number, userType: string): Promise<Obituary>;
   
   // API Calls
   getApiCalls(userId?: number, timeRange?: { start: Date; end: Date }): Promise<ApiCall[]>;
@@ -901,6 +906,64 @@ export class DatabaseStorage implements IStorage {
       .where(eq(apiCalls.id, id))
       .returning();
     return updatedCall;
+  }
+
+  // Phase 4: Obituary Review Edit History
+  async getObituaryReviewEdits(reviewId: number): Promise<ObituaryReviewEdit[]> {
+    return db.select().from(obituaryReviewEdits)
+      .where(eq(obituaryReviewEdits.reviewId, reviewId))
+      .orderBy(desc(obituaryReviewEdits.version));
+  }
+
+  async createObituaryReviewEdit(edit: InsertObituaryReviewEdit): Promise<ObituaryReviewEdit> {
+    const [newEdit] = await db.insert(obituaryReviewEdits).values(edit).returning();
+    return newEdit;
+  }
+
+  async publishObituaryReviewToSystem(reviewId: number, userId: number, userType: string): Promise<Obituary> {
+    // Get the review and its latest version
+    const review = await this.getObituaryReview(reviewId);
+    if (!review) {
+      throw new Error('Review not found');
+    }
+
+    const edits = await this.getObituaryReviewEdits(reviewId);
+    const latestEdit = edits[0]; // Most recent version
+    const finalContent = latestEdit?.editedContent || review.improvedContent || review.extractedText;
+
+    // Extract name from survey responses for obituary title
+    const responses = review.surveyResponses as any;
+    const deceasedName = responses?.['Full Name'] || responses?.['full_name'] || 'Unknown';
+
+    // Create obituary in main system
+    const obituaryData: InsertObituary = {
+      funeralHomeId: review.funeralHomeId,
+      createdById: userId,
+      createdByType: userType,
+      fullName: deceasedName,
+      status: 'completed',
+      // Add other fields as needed from survey responses
+    };
+
+    const newObituary = await this.createObituary(obituaryData);
+
+    // Create generated obituary content
+    await this.createGeneratedObituary({
+      obituaryId: newObituary.id,
+      content: finalContent,
+      aiProvider: review.aiProvider || 'claude',
+      version: 1,
+      createdById: userId,
+      createdByType: userType,
+    });
+
+    // Update review to mark as published
+    await this.updateObituaryReview(reviewId, {
+      finalObituaryId: newObituary.id,
+      isPublishedToSystem: true,
+    });
+
+    return newObituary;
   }
 }
 

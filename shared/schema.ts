@@ -607,8 +607,26 @@ export const obituaryReviews = pgTable("obituary_reviews", {
   improvedContent: text("improved_content"),
   additionalFeedback: text("additional_feedback"),
   processedAt: timestamp("processed_at"),
+  // Phase 4: Integration with main obituaries system
+  finalObituaryId: integer("final_obituary_id").references(() => obituaries.id),
+  isPublishedToSystem: boolean("is_published_to_system").default(false).notNull(),
+  currentVersion: integer("current_version").default(1).notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Obituary Review Edit History (Phase 4: Version tracking)
+export const obituaryReviewEdits = pgTable("obituary_review_edits", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("review_id").references(() => obituaryReviews.id, { onDelete: "cascade" }).notNull(),
+  version: integer("version").notNull(),
+  editedContent: text("edited_content").notNull(),
+  editType: varchar("edit_type", { length: 50 }).notNull(), // 'original', 'ai_improved', 'user_edited'
+  editedBy: integer("edited_by"),
+  editedByType: varchar("edited_by_type", { length: 50 }), // admin, funeral_home, employee, individual
+  editedByName: varchar("edited_by_name", { length: 255 }),
+  changesSummary: text("changes_summary"), // Summary of what was changed
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // API Usage tracking table
@@ -630,6 +648,10 @@ export const apiCalls = pgTable("api_calls", {
 export const insertObituaryReviewSchema = createInsertSchema(obituaryReviews);
 export type ObituaryReview = typeof obituaryReviews.$inferSelect;
 export type InsertObituaryReview = z.infer<typeof insertObituaryReviewSchema>;
+
+export const insertObituaryReviewEditSchema = createInsertSchema(obituaryReviewEdits);
+export type ObituaryReviewEdit = typeof obituaryReviewEdits.$inferSelect;
+export type InsertObituaryReviewEdit = z.infer<typeof insertObituaryReviewEditSchema>;
 
 export const insertApiCallSchema = createInsertSchema(apiCalls);
 export type ApiCall = typeof apiCalls.$inferSelect;
