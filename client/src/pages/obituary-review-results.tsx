@@ -65,6 +65,35 @@ export default function ObituaryReviewResults() {
     localStorage.setItem(`obituary-feedback-${id}`, JSON.stringify(feedbackOpen));
   }, [feedbackOpen, id]);
 
+  // Helper functions for phrase feedback
+  const parsePhrasesArray = (jsonString: string | undefined): string[] => {
+    if (!jsonString) return [];
+    try {
+      return JSON.parse(jsonString);
+    } catch {
+      return [];
+    }
+  };
+
+  const getSurveyQuestionText = (key: string): string => {
+    // Map response keys to readable question text
+    const questionMap: Record<string, string> = {
+      'Full Name': 'Full Name of Deceased',
+      'Date of Death': 'Date of Death',
+      'Age at Death': 'Age at Death',
+      'Place of Birth': 'Place of Birth',
+      'Education': 'Education Background',
+      'Career': 'Career/Profession',
+      'Family Information': 'Family Information',
+      'Hobbies': 'Hobbies and Interests',
+      'Special Achievements': 'Special Achievements',
+      'Personality': 'Personality Traits',
+      'Memorial Service': 'Memorial Service Details',
+      'Additional Information': 'Additional Information'
+    };
+    return questionMap[key] || key;
+  };
+
   // Fetch obituary review with polling for processing status
   const { data: review, isLoading: reviewLoading, error: reviewError } = useQuery<ObituaryReview>({
     queryKey: [`/api/obituary-reviews/${id}`],
@@ -241,6 +270,15 @@ export default function ObituaryReviewResults() {
     URL.revokeObjectURL(url);
   };
 
+  // Helper function to get readable question text
+  const getSurveyQuestionText = (key: string): string => {
+    // Convert camelCase keys to readable text
+    return key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase())
+      .trim();
+  };
+
   const formatSurveyResponses = (responses: Record<string, any>) => {
     return Object.entries(responses).map(([question, answer]) => (
       <div key={question} className="mb-3">
@@ -303,10 +341,14 @@ export default function ObituaryReviewResults() {
 
   const latestEdit = edits[0];
   const currentContent = latestEdit?.editedContent || review.improvedContent || review.extractedText;
+  
+  // Parse phrase feedback arrays
+  const positivePhrases = parsePhrasesArray(review.positivePhrases);
+  const phrasesToImprove = parsePhrasesArray(review.phrasesToImprove);
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -334,220 +376,149 @@ export default function ObituaryReviewResults() {
               </div>
             </div>
           </div>
-          
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              onClick={downloadAsDoc}
-              className="border-gray-600 text-gray-300 hover:bg-gray-700"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
-            {!review.isPublishedToSystem && (
-              <Button
-                onClick={handlePublish}
-                disabled={publishMutation.isPending}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {publishMutation.isPending ? "Publishing..." : "Publish to System"}
-              </Button>
-            )}
-          </div>
         </div>
 
-        {/* Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gray-800 border-gray-700">
-            <TabsTrigger value="original" className="data-[state=active]:bg-gray-700">
-              Original Content
-            </TabsTrigger>
-            <TabsTrigger value="improved" className="data-[state=active]:bg-gray-700">
-              Final Version
-            </TabsTrigger>
-            <TabsTrigger value="feedback" className="data-[state=active]:bg-gray-700">
-              Survey Responses
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="original" className="space-y-4">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Original Document: {review.originalFilename}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
-                  <div className="whitespace-pre-wrap text-gray-200 leading-relaxed">
-                    {review.extractedText}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="improved" className="space-y-4">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white flex items-center">
-                    <Edit3 className="h-5 w-5 mr-2" />
-                    Final Version {latestEdit && `(v${latestEdit.version})`}
-                  </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    {!isEditing ? (
-                      <Button
-                        onClick={() => setIsEditing(true)}
-                        variant="outline"
-                        size="sm"
-                        className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                      >
-                        <Edit3 className="h-4 w-4 mr-2" />
-                        Edit
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          onClick={() => {
-                            setIsEditing(false);
-                            setEditedContent(currentContent);
-                            setEditComment("");
-                          }}
-                          variant="outline"
-                          size="sm"
-                          className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleSave}
-                          disabled={saveEditMutation.isPending}
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <Save className="h-4 w-4 mr-2" />
-                          {saveEditMutation.isPending ? "Saving..." : "Save"}
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {isEditing ? (
-                  <>
-                    <Textarea
-                      value={editedContent}
-                      onChange={(e) => setEditedContent(e.target.value)}
-                      placeholder="Edit the obituary content..."
-                      className="min-h-96 bg-gray-700 border-gray-600 text-gray-100 resize-none"
-                    />
-                    <Textarea
-                      value={editComment}
-                      onChange={(e) => setEditComment(e.target.value)}
-                      placeholder="Add a comment about your changes (optional)..."
-                      className="h-20 bg-gray-700 border-gray-600 text-gray-100"
-                    />
-                  </>
-                ) : (
-                  <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
-                    <div className="whitespace-pre-wrap text-gray-200 leading-relaxed">
-                      {currentContent}
-                    </div>
-                  </ScrollArea>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Version History */}
-            {edits.length > 0 && (
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Version History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {edits.map((edit) => (
-                      <div key={edit.id} className="border border-gray-600 rounded p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <Badge variant="outline" className="border-gray-600 text-gray-300">
-                            Version {edit.version}
-                          </Badge>
-                          <span className="text-sm text-gray-400">
-                            {new Date(edit.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                        {edit.editComment && (
-                          <p className="text-gray-300 text-sm">{edit.editComment}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="feedback" className="space-y-4">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Survey Responses</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-96 w-full">
-                  <div className="space-y-4">
-                    {review.surveyResponses && formatSurveyResponses(review.surveyResponses)}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-
-            {review.additionalFeedback && (
-              <Card className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white">AI Feedback</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="whitespace-pre-wrap text-gray-200 leading-relaxed">
-                    {review.additionalFeedback}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
-
-        {/* Status Information */}
+        {/* Main Content Box */}
         <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="text-gray-400">Created:</span>
-                <span className="text-gray-200 ml-2">
-                  {new Date(review.createdAt).toLocaleString()}
-                </span>
+          <CardHeader>
+            <CardTitle className="text-white flex items-center space-x-2">
+              <FileText className="h-5 w-5" />
+              <span>Final Obituary Content</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
+              <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
+                {currentContent || "No content available"}
               </div>
-              {review.processedAt && (
-                <div>
-                  <span className="text-gray-400">Processed:</span>
-                  <span className="text-gray-200 ml-2">
-                    {new Date(review.processedAt).toLocaleString()}
-                  </span>
-                </div>
-              )}
-              {review.isPublishedToSystem && (
-                <div>
-                  <span className="text-gray-400">Status:</span>
-                  <Badge className="ml-2 bg-green-600">Published to System</Badge>
-                </div>
+            </ScrollArea>
+            
+            {/* Action Buttons under content */}
+            <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-600">
+              <Button
+                variant="outline"
+                onClick={downloadAsDoc}
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+              {!review.isPublishedToSystem && (
+                <Button
+                  onClick={() => handlePublish()}
+                  disabled={publishMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {publishMutation.isPending ? "Publishing..." : "Publish to System"}
+                </Button>
               )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Collapsible Obituary Feedback Section */}
+        <Collapsible open={feedbackOpen} onOpenChange={setFeedbackOpen}>
+          <CollapsibleTrigger asChild>
+            <Card className="bg-gray-800 border-gray-700 cursor-pointer hover:bg-gray-750 transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white flex items-center space-x-2">
+                    <AlertTriangle className="h-5 w-5" />
+                    <span>Obituary Feedback</span>
+                  </CardTitle>
+                  <div className="flex items-center space-x-2">
+                    {(positivePhrases.length > 0 || phrasesToImprove.length > 0) && (
+                      <Badge variant="outline" className="border-gray-600 text-gray-300">
+                        {positivePhrases.length + phrasesToImprove.length} insights
+                      </Badge>
+                    )}
+                    {feedbackOpen ? (
+                      <ChevronUp className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4">
+            
+            {/* Phrase Feedback */}
+            {(positivePhrases.length > 0 || phrasesToImprove.length > 0) && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Positive Phrases */}
+                {positivePhrases.length > 0 && (
+                  <Card className="bg-gray-800 border-gray-700">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-green-400 flex items-center space-x-2 text-lg">
+                        <ThumbsUp className="h-4 w-4" />
+                        <span>We liked these phrases</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {positivePhrases.map((phrase, index) => (
+                        <div key={index} className="p-3 bg-green-900/20 border border-green-700/30 rounded-lg">
+                          <p className="text-gray-100 text-sm italic">"{phrase}"</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+                
+                {/* Phrases to Improve */}
+                {phrasesToImprove.length > 0 && (
+                  <Card className="bg-gray-800 border-gray-700">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-orange-400 flex items-center space-x-2 text-lg">
+                        <Edit3 className="h-4 w-4" />
+                        <span>We'd like to improve these phrases</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      {phrasesToImprove.map((phrase, index) => (
+                        <div key={index} className="p-3 bg-orange-900/20 border border-orange-700/30 rounded-lg">
+                          <p className="text-gray-100 text-sm italic">"{phrase}"</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {/* General Feedback */}
+            {review.additionalFeedback && (
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">General Feedback</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-100 leading-relaxed">{review.additionalFeedback}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Survey Responses */}
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">Survey Responses</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {Object.entries(review.surveyResponses).map(([key, value]) => (
+                  <div key={key} className="border-b border-gray-600 pb-3 last:border-b-0">
+                    <p className="text-sm font-medium text-gray-300 mb-1">
+                      {getSurveyQuestionText(key)}
+                    </p>
+                    <p className="text-gray-100">{String(value)}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
-    </div>
-  );
-}
+    );
+  }
