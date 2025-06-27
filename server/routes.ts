@@ -2318,3 +2318,43 @@ async function initializeDefaultQuestions() {
     console.error("Error initializing questions:", error);
   }
 }
+
+async function initializeDefaultApiPricing() {
+  try {
+    const existingPricing = await storage.getApiPricing();
+    
+    if (existingPricing.length === 0) {
+      const defaultPricing = [
+        {
+          provider: 'claude',
+          model: 'claude-3-5-sonnet-20241022',
+          inputCostPer1M: '3.000000',
+          outputCostPer1M: '15.000000',
+          isActive: true
+        },
+        {
+          provider: 'openai',
+          model: 'gpt-4o',
+          inputCostPer1M: '10.000000',
+          outputCostPer1M: '30.000000',
+          isActive: true
+        },
+        {
+          provider: 'openai',
+          model: 'gpt-4o-mini',
+          inputCostPer1M: '0.150000',
+          outputCostPer1M: '0.600000',
+          isActive: true
+        }
+      ];
+
+      for (const pricing of defaultPricing) {
+        await storage.createApiPricing(pricing);
+      }
+      
+      console.log("Default API pricing created");
+    }
+  } catch (error) {
+    console.error("Error initializing API pricing:", error);
+  }
+}

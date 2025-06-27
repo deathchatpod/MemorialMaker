@@ -127,9 +127,15 @@ EDITED_VERSION:
         }]
       });
 
-      const responseText = response.content[0].text;
-      const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
-      const estimatedCost = this.calculateCost(response.usage.input_tokens, response.usage.output_tokens);
+      const responseText = (response.content[0] as any).text;
+      const inputTokens = response.usage.input_tokens;
+      const outputTokens = response.usage.output_tokens;
+      const tokensUsed = inputTokens + outputTokens;
+      
+      // Calculate separate input and output costs
+      const inputCost = ClaudeService.calculateInputCost(inputTokens);
+      const outputCost = ClaudeService.calculateOutputCost(outputTokens);
+      const estimatedCost = inputCost + outputCost;
 
       // Parse response
       const { feedback, editedText } = this.parseClaudeResponse(responseText);
@@ -137,8 +143,12 @@ EDITED_VERSION:
       // Update API call record with success
       if (apiCallId) {
         await storage.updateApiCall(apiCallId, {
+          inputTokens,
+          outputTokens,
           tokensUsed,
-          estimatedCost,
+          inputCost: inputCost.toString(),
+          outputCost: outputCost.toString(),
+          estimatedCost: estimatedCost.toString(),
           status: 'success',
           responseTime: Date.now() - startTime,
         });
@@ -188,6 +198,14 @@ EDITED_VERSION:
     const inputCost = (inputTokens / 1000) * TOKEN_COST_PER_1K.input;
     const outputCost = (outputTokens / 1000) * TOKEN_COST_PER_1K.output;
     return Number((inputCost + outputCost).toFixed(4));
+  }
+
+  private static calculateInputCost(inputTokens: number): number {
+    return Number(((inputTokens / 1000) * TOKEN_COST_PER_1K.input).toFixed(6));
+  }
+
+  private static calculateOutputCost(outputTokens: number): number {
+    return Number(((outputTokens / 1000) * TOKEN_COST_PER_1K.output).toFixed(6));
   }
 
   // Retry logic with exponential backoff
