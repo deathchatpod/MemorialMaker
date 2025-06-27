@@ -197,9 +197,8 @@ export default function ObituaryReviewResults() {
       return response.json();
     },
     refetchInterval: (data) => {
-      // Poll every 500ms if status is pending or processing for faster updates
-      // Continue polling for a few more cycles after completion to ensure UI updates
-      return data?.status === 'pending' || data?.status === 'processing' ? 500 : 2000;
+      // Only poll if status is pending or processing - stop polling when completed
+      return (data?.status === 'pending' || data?.status === 'processing') ? 2000 : false;
     },
     refetchOnWindowFocus: true,
     refetchOnMount: true,
