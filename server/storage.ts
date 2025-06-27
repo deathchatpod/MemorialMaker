@@ -19,10 +19,6 @@ import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
-  // Universal User Methods
-  getUserByUsername(username: string): Promise<any | undefined>;
-  createUser(user: any): Promise<any>;
-
   // Admin Users
   getAdminUser(id: number): Promise<AdminUser | undefined>;
   getAdminUserByEmail(email: string): Promise<AdminUser | undefined>;
@@ -199,37 +195,6 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // Universal User Methods
-  async getUserByUsername(username: string): Promise<any | undefined> {
-    // Check admin users first
-    const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.email, username));
-    if (adminUser) {
-      return { ...adminUser, userType: 'admin' };
-    }
-
-    // Check funeral homes
-    const [funeralHome] = await db.select().from(funeralHomes).where(eq(funeralHomes.email, username));
-    if (funeralHome) {
-      return { ...funeralHome, userType: 'funeral_home', username: funeralHome.email };
-    }
-
-    // Check employees
-    const [employee] = await db.select().from(employees).where(eq(employees.email, username));
-    if (employee) {
-      return { ...employee, userType: 'employee', username: employee.email };
-    }
-
-    return undefined;
-  }
-
-  async createUser(user: any): Promise<any> {
-    if (user.userType === 'admin') {
-      const [newUser] = await db.insert(adminUsers).values(user).returning();
-      return { ...newUser, userType: 'admin' };
-    }
-    // Add other user types as needed
-    throw new Error('User type not supported for creation');
-  }
   // Admin Users
   async getAdminUser(id: number): Promise<AdminUser | undefined> {
     const [user] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
