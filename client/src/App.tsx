@@ -8,6 +8,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Skull } from "lucide-react";
+import { AccessibilityProvider } from "@/components/AccessibilityProvider";
+import { AccessibilityToolbar } from "@/components/AccessibilityToolbar";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard-fixed";
 import Login from "./pages/login";
@@ -256,15 +258,23 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <div className="min-h-screen bg-gray-900">
-          <a 
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded focus:shadow-lg transition-all"
-          >
-            Skip to main content
-          </a>
+        <AccessibilityProvider>
+          <div className="min-h-screen bg-gray-900">
+            <a 
+              href="#main-content"
+              className="skip-link"
+            >
+              Skip to main content
+            </a>
+            <a 
+              href="#accessibility-tools"
+              className="skip-link"
+            >
+              Skip to accessibility tools
+            </a>
 
-          <GlobalHeader />
+            <GlobalHeader />
+            <AccessibilityToolbar />
 
           <main id="main-content" role="main">
             <Router />
@@ -272,6 +282,7 @@ function App() {
 
           <Toaster />
         </div>
+        </AccessibilityProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
