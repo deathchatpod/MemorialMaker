@@ -122,7 +122,7 @@ export default function Dashboard() {
   ];
 
   const adminOnlyItems = [
-    { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' },
+    { id: 'prompt-templates', label: 'Prompt Templates', icon: 'fas fa-code' },
     { id: 'team-management', label: 'Team Management', icon: 'fas fa-users' }
   ];
 
@@ -193,7 +193,7 @@ export default function Dashboard() {
               {activeSection === 'finalspaces' && 'FinalSpaces'}
               {activeSection === 'surveys' && 'Platform Surveys'}
               {activeSection === 'pre-need' && 'Pre Need Evaluation'}
-              {activeSection === 'prompts' && 'Prompt Templates'}
+              {activeSection === 'prompt-templates' && 'Prompt Templates'}
               {activeSection === 'team-management' && 'Team Management'}
               {activeSection === 'account' && 'My Account'}
             </h1>
