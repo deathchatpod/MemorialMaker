@@ -756,20 +756,6 @@ export class DatabaseStorage implements IStorage {
           )
         );
 
-      // Apply filters
-      if (filters?.funeralHomeId) {
-        obituaryQuery = obituaryQuery.where(eq(obituaries.funeralHomeId, filters.funeralHomeId));
-      }
-      if (filters?.dateFrom) {
-        obituaryQuery = obituaryQuery.where(gte(obituaries.createdAt, new Date(filters.dateFrom)));
-      }
-      if (filters?.dateTo) {
-        obituaryQuery = obituaryQuery.where(lte(obituaries.createdAt, new Date(filters.dateTo)));
-      }
-      if (filters?.status) {
-        obituaryQuery = obituaryQuery.where(eq(obituaries.status, filters.status));
-      }
-
       searchResults.obituaries = await obituaryQuery.orderBy(desc(obituaries.createdAt));
     }
 
@@ -794,20 +780,6 @@ export class DatabaseStorage implements IStorage {
           )
         );
 
-      // Apply filters
-      if (filters?.funeralHomeId) {
-        memorialQuery = memorialQuery.where(eq(finalSpaces.funeralHomeId, filters.funeralHomeId));
-      }
-      if (filters?.dateFrom) {
-        memorialQuery = memorialQuery.where(gte(finalSpaces.createdAt, new Date(filters.dateFrom)));
-      }
-      if (filters?.dateTo) {
-        memorialQuery = memorialQuery.where(lte(finalSpaces.createdAt, new Date(filters.dateTo)));
-      }
-      if (filters?.status) {
-        memorialQuery = memorialQuery.where(eq(finalSpaces.status, filters.status));
-      }
-
       searchResults.memorials = await memorialQuery.orderBy(desc(finalSpaces.createdAt));
     }
 
@@ -815,30 +787,10 @@ export class DatabaseStorage implements IStorage {
     return searchResults;
   }
 
-  // Missing getSurveyResponsesByType implementation
   async getSurveyResponsesByType(responseType: string, userId?: number, userType?: string, funeralHomeId?: number): Promise<SurveyResponse[]> {
-    let query = db.select().from(surveyResponses).where(eq(surveyResponses.responseType, responseType));
-
-    if (userId && userType) {
-      query = query.where(
-        and(
-          eq(surveyResponses.completedById, userId),
-          eq(surveyResponses.completedByType, userType)
-        )
-      );
-    }
-
-    if (funeralHomeId && userType === 'funeral_home') {
-      // For funeral homes, get their own responses and employee responses
-      query = db.select().from(surveyResponses)
-        .where(
-          and(
-            eq(surveyResponses.responseType, responseType),
-            or(
-              and(
-                eq(surveyResponses.completedById, userId!),
-                eq(surveyResponses.completedByType, 'funeral_home')
-              ),
+    const query = db.select().from(surveyResponses).where(eq(surveyResponses.responseType, responseType));
+    return query.orderBy(desc(surveyResponses.createdAt));
+  }
               eq(surveyResponses.completedByType, 'employee')
             )
           )
@@ -875,6 +827,49 @@ export class DatabaseStorage implements IStorage {
       .where(eq(obituaryReviews.id, id))
       .returning();
     return updatedReview;
+  }
+
+  async getObituaryReview(id: number): Promise<ObituaryReview | undefined> {
+    const [review] = await db.select().from(obituaryReviews).where(eq(obituaryReviews.id, id));
+    return review || undefined;
+  }
+
+  async deleteObituaryReview(id: number): Promise<void> {
+    await db.delete(obituaryReviews).where(eq(obituaryReviews.id, id));
+  }
+
+  async getObituaryReviewEdits(reviewId: number): Promise<ObituaryReviewEdit[]> {
+    return db.select().from(obituaryReviewEdits).where(eq(obituaryReviewEdits.reviewId, reviewId));
+  }
+
+  async createObituaryReviewEdit(edit: InsertObituaryReviewEdit): Promise<ObituaryReviewEdit> {
+    const [newEdit] = await db.insert(obituaryReviewEdits).values(edit).returning();
+    return newEdit;
+  }
+
+  async publishObituaryReviewToSystem(reviewId: number, userId: number, userType: string): Promise<Obituary> {
+    const review = await this.getObituaryReview(reviewId);
+    if (!review) {
+      throw new Error('Review not found');
+    }
+
+    const obituaryData: InsertObituary = {
+      funeralHomeId: review.funeralHomeId,
+      createdById: userId,
+      createdByType: userType,
+      fullName: review.originalFilename.replace(/\.[^/.]+$/, ""),
+      formData: review.surveyResponses || {},
+      status: 'generated'
+    };
+
+    const obituary = await this.createObituary(obituaryData);
+    
+    await this.updateObituaryReview(reviewId, {
+      isPublishedToSystem: true,
+      finalObituaryId: obituary.id
+    });
+
+    return obituary;
   }
 
   // API Calls methods

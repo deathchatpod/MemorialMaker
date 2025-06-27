@@ -2250,7 +2250,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: review.updatedAt,
           uploadedBy: review.uploadedByName,
           currentVersion: review.currentVersion,
-          documentMetadata: review.documentMetadata ? JSON.parse(review.documentMetadata) : null
+          documentMetadata: review.documentMetadata ? JSON.parse(review.documentMetadata as string) : null
         },
         timeline: [
           {
