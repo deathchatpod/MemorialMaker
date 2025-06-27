@@ -188,7 +188,7 @@ export default function ObituaryReviewUpload() {
 
       // Close preview and redirect to review results page
       setIsPreviewOpen(false);
-      setLocation(`/obituary-review-results/${result.id}`);
+      setLocation(`/obituary-review/${result.id}/results`);
 
     } catch (error) {
       console.error('Submission error:', error);
