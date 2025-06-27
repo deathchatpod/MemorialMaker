@@ -1919,7 +1919,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parents: []
         };
 
-        const obituaryData: InsertObituary = {
+        const obituaryData = {
           funeralHomeId: review.funeralHomeId || user.id,
           createdById: user.id,
           createdByType: user.userType,

@@ -917,6 +917,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async publishObituaryReviewToSystem(reviewId: number, userId: number, userType: string): Promise<Obituary> {
+    console.log('publishObituaryReviewToSystem called with:', { reviewId, userId, userType });
+    
     // Get the review and its latest version
     const review = await this.getObituaryReview(reviewId);
     if (!review) {
@@ -931,15 +933,31 @@ export class DatabaseStorage implements IStorage {
     const responses = review.surveyResponses as any;
     const deceasedName = responses?.['Full Name'] || responses?.['full_name'] || 'Unknown';
 
-    // Create obituary in main system
+    // Create obituary in main system with proper formData
+    const formData = {
+      fullName: deceasedName,
+      reviewContent: finalContent,
+      originalFilename: review.originalFilename,
+      extractedFromReview: true,
+      tone: "respectful",
+      traits: [],
+      hobbies: [],
+      children: [],
+      grandchildren: [],
+      siblings: [],
+      parents: []
+    };
+
     const obituaryData: InsertObituary = {
       funeralHomeId: review.funeralHomeId,
       createdById: userId,
       createdByType: userType,
       fullName: deceasedName,
-      status: 'completed',
-      // Add other fields as needed from survey responses
+      formData: formData,
+      status: 'completed'
     };
+
+    console.log('Storage publishObituaryReviewToSystem sending:', JSON.stringify(obituaryData, null, 2));
 
     const newObituary = await this.createObituary(obituaryData);
 
