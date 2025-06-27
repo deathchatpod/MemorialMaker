@@ -87,15 +87,29 @@ export default function Dashboard() {
     }
   };
 
-  const menuItems = [
+  const isAdmin = userTypeParam === 'admin';
+  
+  const allMenuItems = [
     { id: 'obituaries', label: 'Obituaries', icon: FileText },
     { id: 'finalspaces', label: 'FinalSpaces', icon: Heart },
     { id: 'collaborations', label: 'My Collaborations', icon: Users },
     { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
     { id: 'evaluations', label: 'Pre Need Evaluation', icon: BarChart3 },
+    { id: 'prompts', label: 'Prompt Templates', icon: FileText },
     { id: 'team', label: 'Team Management', icon: Users },
     { id: 'account', label: 'My Account', icon: Users }
   ];
+
+  const regularMenuItems = [
+    { id: 'obituaries', label: 'Obituaries', icon: FileText },
+    { id: 'finalspaces', label: 'FinalSpaces', icon: Heart },
+    { id: 'collaborations', label: 'My Collaborations', icon: Users },
+    { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
+    { id: 'evaluations', label: 'Pre Need Evaluation', icon: BarChart3 },
+    { id: 'account', label: 'My Account', icon: Users }
+  ];
+
+  const menuItems = isAdmin ? allMenuItems : regularMenuItems;
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -146,6 +160,7 @@ export default function Dashboard() {
               {activeSection === 'finalspaces' && 'FinalSpaces'}
               {activeSection === 'surveys' && 'Platform Surveys'}
               {activeSection === 'evaluations' && 'Pre Need Evaluation'}
+              {activeSection === 'prompts' && 'Prompt Templates'}
               {activeSection === 'team' && 'Team Management'}
               {activeSection === 'account' && 'My Account'}
             </h1>
@@ -324,6 +339,11 @@ export default function Dashboard() {
             {/* Pre Need Evaluation Section */}
             {activeSection === 'evaluations' && (
               <PreNeedEvaluationTab userType={userTypeParam} userId={userIdParam} />
+            )}
+
+            {/* Prompt Templates Section */}
+            {activeSection === 'prompts' && isAdmin && (
+              <PromptTemplates />
             )}
 
             {/* Team Management Section */}

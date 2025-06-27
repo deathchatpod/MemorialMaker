@@ -110,15 +110,30 @@ export default function Dashboard() {
     setCurrentUser(newUser);
   }, [location]);
 
-  // All menu items available to all user types
-  const menuItems = [
+  // Menu items - show all for admin, subset for others
+  const isAdmin = userTypeParam === 'admin' || currentUser.userType === 'admin';
+  
+  const allMenuItems = [
     { id: 'obituaries', label: 'Obituaries', icon: 'fas fa-file-alt' },
     { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
     { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
     { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-poll-h' },
     { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-file-medical' },
-    { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' }
+    { id: 'prompts', label: 'Prompt Templates', icon: 'fas fa-code' },
+    { id: 'team-management', label: 'Team Management', icon: 'fas fa-users' },
+    { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' }
   ];
+
+  const regularMenuItems = [
+    { id: 'obituaries', label: 'Obituaries', icon: 'fas fa-file-alt' },
+    { id: 'finalspaces', label: 'FinalSpaces', icon: 'fas fa-heart' },
+    { id: 'collaborations', label: 'My Collaborations', icon: 'fas fa-handshake' },
+    { id: 'surveys', label: 'Platform Surveys', icon: 'fas fa-poll-h' },
+    { id: 'pre-need', label: 'Pre Need Evaluation', icon: 'fas fa-file-medical' },
+    { id: 'account', label: 'My Account', icon: 'fas fa-user-cog' }
+  ];
+
+  const menuItems = isAdmin ? allMenuItems : regularMenuItems;
 
   // Restore tab state from localStorage
   const [activeSection, setActiveSection] = useState(() => {
@@ -566,12 +581,12 @@ export default function Dashboard() {
               />
             )}
 
+            {activeSection === 'prompts' && isAdmin && <PromptTemplates />}
             {activeSection === 'team-management' && <TeamManagement key="team-management" />}
             {activeSection === 'account' && <AccountInformation />}
-            {activeSection === 'prompts' && <PromptTemplates />}
 
             {/* Default placeholder for other sections */}
-            {!['obituaries', 'collaborations', 'finalspaces', 'surveys', 'pre-need', 'team-management', 'account', 'prompts'].includes(activeSection) && (
+            {!['obituaries', 'collaborations', 'finalspaces', 'surveys', 'pre-need', 'prompts', 'team-management', 'account'].includes(activeSection) && (
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center py-12">
