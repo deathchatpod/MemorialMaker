@@ -270,11 +270,19 @@ export default function Dashboard() {
                   )
                 }
               ]}
-              createButton={{
-                label: "Create New Obituary",
-                icon: Plus,
-                onClick: () => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)
-              }}
+              createButtons={[
+                {
+                  label: "Create New Obituary",
+                  icon: Plus,
+                  onClick: () => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)
+                },
+                {
+                  label: "Upload Existing Obituary for Review",
+                  icon: FileText,
+                  variant: "outline" as const,
+                  onClick: () => setLocation(`/obituary-review/upload?userType=${userTypeParam}&userId=${userIdParam}`)
+                }
+              ]}
               emptyState={{
                 title: 'No obituaries found',
                 description: 'Create your first obituary to get started.'
@@ -438,6 +446,13 @@ export default function Dashboard() {
           {/* Pre Need Evaluation Section */}
           {activeSection === 'pre-need' && (
             <PreNeedEvaluationTab />
+          )}
+
+          {/* Prompt Templates Section */}
+          {activeSection === 'templates' && currentUser.userType === 'admin' && (
+            <div className="space-y-6">
+              <PromptTemplates />
+            </div>
           )}
 
           {/* Team Management Section */}
