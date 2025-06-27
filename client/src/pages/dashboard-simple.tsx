@@ -65,7 +65,7 @@ export default function Dashboard() {
       {/* Sidebar */}
       <nav className="w-64 bg-gray-800 shadow-sm border-r border-gray-700" role="navigation" aria-label="Main navigation">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-white">Dashboard</h2>
+          <h2 className="text-xl font-bold text-white">Dashboard v2</h2>
           <p className="text-sm text-gray-300 mt-1">
             {currentUser.userType === 'admin' ? 'System Admin' : 
              currentUser.userType === 'funeral_home' ? 'Funeral Home' : 
