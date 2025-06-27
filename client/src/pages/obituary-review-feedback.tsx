@@ -76,7 +76,7 @@ export default function ObituaryReviewFeedback() {
                 onClick={() => setLocation('/dashboard')}
                 className="mt-4"
               >
-                Back to Dashboard
+                Return to Reviews
               </Button>
             </CardContent>
           </Card>
