@@ -107,8 +107,8 @@ export default function ObituaryReviewResults() {
       return response.json();
     },
     refetchInterval: (data) => {
-      // Poll every 2 seconds if status is pending or processing
-      return data?.status === 'pending' || data?.status === 'processing' ? 2000 : false;
+      // Poll every 1 second if status is pending or processing for faster updates
+      return data?.status === 'pending' || data?.status === 'processing' ? 1000 : false;
     },
   });
 
@@ -374,7 +374,7 @@ export default function ObituaryReviewResults() {
           <CardHeader>
             <CardTitle className="text-white flex items-center space-x-2">
               <FileText className="h-5 w-5" />
-              <span>Final Obituary Content</span>
+              <span>Obituary Content</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

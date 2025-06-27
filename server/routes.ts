@@ -96,10 +96,10 @@ Rules:
 
 Respond ONLY with valid JSON, no other text.`;
 
-    // Call Claude API
+    // Call Claude API with reduced token limit for faster processing
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
-      max_tokens: 2000,
+      max_tokens: 1500,
       messages: [{
         role: "user",
         content: prompt
@@ -112,7 +112,15 @@ Respond ONLY with valid JSON, no other text.`;
     // Parse the structured JSON response
     let parsedResponse;
     try {
-      parsedResponse = JSON.parse(aiResponse);
+      // Clean the response - remove markdown code blocks if present
+      let cleanResponse = aiResponse.trim();
+      if (cleanResponse.startsWith('```json')) {
+        cleanResponse = cleanResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (cleanResponse.startsWith('```')) {
+        cleanResponse = cleanResponse.replace(/^```[a-z]*\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      parsedResponse = JSON.parse(cleanResponse);
     } catch (error) {
       console.error('Failed to parse JSON response, using fallback parsing:', error);
       // Fallback to old parsing method
