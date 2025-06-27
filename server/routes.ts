@@ -1157,7 +1157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/obituary-reviews/:id', requireAuth, async (req, res) => {
+  app.get('/api/obituary-reviews/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const review = await storage.getObituaryReview(id);
