@@ -190,9 +190,9 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-background memorial-dashboard">
+    <div className="flex min-h-screen bg-background memorial-dashboard">
       {/* Sidebar */}
-      <nav className="w-64 bg-card shadow-lg border-r border-border" role="navigation" aria-label="Dashboard navigation">
+      <nav className="w-64 bg-card shadow-lg border-r border-border flex-shrink-0" role="navigation" aria-label="Dashboard navigation">
         <div className="p-6">
           <div className="flex items-center mb-8">
             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
@@ -232,10 +232,11 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-6 bg-background" role="main">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
-            {activeSection === 'obituaries' && (
+      <main className="flex-1 overflow-y-auto bg-background" role="main">
+        <div className="p-6">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+              {activeSection === 'obituaries' && (
               <>
                 <FileText className="w-7 h-7 text-primary" />
                 Obituaries
@@ -849,6 +850,7 @@ export default function Dashboard() {
               <AccountInformation />
             </div>
           )}
+          </div>
         </div>
       </main>
     </div>
