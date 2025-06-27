@@ -67,50 +67,101 @@ export default function ObituaryReviewResults() {
     }
   }, [review, edits, editedContent]);
 
-  // Save edit mutation
+  // Enhanced save edit mutation with comprehensive validation
   const saveEditMutation = useMutation({
     mutationFn: async ({ editedContent, editComment }: { editedContent: string; editComment?: string }) => {
-      return apiRequest(`/api/obituary-reviews/${id}/edits`, {
+      return apiRequest(`/api/obituary-reviews/${id}/save`, {
         method: "POST",
-        body: { editedContent, editComment },
+        body: JSON.stringify({ editedContent, editComment }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Changes Saved",
-        description: "Your edits have been saved successfully.",
+        description: `Version ${data.version} saved successfully.`,
       });
       setIsEditing(false);
       setEditComment("");
+      queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}/edits`] });
     },
     onError: (error) => {
       toast({
         title: "Save Failed",
-        description: "Failed to save your changes. Please try again.",
+        description: error.message || "Failed to save your changes. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  // Publish to system mutation
+  // Enhanced publish to system mutation with options
   const publishMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ publishToSystem = true, createMemorial = false }: { publishToSystem?: boolean; createMemorial?: boolean }) => {
       return apiRequest(`/api/obituary-reviews/${id}/publish`, {
         method: "POST",
+        body: JSON.stringify({ publishToSystem, createMemorial }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
     },
-    onSuccess: (newObituary) => {
+    onSuccess: (data) => {
       toast({
         title: "Published Successfully",
-        description: "Obituary has been published to the main system.",
+        description: data.memorial ? "Obituary published and memorial created." : "Obituary published to the main system.",
       });
       queryClient.invalidateQueries({ queryKey: [`/api/obituary-reviews/${id}`] });
     },
     onError: (error) => {
       toast({
         title: "Publish Failed",
-        description: "Failed to publish obituary. Please try again.",
+        description: error.message || "Failed to publish obituary. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Export mutation with format options
+  const exportMutation = useMutation({
+    mutationFn: async ({ format, includeHistory }: { format: 'docx' | 'pdf'; includeHistory?: boolean }) => {
+      const response = await fetch(`/api/obituary-reviews/${id}/export`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // if using token auth
+        },
+        body: JSON.stringify({ format, includeHistory })
+      });
+
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const filename = response.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `obituary.${format}`;
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Export Complete",
+        description: "Document downloaded successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Export Failed",
+        description: error.message || "Failed to export document. Please try again.",
         variant: "destructive",
       });
     },
@@ -129,10 +180,14 @@ export default function ObituaryReviewResults() {
     saveEditMutation.mutate({ editedContent, editComment });
   };
 
-  const handlePublish = () => {
-    if (window.confirm("Are you sure you want to publish this obituary to the main system? This action cannot be undone.")) {
-      publishMutation.mutate();
+  const handlePublish = (options: { publishToSystem?: boolean; createMemorial?: boolean } = {}) => {
+    if (window.confirm("Are you sure you want to publish this obituary? This action cannot be undone.")) {
+      publishMutation.mutate(options);
     }
+  };
+
+  const handleExport = (format: 'docx' | 'pdf', includeHistory: boolean = false) => {
+    exportMutation.mutate({ format, includeHistory });
   };
 
   const downloadAsDoc = () => {
