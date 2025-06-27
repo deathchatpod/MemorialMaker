@@ -168,6 +168,18 @@ export interface IStorage {
   getObituaryCollaborationsByEmail(email: string): Promise<any[]>;
   getFinalSpaceCollaborationsByEmail(email: string): Promise<any[]>;
   
+  // Community Contributions
+  getCommunityContributions(finalSpaceId: number): Promise<CommunityContribution[]>;
+  getCommunityContribution(id: number): Promise<CommunityContribution | undefined>;
+  createCommunityContribution(contribution: InsertCommunityContribution): Promise<CommunityContribution>;
+  updateCommunityContribution(id: number, updates: Partial<CommunityContribution>): Promise<CommunityContribution>;
+  deleteCommunityContribution(id: number): Promise<void>;
+  
+  // Community Contribution Comments
+  getCommunityContributionComments(contributionId: number): Promise<CommunityContributionComment[]>;
+  createCommunityContributionComment(comment: InsertCommunityContributionComment): Promise<CommunityContributionComment>;
+  deleteCommunityContributionComment(id: number): Promise<void>;
+  
   // Search functionality
   searchContent(query: string, filters?: {
     type?: 'obituaries' | 'memorials' | 'all';
@@ -1011,6 +1023,68 @@ export class DatabaseStorage implements IStorage {
     
     // Then delete the obituary review
     await db.delete(obituaryReviews).where(eq(obituaryReviews.id, id));
+  }
+
+  // Community Contributions
+  async getCommunityContributions(finalSpaceId: number): Promise<CommunityContribution[]> {
+    return await db
+      .select()
+      .from(communityContributions)
+      .where(and(
+        eq(communityContributions.finalSpaceId, finalSpaceId),
+        eq(communityContributions.isVisible, true)
+      ))
+      .orderBy(desc(communityContributions.createdAt));
+  }
+
+  async getCommunityContribution(id: number): Promise<CommunityContribution | undefined> {
+    const [contribution] = await db
+      .select()
+      .from(communityContributions)
+      .where(eq(communityContributions.id, id));
+    return contribution || undefined;
+  }
+
+  async createCommunityContribution(contribution: InsertCommunityContribution): Promise<CommunityContribution> {
+    const [newContribution] = await db
+      .insert(communityContributions)
+      .values(contribution)
+      .returning();
+    return newContribution;
+  }
+
+  async updateCommunityContribution(id: number, updates: Partial<CommunityContribution>): Promise<CommunityContribution> {
+    const [updatedContribution] = await db
+      .update(communityContributions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(communityContributions.id, id))
+      .returning();
+    return updatedContribution;
+  }
+
+  async deleteCommunityContribution(id: number): Promise<void> {
+    await db.delete(communityContributions).where(eq(communityContributions.id, id));
+  }
+
+  // Community Contribution Comments
+  async getCommunityContributionComments(contributionId: number): Promise<CommunityContributionComment[]> {
+    return await db
+      .select()
+      .from(communityContributionComments)
+      .where(eq(communityContributionComments.contributionId, contributionId))
+      .orderBy(communityContributionComments.createdAt);
+  }
+
+  async createCommunityContributionComment(comment: InsertCommunityContributionComment): Promise<CommunityContributionComment> {
+    const [newComment] = await db
+      .insert(communityContributionComments)
+      .values(comment)
+      .returning();
+    return newComment;
+  }
+
+  async deleteCommunityContributionComment(id: number): Promise<void> {
+    await db.delete(communityContributionComments).where(eq(communityContributionComments.id, id));
   }
 }
 

@@ -2297,6 +2297,177 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .replace(/(^-|-$)/g, '') + '-' + Date.now();
   };
 
+  // Community Contributions API endpoints
+  app.get("/api/final-spaces/:id/community-contributions", async (req, res) => {
+    try {
+      const finalSpaceId = parseInt(req.params.id);
+      const contributions = await storage.getCommunityContributions(finalSpaceId);
+      
+      // Include comments for each contribution
+      const contributionsWithComments = await Promise.all(
+        contributions.map(async (contribution) => {
+          const comments = await storage.getCommunityContributionComments(contribution.id);
+          return { ...contribution, comments };
+        })
+      );
+      
+      res.json(contributionsWithComments);
+    } catch (error) {
+      console.error("Error fetching community contributions:", error);
+      res.status(500).json({ error: "Failed to fetch community contributions" });
+    }
+  });
+
+  app.post("/api/final-spaces/:id/community-contributions", upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'audio', maxCount: 1 }
+  ]), validateFileUpload, async (req, res) => {
+    try {
+      const finalSpaceId = parseInt(req.params.id);
+      const { 
+        contributionType, 
+        contributorId, 
+        contributorType, 
+        contributorName, 
+        contributorEmail,
+        youtubeUrl,
+        textContent,
+        position 
+      } = req.body;
+
+      // Validate contribution type
+      if (!['image', 'audio', 'youtube', 'text'].includes(contributionType)) {
+        return res.status(400).json({ error: 'Invalid contribution type' });
+      }
+
+      let mediaPath = null;
+      let originalFileName = null;
+
+      // Handle file uploads
+      if (req.files) {
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+        if (contributionType === 'image' && files.image) {
+          mediaPath = files.image[0].path;
+          originalFileName = files.image[0].originalname;
+        } else if (contributionType === 'audio' && files.audio) {
+          mediaPath = files.audio[0].path;
+          originalFileName = files.audio[0].originalname;
+        }
+      }
+
+      const contributionData = {
+        finalSpaceId,
+        contributorId: parseInt(contributorId),
+        contributorType,
+        contributorName,
+        contributorEmail,
+        contributionType,
+        mediaPath,
+        youtubeUrl: contributionType === 'youtube' ? youtubeUrl : null,
+        textContent: contributionType === 'text' ? textContent : null,
+        originalFileName,
+        position: position ? JSON.parse(position) : {},
+      };
+
+      const contribution = await storage.createCommunityContribution(contributionData);
+      res.json(contribution);
+    } catch (error) {
+      console.error("Error creating community contribution:", error);
+      res.status(500).json({ error: "Failed to create community contribution" });
+    }
+  });
+
+  app.put("/api/community-contributions/:id", requireAuth, async (req, res) => {
+    try {
+      const contributionId = parseInt(req.params.id);
+      const updates = req.body;
+      const user = req.user as any;
+
+      const contribution = await storage.getCommunityContribution(contributionId);
+      if (!contribution) {
+        return res.status(404).json({ error: 'Contribution not found' });
+      }
+
+      // Check if user has permission to update (creator or admin)
+      const hasPermission = contribution.contributorId === user.id || user.userType === 'admin';
+      if (!hasPermission) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      const updatedContribution = await storage.updateCommunityContribution(contributionId, updates);
+      res.json(updatedContribution);
+    } catch (error) {
+      console.error("Error updating community contribution:", error);
+      res.status(500).json({ error: "Failed to update community contribution" });
+    }
+  });
+
+  app.delete("/api/community-contributions/:id", requireAuth, async (req, res) => {
+    try {
+      const contributionId = parseInt(req.params.id);
+      const user = req.user as any;
+
+      const contribution = await storage.getCommunityContribution(contributionId);
+      if (!contribution) {
+        return res.status(404).json({ error: 'Contribution not found' });
+      }
+
+      // Check if user has permission to delete (creator or admin)
+      const hasPermission = contribution.contributorId === user.id || user.userType === 'admin';
+      if (!hasPermission) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      await storage.deleteCommunityContribution(contributionId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting community contribution:", error);
+      res.status(500).json({ error: "Failed to delete community contribution" });
+    }
+  });
+
+  app.post("/api/community-contributions/:id/comments", async (req, res) => {
+    try {
+      const contributionId = parseInt(req.params.id);
+      const { commenterName, commenterEmail, commentText } = req.body;
+
+      if (!commenterName || !commenterEmail || !commentText) {
+        return res.status(400).json({ error: 'Name, email, and comment text are required' });
+      }
+
+      const commentData = {
+        contributionId,
+        commenterName,
+        commenterEmail,
+        commentText,
+      };
+
+      const comment = await storage.createCommunityContributionComment(commentData);
+      res.json(comment);
+    } catch (error) {
+      console.error("Error creating comment:", error);
+      res.status(500).json({ error: "Failed to create comment" });
+    }
+  });
+
+  app.delete("/api/community-contribution-comments/:id", requireAuth, async (req, res) => {
+    try {
+      const commentId = parseInt(req.params.id);
+      const user = req.user as any;
+
+      // Only admin users can delete comments
+      if (user.userType !== 'admin') {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      await storage.deleteCommunityContributionComment(commentId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ error: "Failed to delete comment" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
