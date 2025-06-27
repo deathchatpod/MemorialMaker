@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Save, FileText, Edit3, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageCircle, RefreshCw } from "lucide-react";
+import { ChevronLeft, Save, FileText, Edit3, Edit, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageCircle, RefreshCw } from "lucide-react";
 
 interface ObituaryReview {
   id: number;
@@ -82,17 +82,13 @@ export default function ObituaryReviewResults() {
     localStorage.setItem(`obituary-feedback-${id}`, JSON.stringify(feedbackOpen));
   }, [feedbackOpen, id]);
 
-  // Fetch review data
-  const { data: review, isLoading: reviewLoading } = useQuery<ObituaryReview>({
-    queryKey: ["/api/obituary-reviews", id],
-    enabled: !!id,
-  });
+
 
   // Initialize edit text when review data loads
   useEffect(() => {
     if (review) {
-      setOriginalEditText(review.extractedContent || '');
-      setUpdatedEditText(review.reviewContent || '');
+      setOriginalEditText(review.extractedText || '');
+      setUpdatedEditText(review.improvedContent || '');
     }
   }, [review]);
 
@@ -161,21 +157,21 @@ export default function ObituaryReviewResults() {
   const handleTextChange = (textType: 'original' | 'updated', value: string) => {
     if (textType === 'original') {
       setOriginalEditText(value);
-      setHasUnsavedOriginal(value !== (review?.extractedContent || ''));
+      setHasUnsavedOriginal(value !== (review?.extractedText || ''));
     } else {
       setUpdatedEditText(value);
-      setHasUnsavedUpdated(value !== (review?.reviewContent || ''));
+      setHasUnsavedUpdated(value !== (review?.improvedContent || ''));
     }
   };
 
   const cancelEdit = (textType: 'original' | 'updated') => {
     if (textType === 'original') {
       setIsEditingOriginal(false);
-      setOriginalEditText(review?.extractedContent || '');
+      setOriginalEditText(review?.extractedText || '');
       setHasUnsavedOriginal(false);
     } else {
       setIsEditingUpdated(false);
-      setUpdatedEditText(review?.reviewContent || '');
+      setUpdatedEditText(review?.improvedContent || '');
       setHasUnsavedUpdated(false);
     }
   };
@@ -919,30 +915,129 @@ export default function ObituaryReviewResults() {
               </TabsList>
               
               <TabsContent value="original" className="mt-4">
-                <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
-                  <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
-                    {review.extractedText || "No original content available"}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-white">Original Obituary Text</h3>
+                    <div className="flex items-center space-x-2">
+                      {!isEditingOriginal ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditClick('original')}
+                          className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => cancelEdit('original')}
+                            className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveClick('original')}
+                            disabled={!hasUnsavedOriginal}
+                            className="bg-blue-600 hover:bg-blue-500"
+                          >
+                            <Save className="h-4 w-4 mr-2" />
+                            Save
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </ScrollArea>
+                  
+                  {isEditingOriginal ? (
+                    <Textarea
+                      value={originalEditText}
+                      onChange={(e) => handleTextChange('original', e.target.value)}
+                      className="min-h-96 bg-gray-800 border-gray-600 text-gray-100 resize-none"
+                      maxLength={5000}
+                      placeholder="Enter original obituary text..."
+                    />
+                  ) : (
+                    <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
+                      <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
+                        {review.extractedText || "No original content available"}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </div>
               </TabsContent>
               
               <TabsContent value="updated" className="mt-4">
-                <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
-                  <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
-                    {review.status === 'processing' ? (
-                      <div className="flex items-center justify-center h-full text-center">
-                        <div className="space-y-3">
-                          <Clock className="h-8 w-8 animate-spin mx-auto text-blue-400" />
-                          <p className="text-gray-300">
-                            Reviewing the obituary and feedback request. An updated obituary will be displayed shortly.
-                          </p>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-medium text-white">Updated Obituary Text</h3>
+                    <div className="flex items-center space-x-2">
+                      {!isEditingUpdated ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditClick('updated')}
+                          className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+                          disabled={review.status === 'processing'}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => cancelEdit('updated')}
+                            className="bg-gray-700 hover:bg-gray-600 border-gray-600"
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveClick('updated')}
+                            disabled={!hasUnsavedUpdated}
+                            className="bg-blue-600 hover:bg-blue-500"
+                          >
+                            <Save className="h-4 w-4 mr-2" />
+                            Save
+                          </Button>
                         </div>
-                      </div>
-                    ) : (
-                      cleanUpdatedText || currentContent || "No updated content available"
-                    )}
+                      )}
+                    </div>
                   </div>
-                </ScrollArea>
+                  
+                  {isEditingUpdated ? (
+                    <Textarea
+                      value={updatedEditText}
+                      onChange={(e) => handleTextChange('updated', e.target.value)}
+                      className="min-h-96 bg-gray-800 border-gray-600 text-gray-100 resize-none"
+                      maxLength={5000}
+                      placeholder="Enter updated obituary text..."
+                    />
+                  ) : (
+                    <ScrollArea className="h-96 w-full rounded border border-gray-600 p-4">
+                      <div className="text-gray-100 whitespace-pre-wrap leading-relaxed">
+                        {review.status === 'processing' ? (
+                          <div className="flex items-center justify-center h-full text-center">
+                            <div className="space-y-3">
+                              <Clock className="h-8 w-8 animate-spin mx-auto text-blue-400" />
+                              <p className="text-gray-300">
+                                Reviewing the obituary and feedback request. An updated obituary will be displayed shortly.
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          cleanUpdatedText || currentContent || "No updated content available"
+                        )}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </div>
               </TabsContent>
             </Tabs>
             
