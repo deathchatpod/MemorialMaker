@@ -160,58 +160,64 @@ Respond ONLY with valid JSON, no other text or markup.`;
       });
 
       const contentBlock = response.content[0];
-    const aiResponse = contentBlock.type === 'text' ? contentBlock.text : '';
-    
-    // Parse the structured JSON response
-    let parsedResponse;
-    try {
-      // Clean the response - remove markdown code blocks if present
-      let cleanResponse = aiResponse.trim();
-      if (cleanResponse.startsWith('```json')) {
-        cleanResponse = cleanResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (cleanResponse.startsWith('```')) {
-        cleanResponse = cleanResponse.replace(/^```[a-z]*\s*/, '').replace(/\s*```$/, '');
+      const aiResponse = contentBlock.type === 'text' ? contentBlock.text : '';
+      
+      // Parse the structured JSON response
+      let parsedResponse;
+      try {
+        // Clean the response - remove markdown code blocks if present
+        let cleanResponse = aiResponse.trim();
+        if (cleanResponse.startsWith('```json')) {
+          cleanResponse = cleanResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (cleanResponse.startsWith('```')) {
+          cleanResponse = cleanResponse.replace(/^```[a-z]*\s*/, '').replace(/\s*```$/, '');
+        }
+        
+        parsedResponse = JSON.parse(cleanResponse);
+        
+        // Ensure we have the expected structure
+        if (!parsedResponse.likedPhrases) parsedResponse.likedPhrases = [];
+        if (!parsedResponse.improvedPhrases) parsedResponse.improvedPhrases = [];
+        if (!parsedResponse.improvedVersion) parsedResponse.improvedVersion = review.extractedText;
+        if (!parsedResponse.generalFeedback) parsedResponse.generalFeedback = 'AI processing completed successfully.';
+        
+      } catch (parseError) {
+        // Fallback to old parsing method
+        const parts = aiResponse.split('FEEDBACK:');
+        parsedResponse = {
+          improvedVersion: parts[0]?.replace('IMPROVED VERSION:', '').trim() || aiResponse,
+          generalFeedback: parts[1]?.trim() || 'AI processing completed successfully.',
+          likedPhrases: [],
+          improvedPhrases: []
+        };
       }
-      
-      parsedResponse = JSON.parse(cleanResponse);
-      
-      // Ensure we have the expected structure
-      if (!parsedResponse.likedPhrases) parsedResponse.likedPhrases = [];
-      if (!parsedResponse.improvedPhrases) parsedResponse.improvedPhrases = [];
-      if (!parsedResponse.improvedVersion) parsedResponse.improvedVersion = review.extractedText;
-      if (!parsedResponse.generalFeedback) parsedResponse.generalFeedback = 'AI processing completed successfully.';
-      
+
+      // Update review with AI results including structured phrase feedback
+      await storage.updateObituaryReview(reviewId, {
+        status: 'completed',
+        improvedContent: parsedResponse.improvedVersion || parsedResponse.editedText || aiResponse,
+        additionalFeedback: parsedResponse.generalFeedback || parsedResponse.feedback || 'AI processing completed successfully.',
+        positivePhrases: JSON.stringify(parsedResponse.likedPhrases || []),
+        phrasesToImprove: JSON.stringify(parsedResponse.improvedPhrases || []),
+        processedAt: new Date()
+      });
+
     } catch (error) {
-
-      // Fallback to old parsing method
-      const parts = aiResponse.split('FEEDBACK:');
-      parsedResponse = {
-        improvedVersion: parts[0]?.replace('IMPROVED VERSION:', '').trim() || aiResponse,
-        generalFeedback: parts[1]?.trim() || 'AI processing completed successfully.',
-        likedPhrases: [],
-        improvedPhrases: []
-      };
+      // Update API call record with failure
+      await storage.updateApiCall(apiCallId, {
+        status: 'error',
+        responseTime: Date.now() - startTime,
+      });
+      
+      // Update status to failed
+      await storage.updateObituaryReview(reviewId, {
+        status: 'failed',
+        additionalFeedback: `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
     }
-
-    // Update review with AI results including structured phrase feedback
-    await storage.updateObituaryReview(reviewId, {
-      status: 'completed',
-      improvedContent: parsedResponse.improvedVersion || parsedResponse.editedText || aiResponse,
-      additionalFeedback: parsedResponse.generalFeedback || parsedResponse.feedback || 'AI processing completed successfully.',
-      positivePhrases: JSON.stringify(parsedResponse.likedPhrases || []),
-      phrasesToImprove: JSON.stringify(parsedResponse.improvedPhrases || []),
-      processedAt: new Date()
-    });
-
-
   } catch (error) {
-
-    
-    // Update status to failed
-    await storage.updateObituaryReview(reviewId, {
-      status: 'failed',
-      additionalFeedback: `Processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-    });
+    console.error('Error in processObituaryReview:', error);
+    throw error;
   }
 }
 
@@ -240,6 +246,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Initialize default data
   await initializeDefaultData();
+
+  // Create server instance
+  const server = app.listen(5000, '0.0.0.0', () => {
+    console.log('Server running on port 5000');
+  });
 
   // Auth routes with enhanced security
   app.post('/auth/login', async (req, res, next) => {
@@ -2618,5 +2629,8 @@ async function initializeDefaultApiPricing() {
   } catch (error) {
     console.error("Error initializing API pricing:", error);
   }
+}
+
+  return server;
 }
 
