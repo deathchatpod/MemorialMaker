@@ -214,7 +214,7 @@ export default function Dashboard() {
           {activeSection === 'obituaries' && (
             <div className="space-y-4">
               {/* Action Buttons */}
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-3 mb-4">
                 <Button 
                   onClick={() => setLocation(`/obituary/new?userType=${userTypeParam}&userId=${userIdParam}`)}
                   className="flex items-center gap-2"
@@ -228,7 +228,7 @@ export default function Dashboard() {
                   className="flex items-center gap-2"
                 >
                   <FileText className="w-4 h-4" />
-                  Upload Existing Obituary for Review
+                  Upload Obit for Review
                 </Button>
               </div>
 
