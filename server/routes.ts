@@ -1892,6 +1892,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // PHASE 5: Enhanced Obituary Review API Endpoints
 
+  // Revision with selected feedback endpoint
+  app.post('/api/obituary-reviews/:id/revise-with-feedback', requireAuth, async (req, res) => {
+    try {
+      const reviewId = parseInt(req.params.id);
+      const { positivePhrases, phrasesToImprove, originalText, aiProvider } = req.body;
+      const user = req.user as any;
+
+      // Get the review to validate it exists
+      const review = await storage.getObituaryReview(reviewId);
+      if (!review) {
+        return res.status(404).json({ error: 'Review not found' });
+      }
+
+      // Build a targeted prompt using only selected feedback
+      let revisionPrompt = `Please revise this obituary text incorporating ONLY the following specific feedback:\n\n`;
+      revisionPrompt += `Original Text:\n${originalText}\n\n`;
+
+      if (positivePhrases && positivePhrases.length > 0) {
+        revisionPrompt += `Phrases to preserve and emphasize:\n`;
+        positivePhrases.forEach((phrase: string, index: number) => {
+          revisionPrompt += `${index + 1}. "${phrase}"\n`;
+        });
+        revisionPrompt += `\n`;
+      }
+
+      if (phrasesToImprove && phrasesToImprove.length > 0) {
+        revisionPrompt += `Phrases to improve:\n`;
+        phrasesToImprove.forEach((phraseObj: any, index: number) => {
+          if (typeof phraseObj === 'object' && phraseObj.original && phraseObj.improved) {
+            revisionPrompt += `${index + 1}. Change "${phraseObj.original}" to "${phraseObj.improved}"\n`;
+          } else {
+            revisionPrompt += `${index + 1}. Improve: "${phraseObj}"\n`;
+          }
+        });
+        revisionPrompt += `\n`;
+      }
+
+      revisionPrompt += `Instructions:
+- Apply ONLY the specific feedback listed above
+- Preserve all factual information and memorial details
+- Maintain the original structure and length
+- Do not add any fictional elements
+- Return only the revised obituary text without additional commentary`;
+
+      // Process with selected AI provider
+      let improvedContent = '';
+      if (aiProvider === 'claude') {
+        const claudeService = await import('./services/claude');
+        improvedContent = await claudeService.processWithClaude(revisionPrompt, user.id, user.userType);
+      } else if (aiProvider === 'chatgpt') {
+        const aiService = await import('./services/ai');
+        improvedContent = await aiService.processWithChatGPT(revisionPrompt, user.id, user.userType);
+      } else {
+        return res.status(400).json({ error: 'Invalid AI provider' });
+      }
+
+      // Update the review with the new revision
+      await storage.updateObituaryReview(reviewId, {
+        improvedContent,
+        aiProvider,
+        processedAt: new Date()
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Revision completed with selected feedback',
+        improvedContent 
+      });
+
+    } catch (error) {
+      console.error('Error processing revision with feedback:', error);
+      res.status(500).json({ error: 'Failed to process revision' });
+    }
+  });
+
   // Enhanced save with comprehensive validation and version tracking
   app.post('/api/obituary-reviews/:id/save', requireAuth, async (req, res) => {
     try {

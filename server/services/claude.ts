@@ -232,3 +232,53 @@ EDITED_VERSION:
     throw lastError!;
   }
 }
+
+// Simple processing function for revision requests
+export async function processWithClaude(prompt: string, userId: number, userType: string): Promise<string> {
+  const startTime = Date.now();
+  
+  try {
+    const response = await anthropic.messages.create({
+      model: DEFAULT_MODEL_STR,
+      max_tokens: 4000,
+      messages: [{
+        role: "user",
+        content: prompt
+      }]
+    });
+
+    const processingTime = Date.now() - startTime;
+    const contentBlock = response.content[0];
+    const aiResponse = contentBlock.type === 'text' ? contentBlock.text : '';
+    
+    // Calculate token usage and cost
+    const inputTokens = response.usage?.input_tokens || 0;
+    const outputTokens = response.usage?.output_tokens || 0;
+    const inputCost = ClaudeService.calculateInputCost(inputTokens);
+    const outputCost = ClaudeService.calculateOutputCost(outputTokens);
+    
+    // Log API usage
+    await storage.logApiCall({
+      userId,
+      userType,
+      apiProvider: 'claude',
+      endpoint: 'messages',
+      promptTokens: inputTokens,
+      completionTokens: outputTokens,
+      totalTokens: inputTokens + outputTokens,
+      cost: inputCost + outputCost,
+      processingTimeMs: processingTime,
+      platformFunction: 'revision_with_feedback',
+      promptTemplate: 'custom_revision',
+      inputTokens,
+      outputTokens,
+      inputCost,
+      outputCost
+    });
+
+    return aiResponse;
+  } catch (error) {
+    console.error('Claude processing error:', error);
+    throw new Error('Failed to process with Claude');
+  }
+}

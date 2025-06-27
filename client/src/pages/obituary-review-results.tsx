@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, Save, FileText, Edit3, Edit, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageCircle, RefreshCw } from "lucide-react";
+import { ChevronLeft, Save, FileText, Edit3, Edit, Download, CheckCircle, Clock, AlertCircle, ChevronDown, ChevronUp, ThumbsUp, AlertTriangle, MessageCircle, RefreshCw, Sparkles, Zap } from "lucide-react";
 
 interface ObituaryReview {
   id: number;
@@ -546,6 +546,58 @@ export default function ObituaryReviewResults() {
     }
 
     saveEditMutation.mutate({ editedContent, editComment });
+  };
+
+  // Handle revision with selected feedback
+  const handleRevisionWithFeedback = async (aiProvider: 'claude' | 'chatgpt') => {
+    if (!review || Object.values(includedPhrases).filter(Boolean).length === 0) {
+      toast({
+        title: "No Feedback Selected",
+        description: "Please select at least one piece of feedback to include in the revision.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Build selected feedback object
+    const positivePhrases = parsePhrasesArray(review.positivePhrases);
+    const phrasesToImprove = parsePhrasesArray(review.phrasesToImprove);
+    
+    const selectedFeedbackData = {
+      positivePhrases: positivePhrases.filter((_, index) => includedPhrases[`positive-${index}`]),
+      phrasesToImprove: phrasesToImprove.filter((_, index) => includedPhrases[`improve-${index}`]),
+      originalText: review.extractedText,
+      aiProvider
+    };
+
+    // Call revision API with selected feedback
+    try {
+      const response = await apiRequest('POST', `/api/obituary-reviews/${review.id}/revise-with-feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(selectedFeedbackData)
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Revision Started",
+          description: `Creating new version with ${aiProvider.toUpperCase()} using your selected feedback...`,
+        });
+        
+        // Refresh the review data
+        queryClient.invalidateQueries({ queryKey: ['/api/obituary-reviews', id] });
+      } else {
+        throw new Error('Revision failed');
+      }
+    } catch (error) {
+      toast({
+        title: "Revision Failed",
+        description: "Failed to create revision with selected feedback. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handlePublish = (options: { publishToSystem?: boolean; createMemorial?: boolean } = {}) => {

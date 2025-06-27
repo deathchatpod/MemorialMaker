@@ -356,6 +356,52 @@ export async function generateObituariesWithChatGPT(formData: ObituaryFormData, 
   return results;
 }
 
+// Simple processing function for revision requests
+export async function processWithChatGPT(prompt: string, userId: number, userType: string): Promise<string> {
+  const startTime = Date.now();
+  
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 4000,
+    });
+
+    const processingTime = Date.now() - startTime;
+    const aiResponse = response.choices[0].message.content || '';
+    
+    // Calculate token usage and cost
+    const inputTokens = response.usage?.prompt_tokens || 0;
+    const outputTokens = response.usage?.completion_tokens || 0;
+    const inputCost = (inputTokens / 1000) * 0.01; // $10 per 1M tokens
+    const outputCost = (outputTokens / 1000) * 0.03; // $30 per 1M tokens
+    
+    // Log API usage
+    await storage.logApiCall({
+      userId,
+      userType,
+      apiProvider: 'openai',
+      endpoint: 'chat/completions',
+      promptTokens: inputTokens,
+      completionTokens: outputTokens,
+      totalTokens: inputTokens + outputTokens,
+      cost: inputCost + outputCost,
+      processingTimeMs: processingTime,
+      platformFunction: 'revision_with_feedback',
+      promptTemplate: 'custom_revision',
+      inputTokens,
+      outputTokens,
+      inputCost,
+      outputCost
+    });
+
+    return aiResponse;
+  } catch (error) {
+    console.error('ChatGPT processing error:', error);
+    throw new Error('Failed to process with ChatGPT');
+  }
+}
+
 export async function generateRevisedObituary(
   originalFormData: ObituaryFormData,
   feedback: { liked: string[]; disliked: string[] },
