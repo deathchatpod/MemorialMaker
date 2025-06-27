@@ -721,7 +721,7 @@ export default function ObituaryReviewResults() {
                 </div>
 
                 {/* Phrase Feedback */}
-                {(allPositivePhrases.length > 0 || allImprovedPhrases.length > 0) && (
+                {review.status === 'completed' && (allPositivePhrases.length > 0 || allImprovedPhrases.length > 0) ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     
                     {/* Positive Phrases */}
@@ -771,7 +771,13 @@ export default function ObituaryReviewResults() {
                       </div>
                     )}
                   </div>
-                )}
+                ) : review.status === 'completed' ? (
+                  <div className="p-3 bg-blue-900/20 border border-blue-700/30 rounded">
+                    <p className="text-blue-400 text-xs">
+                      Specific feedback will appear here shortly. Thank you for your patience.
+                    </p>
+                  </div>
+                ) : null}
 
                 {/* Initial Request (Survey Responses) */}
                 <div>
