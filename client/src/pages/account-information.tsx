@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { AlertCircle, Save, Lock, MapPin, Plus, Trash2, ChevronDown, Mail, User } from 'lucide-react';
+import { AlertCircle, Save, Lock, MapPin, Plus, Trash2, ChevronDown, Mail, User, Eye } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { AccessibilityToolbar } from '@/components/AccessibilityToolbar';
 
 export default function AccountInformation() {
   // Get user info from URL parameters
@@ -531,6 +532,24 @@ export default function AccountInformation() {
                 Change Password
               </Button>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Accessibility Settings */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              <CardTitle>Accessibility Settings</CardTitle>
+            </div>
+            <CardDescription>
+              Customize display and interaction preferences to improve your experience
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div id="accessibility-tools">
+              <AccessibilityToolbar />
+            </div>
           </CardContent>
         </Card>
       </div>

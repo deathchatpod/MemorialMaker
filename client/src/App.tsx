@@ -274,7 +274,6 @@ function App() {
             </a>
 
             <GlobalHeader />
-            <AccessibilityToolbar />
 
           <main id="main-content" role="main">
             <Router />
