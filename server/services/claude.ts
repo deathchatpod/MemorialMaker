@@ -254,26 +254,23 @@ export async function processWithClaude(prompt: string, userId: number, userType
     // Calculate token usage and cost
     const inputTokens = response.usage?.input_tokens || 0;
     const outputTokens = response.usage?.output_tokens || 0;
-    const inputCost = ClaudeService.calculateInputCost(inputTokens);
-    const outputCost = ClaudeService.calculateOutputCost(outputTokens);
+    const inputCost = Number(((inputTokens / 1000) * TOKEN_COST_PER_1K.input).toFixed(6));
+    const outputCost = Number(((outputTokens / 1000) * TOKEN_COST_PER_1K.output).toFixed(6));
     
     // Log API usage
-    await storage.logApiCall({
+    await storage.createApiCall({
       userId,
       userType,
-      apiProvider: 'claude',
-      endpoint: 'messages',
-      promptTokens: inputTokens,
-      completionTokens: outputTokens,
-      totalTokens: inputTokens + outputTokens,
-      cost: inputCost + outputCost,
-      processingTimeMs: processingTime,
+      provider: 'claude',
+      model: DEFAULT_MODEL_STR,
       platformFunction: 'revision_with_feedback',
       promptTemplate: 'custom_revision',
+      status: 'completed',
       inputTokens,
       outputTokens,
-      inputCost,
-      outputCost
+      tokensUsed: inputTokens + outputTokens,
+      inputCost: inputCost.toFixed(6),
+      outputCost: outputCost.toFixed(6)
     });
 
     return aiResponse;

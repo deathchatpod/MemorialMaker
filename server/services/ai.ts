@@ -377,22 +377,19 @@ export async function processWithChatGPT(prompt: string, userId: number, userTyp
     const outputCost = (outputTokens / 1000) * 0.03; // $30 per 1M tokens
     
     // Log API usage
-    await storage.logApiCall({
+    await storage.createApiCall({
       userId,
       userType,
-      apiProvider: 'openai',
-      endpoint: 'chat/completions',
-      promptTokens: inputTokens,
-      completionTokens: outputTokens,
-      totalTokens: inputTokens + outputTokens,
-      cost: inputCost + outputCost,
-      processingTimeMs: processingTime,
+      provider: 'openai',
+      model: 'gpt-4o',
       platformFunction: 'revision_with_feedback',
       promptTemplate: 'custom_revision',
+      status: 'completed',
       inputTokens,
       outputTokens,
-      inputCost,
-      outputCost
+      tokensUsed: inputTokens + outputTokens,
+      inputCost: inputCost.toFixed(6),
+      outputCost: outputCost.toFixed(6)
     });
 
     return aiResponse;
