@@ -81,27 +81,60 @@ export default function ObituaryReviewResults() {
     if (!content) return { liked: [], improved: [] };
     
     try {
-      // Check if content contains structured phrase feedback
-      if (content.trim().startsWith('[') && content.includes('"original"') && content.includes('"improved"')) {
-        const parsed = JSON.parse(content);
-        if (Array.isArray(parsed)) {
-          return {
-            liked: [], // Array structure doesn't contain liked phrases
-            improved: parsed.filter(item => item.original && item.improved)
-          };
-        }
-      }
+      let cleanContent = content.trim();
       
-      // Check for full structured response
-      if (content.trim().startsWith('{') && content.includes('improvedPhrases')) {
-        const parsed = JSON.parse(content);
+      // Remove code block markers if present
+      cleanContent = cleanContent
+        .replace(/^```json\s*/, '')
+        .replace(/\s*```$/, '')
+        .replace(/^```\s*/, '')
+        .replace(/\s*```$/, '');
+      
+      // Parse the JSON content
+      const parsed = JSON.parse(cleanContent);
+      
+      // Handle full structured response with separate fields
+      if (parsed.likedPhrases || parsed.improvedPhrases) {
         return {
-          liked: parsed.likedPhrases || [],
-          improved: parsed.improvedPhrases || []
+          liked: Array.isArray(parsed.likedPhrases) ? parsed.likedPhrases : [],
+          improved: Array.isArray(parsed.improvedPhrases) ? parsed.improvedPhrases : []
         };
       }
-    } catch {
-      // If parsing fails, return empty arrays
+      
+      // Handle array of phrase comparison objects
+      if (Array.isArray(parsed)) {
+        return {
+          liked: [], // Arrays typically don't separate liked vs improved
+          improved: parsed.filter(item => 
+            typeof item === 'object' && 
+            item !== null && 
+            (item.original || item.improved)
+          )
+        };
+      }
+      
+      // Handle nested structure where phrases are within another object
+      if (parsed.feedback && (parsed.feedback.likedPhrases || parsed.feedback.improvedPhrases)) {
+        return {
+          liked: Array.isArray(parsed.feedback.likedPhrases) ? parsed.feedback.likedPhrases : [],
+          improved: Array.isArray(parsed.feedback.improvedPhrases) ? parsed.feedback.improvedPhrases : []
+        };
+      }
+      
+    } catch (parseError) {
+      // If main parsing fails, try to extract from partial JSON structures
+      try {
+        // Look for likedPhrases array in the content
+        const likedMatch = content.match(/"likedPhrases":\s*\[(.*?)\]/s);
+        const improvedMatch = content.match(/"improvedPhrases":\s*\[(.*?)\]/s);
+        
+        const liked = likedMatch ? JSON.parse(`[${likedMatch[1]}]`) : [];
+        const improved = improvedMatch ? JSON.parse(`[${improvedMatch[1]}]`) : [];
+        
+        return { liked, improved };
+      } catch {
+        // Final fallback - return empty arrays
+      }
     }
     
     return { liked: [], improved: [] };
@@ -415,47 +448,97 @@ export default function ObituaryReviewResults() {
   const allPositivePhrases = [...positivePhrases, ...contentFeedback.liked];
   const allImprovedPhrases = [...phrasesToImprove, ...contentFeedback.improved];
   
-  // Extract clean text from improvedContent (remove JSON structure if present)
+  // Extract clean text from improvedContent (remove ALL JSON structure)
   const getCleanUpdatedText = (content: string): string => {
     if (!content) return "";
     
-    // Check if content looks like JSON structure (starts with { and contains "original"/"improved")
-    if (content.trim().startsWith('{') && (content.includes('"original"') || content.includes('"improved"'))) {
+    // Remove any leading/trailing whitespace and quotes
+    let cleanContent = content.trim();
+    
+    // First, try to remove code block markers if present
+    if (cleanContent.includes('```json') || cleanContent.includes('```')) {
+      cleanContent = cleanContent
+        .replace(/^```json\s*/, '')
+        .replace(/\s*```$/, '')
+        .replace(/^```\s*/, '')
+        .replace(/\s*```$/, '');
+    }
+
+    // Handle full JSON responses from Claude
+    if (cleanContent.startsWith('{') || cleanContent.startsWith('[')) {
       try {
-        const parsed = JSON.parse(content);
+        const parsed = JSON.parse(cleanContent);
         
-        // Handle structured feedback with improved phrases
+        // Handle structured response with improvedVersion field
         if (parsed.improvedVersion) {
-          return parsed.improvedVersion;
+          return parsed.improvedVersion.trim();
         }
         
-        // Handle array of phrase comparisons
-        if (Array.isArray(parsed)) {
-          // Extract improved text from phrase comparison structure
-          return parsed.map((item: any) => item.improved || item.original || '').join(' ');
+        // Handle structured response with improvedContent field
+        if (parsed.improvedContent) {
+          return parsed.improvedContent.trim();
         }
         
-        // Handle simple object with improved field
-        if (parsed.improved) {
-          return parsed.improved;
+        // Handle structured response with editedText field
+        if (parsed.editedText) {
+          return parsed.editedText.trim();
         }
         
-        // Fallback to original content
-        return content;
-      } catch {
-        // If JSON parsing fails, clean up visible JSON artifacts
-        return content
-          .replace(/\{"original":\s*"/g, '')
-          .replace(/",\s*"improved":\s*"/g, ' → ')
-          .replace(/"\}/g, '')
-          .replace(/^\{/, '')
-          .replace(/\}$/, '')
+        // Handle array of phrase objects - extract the full improved text if available
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Look for a complete improved text in the first item
+          if (parsed[0].improvedText) {
+            return parsed[0].improvedText.trim();
+          }
+          // Otherwise, don't try to reconstruct from individual phrases
+          return "Unable to extract clean text from phrase-level feedback.";
+        }
+        
+        // If it's an object but no recognized field, return error
+        return "Unable to extract clean obituary text from response.";
+        
+      } catch (parseError) {
+        console.log('JSON parse failed:', parseError);
+        console.log('Attempting to extract improvedVersion with regex...');
+        
+        // Try to extract improvedVersion using regex as fallback
+        const improvedVersionMatch = cleanContent.match(/"improvedVersion":\s*"([^"]*(?:\\.[^"]*)*)"/s);
+        console.log('Regex match result:', improvedVersionMatch ? 'Found' : 'Not found');
+        if (improvedVersionMatch) {
+          console.log('Extracted improvedVersion:', improvedVersionMatch[1].substring(0, 200));
+          return improvedVersionMatch[1]
+            .replace(/\\n/g, '\n')
+            .replace(/\\"/g, '"')
+            .replace(/\\t/g, '\t')
+            .trim();
+        }
+        
+        // Last resort: aggressive text cleanup
+        return cleanContent
+          .replace(/\{[^}]*"likedPhrases"[^}]*\}/g, '')
+          .replace(/\{[^}]*"improvedPhrases"[^}]*\}/g, '')
+          .replace(/^\s*\{/, '')
+          .replace(/\}\s*$/, '')
+          .replace(/^"/, '')
+          .replace(/"$/, '')
+          .replace(/\\n/g, '\n')
+          .replace(/\\"/g, '"')
           .trim();
       }
     }
     
-    // If not JSON, return as is
-    return content;
+    // If content doesn't start with JSON markers, clean up any JSON artifacts
+    if (cleanContent.includes('"likedPhrases"') || cleanContent.includes('"improvedPhrases"')) {
+      return cleanContent
+        .replace(/\{[^}]*"likedPhrases"[^}]*\}/g, '')
+        .replace(/\{[^}]*"improvedPhrases"[^}]*\}/g, '')
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+    }
+    
+    // Return cleaned content
+    return cleanContent;
   };
   
   const cleanUpdatedText = getCleanUpdatedText(review.improvedContent || "");
