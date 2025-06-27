@@ -22,6 +22,7 @@ import { db } from "./db";
 import { eq, and, or, ilike, gte, lte, desc, sql } from "drizzle-orm";
 import { obituaries, finalSpaces } from "@shared/schema";
 import { apiRateLimit, searchRateLimit, securityHeaders, sanitizeInput, validateFileUpload } from "./middleware/security";
+import Anthropic from "@anthropic-ai/sdk";
 
 // Configure multer for file uploads
 const storage_multer = multer.diskStorage({
@@ -1043,6 +1044,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const review = await storage.createObituaryReview(validatedData);
+      
+      // Trigger automatic AI processing
+      processObituaryReviewAsync(review.id);
+      
       res.json(review);
     } catch (error) {
       console.error('Error creating obituary review:', error);

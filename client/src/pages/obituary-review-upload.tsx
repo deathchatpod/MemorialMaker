@@ -183,12 +183,12 @@ export default function ObituaryReviewUpload() {
 
       toast({
         title: "Review Submitted Successfully",
-        description: "Your obituary review has been saved and will be processed.",
+        description: "Redirecting to review page...",
       });
 
-      // Close preview and redirect to dashboard
+      // Close preview and redirect to review results page
       setIsPreviewOpen(false);
-      setLocation('/dashboard');
+      setLocation(`/obituary-review-results/${result.id}`);
 
     } catch (error) {
       console.error('Submission error:', error);

@@ -49,9 +49,13 @@ export default function ObituaryReviewResults() {
   const [editComment, setEditComment] = useState("");
   const [isEditing, setIsEditing] = useState(false);
 
-  // Fetch obituary review
+  // Fetch obituary review with polling for processing status
   const { data: review, isLoading: reviewLoading } = useQuery<ObituaryReview>({
     queryKey: [`/api/obituary-reviews/${id}`],
+    refetchInterval: (data) => {
+      // Poll every 2 seconds if status is pending or processing
+      return data?.status === 'pending' || data?.status === 'processing' ? 2000 : false;
+    },
   });
 
   // Fetch edit history
