@@ -728,10 +728,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const formData = obituary.formData as any;
       
-      // Generate obituaries from both AI services
+      // Get user information for API tracking
+      const userId = obituary.createdById || 1;
+      const userType = obituary.createdByType || 'admin';
+      
+      // Generate obituaries from both AI services with tracking
       const [claudeResults, chatgptResults] = await Promise.all([
-        generateObituariesWithClaude(formData),
-        generateObituariesWithChatGPT(formData)
+        generateObituariesWithClaude(formData, userId, userType),
+        generateObituariesWithChatGPT(formData, userId, userType)
       ]);
 
       // Save generated obituaries to database

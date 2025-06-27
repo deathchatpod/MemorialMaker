@@ -202,7 +202,7 @@ function substituteTemplateVariables(template: string, formData: ObituaryFormDat
   return result;
 }
 
-export async function generateObituariesWithClaude(formData: ObituaryFormData): Promise<GeneratedObituaryResult[]> {
+export async function generateObituariesWithClaude(formData: ObituaryFormData, userId: number = 1, userType: string = 'admin'): Promise<GeneratedObituaryResult[]> {
   const templatePrompt = await getTemplateWithContext('claude', 'base');
   const basePrompt = substituteTemplateVariables(templatePrompt, formData);
   const results: GeneratedObituaryResult[] = [];
@@ -214,8 +214,20 @@ export async function generateObituariesWithClaude(formData: ObituaryFormData): 
   ];
   
   for (let i = 0; i < variations.length; i++) {
+    let apiCallId: number | null = null;
     try {
       const prompt = basePrompt + variations[i].suffix;
+      
+      // Create API call record for tracking
+      apiCallId = await storage.createApiCall({
+        userId,
+        userType,
+        provider: 'claude',
+        model: 'claude-sonnet-4-20250514',
+        platformFunction: 'obituary_generation',
+        promptTemplate: `Obituary ${variations[i].tone}`,
+        status: 'pending',
+      });
       
       const message = await anthropic.messages.create({
         max_tokens: 1024,
@@ -227,12 +239,38 @@ export async function generateObituariesWithClaude(formData: ObituaryFormData): 
         (message.content[0].type === 'text' ? (message.content[0] as any).text : '') : 
         message.content;
       
+      // Calculate costs and update API call record
+      const inputTokens = message.usage.input_tokens;
+      const outputTokens = message.usage.output_tokens;
+      const inputCost = (inputTokens / 1000) * 0.003; // $3 per 1M tokens
+      const outputCost = (outputTokens / 1000) * 0.015; // $15 per 1M tokens
+      
+      if (apiCallId) {
+        await storage.updateApiCall(apiCallId, {
+          inputTokens,
+          outputTokens,
+          tokensUsed: inputTokens + outputTokens,
+          inputCost: inputCost.toString(),
+          outputCost: outputCost.toString(),
+          status: 'completed',
+        });
+      }
+      
       results.push({
         content: content || '',
         tone: variations[i].tone
       });
     } catch (error) {
       console.error(`Error generating Claude obituary ${i + 1}:`, error);
+      
+      // Update API call record with error
+      if (apiCallId) {
+        await storage.updateApiCall(apiCallId, {
+          status: 'failed',
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+      
       results.push({
         content: `Error generating obituary: ${error instanceof Error ? error.message : 'Unknown error'}`,
         tone: variations[i].tone
@@ -243,7 +281,7 @@ export async function generateObituariesWithClaude(formData: ObituaryFormData): 
   return results;
 }
 
-export async function generateObituariesWithChatGPT(formData: ObituaryFormData): Promise<GeneratedObituaryResult[]> {
+export async function generateObituariesWithChatGPT(formData: ObituaryFormData, userId: number = 1, userType: string = 'admin'): Promise<GeneratedObituaryResult[]> {
   const templatePrompt = await getTemplateWithContext('chatgpt', 'base');
   const basePrompt = substituteTemplateVariables(templatePrompt, formData);
   const results: GeneratedObituaryResult[] = [];
@@ -255,8 +293,20 @@ export async function generateObituariesWithChatGPT(formData: ObituaryFormData):
   ];
   
   for (let i = 0; i < variations.length; i++) {
+    let apiCallId: number | null = null;
     try {
       const prompt = basePrompt + variations[i].suffix;
+      
+      // Create API call record for tracking
+      apiCallId = await storage.createApiCall({
+        userId,
+        userType,
+        provider: 'openai',
+        model: 'gpt-4o',
+        platformFunction: 'obituary_generation',
+        promptTemplate: `Obituary ${variations[i].tone}`,
+        status: 'pending',
+      });
       
       const response = await openai.chat.completions.create({
         model: "gpt-4o",
@@ -264,12 +314,38 @@ export async function generateObituariesWithChatGPT(formData: ObituaryFormData):
         max_tokens: 1000,
       });
       
+      // Calculate costs and update API call record
+      const inputTokens = response.usage?.prompt_tokens || 0;
+      const outputTokens = response.usage?.completion_tokens || 0;
+      const inputCost = (inputTokens / 1000) * 0.01; // $10 per 1M tokens
+      const outputCost = (outputTokens / 1000) * 0.03; // $30 per 1M tokens
+      
+      if (apiCallId) {
+        await storage.updateApiCall(apiCallId, {
+          inputTokens,
+          outputTokens,
+          tokensUsed: inputTokens + outputTokens,
+          inputCost: inputCost.toString(),
+          outputCost: outputCost.toString(),
+          status: 'completed',
+        });
+      }
+      
       results.push({
         content: response.choices[0].message.content || '',
         tone: variations[i].tone
       });
     } catch (error) {
       console.error(`Error generating ChatGPT obituary ${i + 1}:`, error);
+      
+      // Update API call record with error
+      if (apiCallId) {
+        await storage.updateApiCall(apiCallId, {
+          status: 'failed',
+          errorMessage: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+      
       results.push({
         content: `Error generating obituary: ${error instanceof Error ? error.message : 'Unknown error'}`,
         tone: variations[i].tone
