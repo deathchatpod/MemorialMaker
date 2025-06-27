@@ -223,6 +223,7 @@ function Router() {
       <Route path="/admin/surveys/:id" component={SurveyEditor} />
       <Route path="/final-spaces" component={FinalSpaces} />
       <Route path="/final-spaces/create" component={CreateFinalSpace} />
+      <Route path="/create-final-space" component={CreateFinalSpace} />
       <Route path="/final-spaces/:id/edit" component={EditFinalSpace} />
       <Route path="/memorial/:slug" component={MemorialPage} />
       <Route path="/collaborate/:uuid" component={Collaborate} />

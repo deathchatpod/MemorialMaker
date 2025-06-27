@@ -40,7 +40,7 @@ const createFinalSpaceSchema = z.object({
 
 type CreateFinalSpaceForm = z.infer<typeof createFinalSpaceSchema>;
 
-export default function CreateFinalSpace() {
+function CreateFinalSpace() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [mediaData, setMediaData] = useState({
@@ -579,3 +579,5 @@ export default function CreateFinalSpace() {
     </div>
   );
 }
+
+export default CreateFinalSpace;
