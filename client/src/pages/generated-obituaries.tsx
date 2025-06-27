@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -12,7 +14,7 @@ import TextHighlighter from "@/components/text-highlighter";
 import ObituaryEditor from "@/components/obituary-editor";
 import CollaborationManager from "@/components/CollaborationManager";
 import VersionManager from "@/components/version-manager";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, ChevronDown, ChevronUp, Clock, Users, MessageSquare, Eye, EyeOff } from "lucide-react";
 
 interface GeneratedObituary {
   id: number;
@@ -42,6 +44,9 @@ export default function GeneratedObituaries() {
   const [feedbackInclusion, setFeedbackInclusion] = useState<{ [key: string]: boolean }>({});
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [activeTab, setActiveTab] = useState<string>('latest');
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const { data: generatedObituaries = [], isLoading } = useQuery<GeneratedObituary[]>({
     queryKey: ["/api/obituaries", obituaryId, "generated"],
@@ -51,7 +56,11 @@ export default function GeneratedObituaries() {
       return response.json();
     },
     enabled: !!obituaryId,
+    refetchInterval: generatedObituaries.length === 0 ? 3000 : false, // Poll every 3 seconds if no obituaries yet
   });
+
+  // Check if obituaries are still being generated
+  const isGenerating = !isLoading && generatedObituaries.length === 0;
 
   // Fetch feedback for all generated obituaries
   const { data: allFeedback } = useQuery({

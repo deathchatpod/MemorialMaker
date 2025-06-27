@@ -176,10 +176,7 @@ export default function ObituaryForm() {
       return await apiRequest('POST', `/api/obituaries/${obituaryId}/generate`);
     },
     onSuccess: (_, obituaryId) => {
-      toast({
-        title: "Success",
-        description: "6 obituaries generated successfully!",
-      });
+      // Redirect to editing page immediately after successful generation
       setLocation(`/obituary/${obituaryId}/generated`);
     },
     onError: (error: Error) => {
