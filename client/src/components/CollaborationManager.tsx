@@ -41,7 +41,17 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
   // Fetch collaborators
   const { data: collaborators = [], isLoading } = useQuery({
     queryKey: [`${endpointBase}/${entityId}/collaborators`],
+    enabled: entityId > 0, // Only fetch if we have a valid entity ID
   });
+
+  // Type the collaborators array
+  const typedCollaborators = collaborators as Array<{
+    id: number;
+    collaboratorEmail: string;
+    name?: string;
+    status: string;
+    createdAt: string;
+  }>;
 
   // Invite collaborator mutation
   const inviteCollaborator = useMutation({
@@ -168,13 +178,13 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="text-sm text-gray-600">
-          {collaborators.length}/5 collaborators
+          {typedCollaborators.length}/5 collaborators
         </div>
         <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
           <DialogTrigger asChild>
             <Button 
               size="sm" 
-              disabled={collaborators.length >= 5}
+              disabled={typedCollaborators.length >= 5}
               className="flex items-center gap-2"
             >
               <UserPlus className="w-4 h-4" />
@@ -240,14 +250,14 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
         </Dialog>
       </div>
 
-      {collaborators.length > 0 && (
+      {typedCollaborators.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Current Collaborators</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {collaborators.map((collaborator: any) => (
+              {typedCollaborators.map((collaborator) => (
                 <div 
                   key={collaborator.id} 
                   className="flex items-center justify-between p-3 border rounded-lg"
