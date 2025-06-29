@@ -832,8 +832,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         obituaryId,
         email: email,
         collaboratorEmail: email,
-        invitedBy: req.user?.id || 0,
-        invitedByType: req.user?.userType || 'unknown',
+        invitedBy: (req.user as any)?.id || 0,
+        invitedByType: (req.user as any)?.userType || 'unknown',
         name: null
       });
 
@@ -1835,7 +1835,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const searchQuery = `%${query}%`;
-      const results = {
+      const results: {
+        obituaries: any[];
+        memorials: any[];
+        total: number;
+      } = {
         obituaries: [],
         memorials: [],
         total: 0

@@ -846,7 +846,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteObituaryReview(id: number): Promise<void> {
     // First delete any API calls associated with this review
-    await db.delete(apiCalls).where(eq(apiCalls.documentId, id));
+    await db.delete(apiCalls).where(eq(apiCalls.obituaryReviewId, id));
     // Then delete the review
     await db.delete(obituaryReviews).where(eq(obituaryReviews.id, id));
   }
@@ -860,30 +860,7 @@ export class DatabaseStorage implements IStorage {
     return newEdit;
   }
 
-  async publishObituaryReviewToSystem(reviewId: number, userId: number, userType: string): Promise<Obituary> {
-    const review = await this.getObituaryReview(reviewId);
-    if (!review) {
-      throw new Error('Review not found');
-    }
 
-    const obituaryData: InsertObituary = {
-      funeralHomeId: review.funeralHomeId,
-      createdById: userId,
-      createdByType: userType,
-      fullName: review.originalFilename.replace(/\.[^/.]+$/, ""),
-      formData: review.surveyResponses || {},
-      status: 'generated'
-    };
-
-    const obituary = await this.createObituary(obituaryData);
-    
-    await this.updateObituaryReview(reviewId, {
-      isPublishedToSystem: true,
-      finalObituaryId: obituary.id
-    });
-
-    return obituary;
-  }
 
   // API Calls methods
   async getApiCalls(userId?: number, timeRange?: { start: Date; end: Date }): Promise<ApiCall[]> {
@@ -898,13 +875,14 @@ export class DatabaseStorage implements IStorage {
       conditions.push(lte(apiCalls.createdAt, timeRange.end));
     }
     
-    let query = db.select().from(apiCalls);
-    
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      return await db.select().from(apiCalls)
+        .where(and(...conditions))
+        .orderBy(desc(apiCalls.createdAt));
     }
     
-    return query.orderBy(desc(apiCalls.createdAt));
+    return await db.select().from(apiCalls)
+      .orderBy(desc(apiCalls.createdAt));
   }
 
   async createApiCall(apiCall: InsertApiCall): Promise<number> {
@@ -1014,13 +992,7 @@ export class DatabaseStorage implements IStorage {
     return newObituary;
   }
 
-  async deleteObituaryReview(id: number): Promise<void> {
-    // First delete related API calls to avoid foreign key constraint violation
-    await db.delete(apiCalls).where(eq(apiCalls.obituaryReviewId, id));
-    
-    // Then delete the obituary review
-    await db.delete(obituaryReviews).where(eq(obituaryReviews.id, id));
-  }
+
 
   // Community Contributions
   async getCommunityContributions(finalSpaceId: number): Promise<CommunityContribution[]> {
