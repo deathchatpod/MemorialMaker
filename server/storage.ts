@@ -1,7 +1,7 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing, communityContributions, communityContributionComments,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing, communityContributions, communityContributionComments, customerFeedback,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
@@ -13,7 +13,7 @@ import {
   type ObituaryCollaborator, type InsertObituaryCollaborator,
   type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
-  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall, type ApiPricing, type InsertApiPricing, type CommunityContribution, type InsertCommunityContribution, type CommunityContributionComment, type InsertCommunityContributionComment
+  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall, type ApiPricing, type InsertApiPricing, type CommunityContribution, type InsertCommunityContribution, type CommunityContributionComment, type InsertCommunityContributionComment, type CustomerFeedback, type InsertCustomerFeedback
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
@@ -1083,6 +1083,42 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCommunityContributionComment(id: number): Promise<void> {
     await db.delete(communityContributionComments).where(eq(communityContributionComments.id, id));
+  }
+
+  // Customer Feedback methods
+  async getCustomerFeedback(): Promise<CustomerFeedback[]> {
+    return await db
+      .select()
+      .from(customerFeedback)
+      .orderBy(desc(customerFeedback.createdAt));
+  }
+
+  async getCustomerFeedbackById(id: number): Promise<CustomerFeedback | undefined> {
+    const [feedback] = await db
+      .select()
+      .from(customerFeedback)
+      .where(eq(customerFeedback.id, id));
+    return feedback || undefined;
+  }
+
+  async createCustomerFeedback(feedback: InsertCustomerFeedback): Promise<CustomerFeedback> {
+    const [newFeedback] = await db
+      .insert(customerFeedback)
+      .values(feedback)
+      .returning();
+    return newFeedback;
+  }
+
+  async updateCustomerFeedbackStatus(id: number, status: string): Promise<CustomerFeedback | undefined> {
+    const [updatedFeedback] = await db
+      .update(customerFeedback)
+      .set({ 
+        status, 
+        updatedAt: new Date() 
+      })
+      .where(eq(customerFeedback.id, id))
+      .returning();
+    return updatedFeedback || undefined;
   }
 }
 

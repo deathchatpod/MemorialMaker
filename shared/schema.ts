@@ -752,6 +752,21 @@ export const apiPricing = pgTable("api_pricing", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Customer Feedback table
+export const customerFeedback = pgTable("customer_feedback", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  userType: varchar("user_type", { length: 50 }).notNull(), // admin, funeral_home, employee, individual
+  userName: varchar("user_name", { length: 255 }).notNull(),
+  category: varchar("category", { length: 100 }).notNull(), // Bug/App Crashing, New Feature Request, General Feedback, General Question
+  subject: varchar("subject", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  screenshotUrl: varchar("screenshot_url", { length: 500 }), // path to uploaded screenshot
+  status: varchar("status", { length: 50 }).notNull().default("Needs Work"), // Needs Work, In Process, Resolved
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertObituaryReviewSchema = createInsertSchema(obituaryReviews);
 export type ObituaryReview = typeof obituaryReviews.$inferSelect;
 export type InsertObituaryReview = z.infer<typeof insertObituaryReviewSchema>;
@@ -767,6 +782,10 @@ export type InsertApiCall = z.infer<typeof insertApiCallSchema>;
 export const insertApiPricingSchema = createInsertSchema(apiPricing);
 export type ApiPricing = typeof apiPricing.$inferSelect;
 export type InsertApiPricing = z.infer<typeof insertApiPricingSchema>;
+
+export const insertCustomerFeedbackSchema = createInsertSchema(customerFeedback);
+export type CustomerFeedback = typeof customerFeedback.$inferSelect;
+export type InsertCustomerFeedback = z.infer<typeof insertCustomerFeedbackSchema>;
 
 export type CommunityContribution = typeof communityContributions.$inferSelect;
 export type InsertCommunityContribution = z.infer<typeof insertCommunityContributionSchema>;
