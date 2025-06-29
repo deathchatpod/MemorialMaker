@@ -49,6 +49,7 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
     id: number;
     collaboratorEmail: string;
     name?: string;
+    collaboratorName?: string;
     status: string;
     createdAt: string;
   }>;
@@ -266,9 +267,9 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
                     <Mail className="w-4 h-4 text-gray-400" />
                     <div>
                       <div className="font-medium">
-                        {collaborator.collaboratorName || collaborator.collaboratorEmail}
+                        {collaborator.collaboratorName || collaborator.name || collaborator.collaboratorEmail}
                       </div>
-                      {collaborator.collaboratorName && (
+                      {(collaborator.collaboratorName || collaborator.name) && (
                         <div className="text-sm text-gray-500">
                           {collaborator.collaboratorEmail}
                         </div>
