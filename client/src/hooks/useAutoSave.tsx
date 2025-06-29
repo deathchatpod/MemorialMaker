@@ -1,151 +1,118 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AutoSaveOptions {
-  data: any;
-  saveEndpoint: string;
   delay?: number;
-  maxRetries?: number;
-  retryDelay?: number;
+  onSave?: (data: any) => Promise<void>;
   enabled?: boolean;
-  onSaveSuccess?: (data: any) => void;
-  onSaveError?: (error: any) => void;
 }
 
-export function useAutoSave({
-  data,
-  saveEndpoint,
-  delay = 3000, // 3 seconds
-  maxRetries = 3,
-  retryDelay = 1000,
-  enabled = true,
-  onSaveSuccess,
-  onSaveError
-}: AutoSaveOptions) {
+export function useAutoSave<T>(
+  data: T,
+  options: AutoSaveOptions = {}
+) {
+  const { delay = 3000, onSave, enabled = true } = options;
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSavedRef = useRef<string>('');
-  const retryCountRef = useRef(0);
+  const timeoutRef = useRef<NodeJS.Timeout>();
+  const previousDataRef = useRef<T>(data);
+  const isSavingRef = useRef(false);
 
-  const saveMutation = useMutation({
-    mutationFn: async (saveData: any) => {
-      const response = await fetch(saveEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(saveData),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Save failed: ${response.statusText}`);
-      }
-      
-      return response.json();
-    },
-    onSuccess: (result) => {
-      retryCountRef.current = 0;
-      lastSavedRef.current = JSON.stringify(data);
-      
-      // Show subtle success indicator
-      toast({
-        title: "Draft saved",
-        description: "Your changes have been automatically saved.",
-        duration: 2000,
-        variant: "default"
-      });
-      
-      onSaveSuccess?.(result);
-    },
-    onError: (error) => {
-      if (retryCountRef.current < maxRetries) {
-        retryCountRef.current++;
-        
-        // Exponential backoff retry
-        setTimeout(() => {
-          if (enabled) {
-            saveMutation.mutate(data);
-          }
-        }, retryDelay * Math.pow(2, retryCountRef.current - 1));
-        
-        toast({
-          title: "Save retry",
-          description: `Retrying save (attempt ${retryCountRef.current}/${maxRetries})...`,
-          duration: 2000,
-          variant: "default"
-        });
-      } else {
-        toast({
-          title: "Auto-save failed",
-          description: "Unable to save draft. Please save manually.",
-          duration: 5000,
-          variant: "destructive"
-        });
-        
-        onSaveError?.(error);
-        retryCountRef.current = 0;
-      }
+  useEffect(() => {
+    if (!enabled || !onSave || isSavingRef.current) {
+      return;
     }
-  });
 
-  const scheduleAutoSave = useCallback(() => {
-    if (!enabled) return;
+    // Check if data has actually changed
+    const hasChanged = JSON.stringify(data) !== JSON.stringify(previousDataRef.current);
     
+    if (!hasChanged) {
+      return;
+    }
+
     // Clear existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    
-    // Check if data has changed
-    const currentDataStr = JSON.stringify(data);
-    if (currentDataStr === lastSavedRef.current) {
-      return; // No changes to save
-    }
-    
-    // Schedule new save
-    timeoutRef.current = setTimeout(() => {
-      if (!saveMutation.isPending) {
-        saveMutation.mutate(data);
+
+    // Set new timeout for auto-save
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        isSavingRef.current = true;
+        await onSave(data);
+        previousDataRef.current = data;
+        
+        toast({
+          title: "Auto-saved",
+          description: "Your changes have been automatically saved",
+          duration: 2000,
+        });
+      } catch (error) {
+        console.error('Auto-save failed:', error);
+        toast({
+          title: "Auto-save failed",
+          description: "Failed to save changes automatically",
+          variant: "destructive",
+          duration: 3000,
+        });
+      } finally {
+        isSavingRef.current = false;
       }
     }, delay);
-  }, [data, delay, enabled, saveMutation]);
 
-  // Auto-save when data changes
-  useEffect(() => {
-    scheduleAutoSave();
-    
+    // Cleanup function
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [scheduleAutoSave]);
+  }, [data, delay, onSave, enabled, toast]);
 
   // Manual save function
-  const saveNow = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+  const saveNow = async () => {
+    if (!onSave || isSavingRef.current) {
+      return;
     }
-    
-    if (!saveMutation.isPending) {
-      saveMutation.mutate(data);
-    }
-  }, [data, saveMutation]);
 
-  // Get save status
-  const getSaveStatus = useCallback(() => {
-    if (saveMutation.isPending) return 'saving';
-    if (retryCountRef.current > 0) return 'retrying';
-    if (JSON.stringify(data) !== lastSavedRef.current) return 'unsaved';
-    return 'saved';
-  }, [data, saveMutation.isPending]);
+    try {
+      isSavingRef.current = true;
+      
+      // Clear auto-save timeout since we're saving manually
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      await onSave(data);
+      previousDataRef.current = data;
+      
+      toast({
+        title: "Saved",
+        description: "Your changes have been saved",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('Manual save failed:', error);
+      toast({
+        title: "Save failed",
+        description: "Failed to save changes",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      isSavingRef.current = false;
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     saveNow,
-    isSaving: saveMutation.isPending,
-    saveStatus: getSaveStatus(),
-    lastSaved: lastSavedRef.current ? new Date() : null
+    isSaving: isSavingRef.current
   };
 }
