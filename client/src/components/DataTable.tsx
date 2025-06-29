@@ -284,80 +284,87 @@ export default function DataTable({
         </div>
 
         {/* Table */}
-        {processedData.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading data...</p>
+          </div>
+        ) : processedData.length === 0 ? (
           <div className="text-center py-12">
             {emptyState?.icon}
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
               {emptyState?.title || "No data found"}
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               {emptyState?.description || "No items match your search criteria."}
             </p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {columns.map(column => (
-                  <TableHead 
-                    key={column.key}
-                    className={column.sortable ? "cursor-pointer hover:bg-gray-50" : ""}
-                    onClick={() => column.sortable && handleSort(column.key)}
-                  >
-                    <div className="flex items-center gap-1">
-                      {column.title}
-                      {column.sortable && getSortIcon(column.key)}
-                    </div>
-                  </TableHead>
-                ))}
-                {actions && (
-                  <TableHead>Actions</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {processedData.map((row, index) => (
-                <TableRow 
-                  key={row.id || index}
-                  className={onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" : ""}
-                  onClick={() => onRowClick && onRowClick(row)}
-                >
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
                   {columns.map(column => (
-                    <TableCell key={column.key}>
-                      {column.render 
-                        ? column.render(row[column.key], row)
-                        : row[column.key] || "-"
-                      }
-                    </TableCell>
+                    <TableHead 
+                      key={column.key}
+                      className={column.sortable ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" : ""}
+                      onClick={() => column.sortable && handleSort(column.key)}
+                    >
+                      <div className="flex items-center gap-1">
+                        {column.title}
+                        {column.sortable && getSortIcon(column.key)}
+                      </div>
+                    </TableHead>
                   ))}
                   {actions && (
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {actions(row).map((action, actionIndex) => {
-                          const IconComponent = action.icon;
-                          return (
-                            <Button
-                              key={actionIndex}
-                              size="sm"
-                              variant={action.variant || "outline"}
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent row click when clicking action button
-                                action.onClick();
-                              }}
-                              className="flex items-center gap-1"
-                            >
-                              <IconComponent className="w-4 h-4" />
-                              {action.label}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </TableCell>
+                    <TableHead>Actions</TableHead>
                   )}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {processedData.map((row, index) => (
+                  <TableRow 
+                    key={row.id || `row-${index}`}
+                    className={onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" : ""}
+                    onClick={() => onRowClick && onRowClick(row)}
+                  >
+                    {columns.map(column => (
+                      <TableCell key={`${row.id || index}-${column.key}`}>
+                        {column.render 
+                          ? column.render(row[column.key], row)
+                          : row[column.key] || "-"
+                        }
+                      </TableCell>
+                    ))}
+                    {actions && (
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {actions(row).map((action, actionIndex) => {
+                            const IconComponent = action.icon;
+                            return (
+                              <Button
+                                key={`${row.id || index}-action-${actionIndex}`}
+                                size="sm"
+                                variant={action.variant || "outline"}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  action.onClick();
+                                }}
+                                className="flex items-center gap-1"
+                              >
+                                <IconComponent className="w-4 h-4" />
+                                {action.label}
+                              </Button>
+                            );
+                          })}
+                        </div>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>

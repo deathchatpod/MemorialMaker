@@ -114,8 +114,8 @@ export default function Dashboard() {
       const res = await apiRequest('GET', `/api/api-usage?timeRange=${apiTimeRange}`);
       return res.json();
     },
-    enabled: currentUser.userType === 'admin',
-    refetchInterval: 5000, // Refresh every 5 seconds to show new API calls
+    enabled: currentUser.userType === 'admin' && activeSection === 'api-usage',
+    refetchInterval: currentUser.userType === 'admin' && activeSection === 'api-usage' ? 5000 : false,
     staleTime: 0 // Always consider data stale to ensure fresh fetches
   });
 
