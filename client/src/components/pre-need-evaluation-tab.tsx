@@ -255,9 +255,9 @@ export function PreNeedEvaluationTab() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Evaluation</AlertDialogTitle>
+                              <AlertDialogTitle>Delete Survey Response</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete this pre-need evaluation? This action cannot be undone.
+                                Are you sure you want to delete this survey response? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
