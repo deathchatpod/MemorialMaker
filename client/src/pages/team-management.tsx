@@ -67,10 +67,7 @@ export default function TeamManagement() {
 
   const inviteEmployeeMutation = useMutation({
     mutationFn: async (email: string) => {
-      return apiRequest('/api/employee-invitations', {
-        method: 'POST',
-        body: JSON.stringify({ email, funeralHomeId }),
-      });
+      return apiRequest('/api/employee-invitations', 'POST', { email, funeralHomeId });
     },
     onSuccess: () => {
       toast({
@@ -92,9 +89,7 @@ export default function TeamManagement() {
 
   const deleteEmployeeMutation = useMutation({
     mutationFn: async (employeeId: number) => {
-      return apiRequest(`/api/employees/${employeeId}`, {
-        method: 'DELETE',
-      });
+      return apiRequest(`/api/employees/${employeeId}`, 'DELETE');
     },
     onSuccess: () => {
       toast({
@@ -114,9 +109,7 @@ export default function TeamManagement() {
 
   const toggleEmployeeStatusMutation = useMutation({
     mutationFn: async ({ employeeId, action }: { employeeId: number; action: 'suspend' | 'activate' }) => {
-      return apiRequest(`/api/employees/${employeeId}/${action}`, {
-        method: 'PATCH',
-      });
+      return apiRequest(`/api/employees/${employeeId}/${action}`, 'PATCH');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/employees', funeralHomeId] });
@@ -132,9 +125,7 @@ export default function TeamManagement() {
 
   const deleteInvitationMutation = useMutation({
     mutationFn: async (invitationId: number) => {
-      return apiRequest(`/api/employee-invitations/${invitationId}`, {
-        method: 'DELETE',
-      });
+      return apiRequest(`/api/employee-invitations/${invitationId}`, 'DELETE');
     },
     onSuccess: () => {
       toast({
@@ -155,8 +146,8 @@ export default function TeamManagement() {
   const handleInviteEmployee = () => {
     if (!inviteEmail.trim()) return;
     
-    const activeEmployees = employees.filter((emp: Employee) => emp.isActive).length;
-    const pendingInvitations = invitations.filter((inv: EmployeeInvitation) => !inv.isUsed).length;
+    const activeEmployees = (employees as any[]).filter((emp: any) => emp.isActive).length;
+    const pendingInvitations = (invitations as any[]).filter((inv: any) => !inv.isUsed).length;
     
     if (activeEmployees + pendingInvitations >= 5) {
       toast({
@@ -183,8 +174,8 @@ export default function TeamManagement() {
     return <div className="p-6">Loading team management...</div>;
   }
 
-  const activeEmployees = employees.filter((emp: Employee) => emp.isActive);
-  const pendingInvitations = invitations.filter((inv: EmployeeInvitation) => !inv.isUsed);
+  const activeEmployees = (employees as any[]).filter((emp: any) => emp.isActive);
+  const pendingInvitations = (invitations as any[]).filter((inv: any) => !inv.isUsed);
 
   return (
     <div className="p-6 space-y-6">
