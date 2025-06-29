@@ -878,19 +878,21 @@ export class DatabaseStorage implements IStorage {
 
   // API Calls methods
   async getApiCalls(userId?: number, timeRange?: { start: Date; end: Date }): Promise<ApiCall[]> {
-    let query = db.select().from(apiCalls);
+    const conditions = [];
     
     if (userId) {
-      query = query.where(eq(apiCalls.userId, userId));
+      conditions.push(eq(apiCalls.userId, userId));
     }
     
     if (timeRange) {
-      query = query.where(
-        and(
-          gte(apiCalls.createdAt, timeRange.start),
-          lte(apiCalls.createdAt, timeRange.end)
-        )
-      );
+      conditions.push(gte(apiCalls.createdAt, timeRange.start));
+      conditions.push(lte(apiCalls.createdAt, timeRange.end));
+    }
+    
+    let query = db.select().from(apiCalls);
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
     }
     
     return query.orderBy(desc(apiCalls.createdAt));

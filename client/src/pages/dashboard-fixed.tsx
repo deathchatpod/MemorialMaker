@@ -104,7 +104,7 @@ export default function Dashboard() {
   const { data: apiUsage, isLoading: isApiUsageLoading } = useQuery({
     queryKey: ['/api/api-usage', userTypeParam, userIdParam],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/api-usage?timeRange=24h`);
+      const res = await apiRequest('GET', `/api/api-usage?timeRange=7d`);
       return res.json();
     },
     enabled: currentUser.userType === 'admin',
