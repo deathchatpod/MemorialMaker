@@ -148,7 +148,7 @@ export default function Dashboard() {
     { id: 'finalspaces', label: 'FinalSpaces', icon: Heart },
     { id: 'collaborations', label: 'My Collaborations', icon: Users },
     ...(currentUser.userType === 'admin' ? [{ id: 'surveys', label: 'Platform Surveys', icon: ClipboardList }] : []),
-    { id: 'pre-need', label: 'Pre Need Evaluation', icon: BarChart3 },
+    { id: 'pre-need', label: 'Pre Need Services', icon: BarChart3 },
     ...(currentUser.userType === 'admin' ? [{ id: 'templates', label: 'Prompt Templates', icon: Settings }] : []),
     ...(currentUser.userType === 'admin' ? [{ id: 'api-usage', label: 'API Usage', icon: Activity }] : []),
     ...(currentUser.userType === 'admin' ? [{ id: 'customer-feedback', label: 'Customer Feedback', icon: MessageSquare }] : []),
