@@ -10,7 +10,7 @@ import { Link } from "wouter";
 import { Skull } from "lucide-react";
 import { AccessibilityProvider } from "@/components/AccessibilityProvider";
 import { AccessibilityToolbar } from "@/components/AccessibilityToolbar";
-import ErrorBoundary from "@/components/ErrorBoundary";
+import ErrorBoundary from "@/components/ui/error-boundary";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard-fixed";
 import Login from "./pages/login";
