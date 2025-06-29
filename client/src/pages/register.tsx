@@ -6,9 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Link } from 'wouter';
 import type { UserType } from "@shared/schema";
 
 export default function Register() {
@@ -75,6 +77,19 @@ export default function Register() {
       return;
     }
 
+    // Validate legal agreements
+    if (!formData.acceptTerms) {
+      setError('You must accept the Terms of Service to continue');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!formData.acceptPrivacy) {
+      setError('You must accept the Privacy Policy to continue');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch('/auth/register', {
         method: 'POST',
@@ -106,7 +121,9 @@ export default function Register() {
           companyName: '',
           address: '',
           website: '',
-          description: ''
+          description: '',
+          acceptTerms: false,
+          acceptPrivacy: false
         });
       } else {
         const data = await response.json();
@@ -169,13 +186,13 @@ export default function Register() {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="businessName">Business Name *</Label>
+                  <Label htmlFor="companyName">Business Name *</Label>
                   <Input
-                    id="businessName"
-                    name="businessName"
+                    id="companyName"
+                    name="companyName"
                     type="text"
                     placeholder="Smith Funeral Home"
-                    value={formData.businessName}
+                    value={formData.companyName}
                     onChange={handleInputChange}
                     required
                   />
@@ -259,6 +276,45 @@ export default function Register() {
                   value={formData.address}
                   onChange={handleInputChange}
                 />
+              </div>
+
+              {/* Legal Agreements */}
+              <div className="space-y-4 pt-4 border-t border-border">
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="acceptTerms"
+                    checked={formData.acceptTerms}
+                    onCheckedChange={(checked) => 
+                      setFormData({...formData, acceptTerms: checked as boolean})
+                    }
+                  />
+                  <div className="space-y-1 leading-none">
+                    <label htmlFor="acceptTerms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      I agree to the{' '}
+                      <Link href="/terms-of-service" className="text-primary hover:underline">
+                        Terms of Service
+                      </Link>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="acceptPrivacy"
+                    checked={formData.acceptPrivacy}
+                    onCheckedChange={(checked) => 
+                      setFormData({...formData, acceptPrivacy: checked as boolean})
+                    }
+                  />
+                  <div className="space-y-1 leading-none">
+                    <label htmlFor="acceptPrivacy" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      I agree to the{' '}
+                      <Link href="/privacy-policy" className="text-primary hover:underline">
+                        Privacy Policy
+                      </Link>
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <Button 

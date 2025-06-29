@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescript
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import ImageUpload from "@/components/image-upload";
+import { ContextualTooltip } from "@/components/ContextualTooltip";
 
 const obituaryFormSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
