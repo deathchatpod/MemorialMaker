@@ -228,24 +228,22 @@
   }
   
   .btn-primary-professional {
-    @apply bg-blue-600 hover:bg-blue-700 text-white;
-    @apply border border-blue-700/20 hover:border-blue-800/30;
+    @apply bg-orange-700 hover:bg-orange-800 text-white;
+    @apply border border-orange-800/20 hover:border-orange-900/30;
     @apply font-medium tracking-wide;
   }
   
   .btn-secondary-professional {
-    @apply bg-gray-100 hover:bg-gray-200 text-gray-900;
-    @apply border border-gray-300/60 hover:border-gray-400/70;
+    @apply bg-gray-700 hover:bg-gray-600 text-gray-100;
+    @apply border border-gray-600/60 hover:border-gray-500/70;
     @apply font-medium tracking-wide;
-    @apply dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-100;
-    @apply dark:border-gray-600/60 dark:hover:border-gray-500/70;
   }
   
   /* Modern Card System */
   .card-elevated {
-    @apply bg-white/95 backdrop-blur-sm;
-    @apply border border-gray-200/60;
-    @apply shadow-lg shadow-black/5;
+    @apply bg-gray-900/95 backdrop-blur-sm;
+    @apply border border-gray-700/60;
+    @apply shadow-lg shadow-black/20;
     @apply rounded-xl;
     @apply transition-all duration-300 ease-out;
     @apply dark:bg-gray-900/95 dark:border-gray-700/60;
@@ -264,38 +262,36 @@
   
   /* Professional Form Controls */
   .input-elevated {
-    @apply bg-white/80 backdrop-blur-sm;
-    @apply border-2 border-gray-200;
+    @apply bg-gray-800/90 backdrop-blur-sm;
+    @apply border-2 border-gray-600;
     @apply rounded-lg px-4 py-2.5;
     @apply transition-all duration-200 ease-out;
-    @apply placeholder:text-gray-500/70;
-    @apply dark:bg-gray-900/80 dark:border-gray-700;
+    @apply placeholder:text-gray-400/70;
+    @apply text-gray-100;
   }
   
   .input-elevated:focus {
-    @apply border-blue-500/60 ring-2 ring-blue-500/20;
-    @apply shadow-sm shadow-blue-500/10;
+    @apply border-orange-600/60 ring-2 ring-orange-600/20;
+    @apply shadow-sm shadow-orange-600/10;
   }
   
   /* Enhanced Navigation */
   .nav-glass {
-    @apply bg-white/90 backdrop-blur-lg;
-    @apply border-b border-gray-200/50;
-    @apply shadow-sm shadow-black/5;
-    @apply dark:bg-gray-900/90 dark:border-gray-700/50;
+    @apply bg-gray-900/90 backdrop-blur-lg;
+    @apply border-b border-gray-700/50;
+    @apply shadow-sm shadow-black/20;
   }
   
   /* Professional Modal System */
   .modal-glass {
-    @apply bg-white/95 backdrop-blur-sm;
-    @apply border border-gray-200/60;
-    @apply shadow-2xl shadow-black/20;
+    @apply bg-gray-900/95 backdrop-blur-sm;
+    @apply border border-gray-700/60;
+    @apply shadow-2xl shadow-black/40;
     @apply rounded-2xl;
-    @apply dark:bg-gray-900/95 dark:border-gray-700/60;
   }
   
   .modal-backdrop {
-    @apply bg-black/40 backdrop-blur-sm;
+    @apply bg-black/60 backdrop-blur-sm;
   }
   
   /* Enhanced Table System */
@@ -382,26 +378,26 @@
 }
 
 :root {
-  /* Memorial theme - clean light interface with warm brown accents */
-  --background: hsl(0, 0%, 100%);
-  --foreground: hsl(222.2, 84%, 4.9%);
-  --muted: hsl(210, 40%, 96%);
-  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(222.2, 84%, 4.9%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(222.2, 84%, 4.9%);
-  --border: hsl(214.3, 31.8%, 91.4%);
-  --input: hsl(214.3, 31.8%, 91.4%);
+  /* Memorial theme - dark aesthetic with grey/black/sage green/brown palette */
+  --background: hsl(220, 13%, 9%);
+  --foreground: hsl(0, 0%, 95%);
+  --muted: hsl(220, 8%, 18%);
+  --muted-foreground: hsl(220, 5%, 65%);
+  --popover: hsl(220, 10%, 12%);
+  --popover-foreground: hsl(0, 0%, 95%);
+  --card: hsl(220, 10%, 12%);
+  --card-foreground: hsl(0, 0%, 92%);
+  --border: hsl(220, 8%, 25%);
+  --input: hsl(220, 10%, 16%);
   --primary: hsl(25, 30%, 45%);
   --primary-foreground: hsl(0, 0%, 98%);
-  --secondary: hsl(210, 40%, 96%);
-  --secondary-foreground: hsl(222.2, 84%, 4.9%);
-  --accent: hsl(210, 40%, 96%);
-  --accent-foreground: hsl(222.2, 84%, 4.9%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(210, 40%, 98%);
-  --ring: hsl(222.2, 84%, 4.9%);
+  --secondary: hsl(220, 8%, 20%);
+  --secondary-foreground: hsl(0, 0%, 90%);
+  --accent: hsl(120, 8%, 25%);
+  --accent-foreground: hsl(0, 0%, 95%);
+  --destructive: hsl(0, 75%, 55%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(25, 30%, 45%);
 
   /* Focus styles */
   --focus-ring: hsl(207, 90%, 54%);
