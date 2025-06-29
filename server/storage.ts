@@ -816,18 +816,19 @@ export class DatabaseStorage implements IStorage {
 
   // Obituary Reviews
   async getObituaryReviews(funeralHomeId?: number): Promise<ObituaryReview[]> {
-    let query = db.select().from(obituaryReviews);
-    
     if (funeralHomeId) {
-      query = query.where(eq(obituaryReviews.funeralHomeId, funeralHomeId));
+      return await db.select().from(obituaryReviews)
+        .where(eq(obituaryReviews.funeralHomeId, funeralHomeId))
+        .orderBy(desc(obituaryReviews.createdAt));
     }
     
-    return await query.orderBy(desc(obituaryReviews.createdAt));
+    return await db.select().from(obituaryReviews)
+      .orderBy(desc(obituaryReviews.createdAt));
   }
 
   async getObituaryReview(id: number): Promise<ObituaryReview | undefined> {
     const [review] = await db.select().from(obituaryReviews).where(eq(obituaryReviews.id, id));
-    return review;
+    return review || undefined;
   }
 
   async createObituaryReview(review: InsertObituaryReview): Promise<ObituaryReview> {
@@ -843,12 +844,10 @@ export class DatabaseStorage implements IStorage {
     return updatedReview;
   }
 
-  async getObituaryReview(id: number): Promise<ObituaryReview | undefined> {
-    const [review] = await db.select().from(obituaryReviews).where(eq(obituaryReviews.id, id));
-    return review || undefined;
-  }
-
   async deleteObituaryReview(id: number): Promise<void> {
+    // First delete any API calls associated with this review
+    await db.delete(apiCalls).where(eq(apiCalls.documentId, id));
+    // Then delete the review
     await db.delete(obituaryReviews).where(eq(obituaryReviews.id, id));
   }
 
@@ -953,18 +952,6 @@ export class DatabaseStorage implements IStorage {
 
   async deleteApiPricing(id: number): Promise<void> {
     await db.delete(apiPricing).where(eq(apiPricing.id, id));
-  }
-
-  // Phase 4: Obituary Review Edit History
-  async getObituaryReviewEdits(reviewId: number): Promise<ObituaryReviewEdit[]> {
-    return db.select().from(obituaryReviewEdits)
-      .where(eq(obituaryReviewEdits.reviewId, reviewId))
-      .orderBy(desc(obituaryReviewEdits.version));
-  }
-
-  async createObituaryReviewEdit(edit: InsertObituaryReviewEdit): Promise<ObituaryReviewEdit> {
-    const [newEdit] = await db.insert(obituaryReviewEdits).values(edit).returning();
-    return newEdit;
   }
 
   async publishObituaryReviewToSystem(reviewId: number, userId: number, userType: string): Promise<Obituary> {
