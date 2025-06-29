@@ -130,15 +130,7 @@ function GlobalHeader() {
               </span>
             </div>
           </Link>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <span className="text-sm font-medium text-foreground">
-                {currentUser.userType === 'admin' ? 'Admin' : 
-                 currentUser.userType === 'funeral_home' ? 'Funeral Home' :
-                 currentUser.userType === 'employee' ? 'Employee' : 'Individual'} - {currentUser.username}
-              </span>
-            </div>
-
+          <div className="flex items-center space-x-3">
             {/* Auth Buttons */}
             <nav role="navigation" aria-label="User account navigation">
               {authenticatedUser ? (
