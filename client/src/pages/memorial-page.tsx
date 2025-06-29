@@ -275,7 +275,7 @@ export default function MemorialPage() {
 
         {/* Primary Media */}
         {memorial.primaryMediaType && memorial.primaryMediaId && (
-          <Card className="mb-8 bg-card border-border">
+          <Card className="mb-8 bg-gray-800/90 border-gray-600 backdrop-blur-sm">
             <CardContent className="p-0">
               {memorial.primaryMediaType === 'image' && (
                 <img 
@@ -429,12 +429,12 @@ export default function MemorialPage() {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className={`${isMobile ? 'flex flex-col gap-1 mb-2' : 'flex items-center gap-2 mb-2'}`}>
-                          <span className="font-medium truncate">{comment.authorName}</span>
-                          <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-300`}>
+                          <span className="font-medium truncate text-gray-100">{comment.authorName}</span>
+                          <span className={`${isMobile ? 'text-xs' : 'text-sm'} text-gray-400`}>
                             {format(new Date(comment.createdAt), isMobile ? 'MMM d' : 'MMM d, yyyy')}
                           </span>
                         </div>
-                        <p className={`text-white leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
+                        <p className={`text-gray-100 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
                           {comment.content}
                         </p>
                       </div>
@@ -442,8 +442,8 @@ export default function MemorialPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-300">
-                  <MessageCircle className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 opacity-50`} />
+                <div className="text-center py-8 text-gray-200">
+                  <MessageCircle className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-4 opacity-60`} />
                   <p className={isMobile ? 'text-sm' : ''}>No messages yet. Be the first to share a memory.</p>
                 </div>
               )}
