@@ -188,24 +188,26 @@ export default function TeamManagement() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex-1">
           <h1 className="text-2xl font-bold">Team Management</h1>
           <p className="text-gray-600">
             Manage your funeral home team members ({activeEmployees.length + pendingInvitations.length}/5 slots used)
           </p>
         </div>
         
-        <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              disabled={activeEmployees.length + pendingInvitations.length >= 5}
-              className="flex items-center gap-2"
-            >
-              <UserPlus className="h-4 w-4" />
-              Invite Employee
-            </Button>
-          </DialogTrigger>
+        <div className="flex-shrink-0">
+          <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                disabled={activeEmployees.length + pendingInvitations.length >= 5}
+                className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:w-auto"
+                size="sm"
+              >
+                <UserPlus className="h-4 w-4" />
+                Invite Employee
+              </Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite Team Member</DialogTitle>
@@ -235,6 +237,7 @@ export default function TeamManagement() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {(activeEmployees.length + pendingInvitations.length >= 5) && (
