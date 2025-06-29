@@ -387,23 +387,11 @@ export default function EnhancedPromptTemplates() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto bg-gray-900 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white">Enhanced Prompt Templates</h1>
           <p className="text-gray-400 mt-1">Manage AI prompt templates with versioning and context documents</p>
         </div>
-        <Button
-          onClick={() => {
-            setIsCreating(true);
-            setSelectedTemplate(null);
-            setEditingTemplate(null);
-            setShowVersionHistory(false);
-          }}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create New Template
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
