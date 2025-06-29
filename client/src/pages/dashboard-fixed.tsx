@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Users, MessageSquare, Plus, FileText, Heart, Calendar, Eye, Edit, BarChart3, ClipboardList, Skull, UserCog, Settings, Book, Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -101,10 +102,12 @@ export default function Dashboard() {
     }
   });
 
+  const [apiTimeRange, setApiTimeRange] = useState('7d');
+
   const { data: apiUsage, isLoading: isApiUsageLoading } = useQuery({
-    queryKey: ['/api/api-usage', userTypeParam, userIdParam],
+    queryKey: ['/api/api-usage', userTypeParam, userIdParam, apiTimeRange],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/api-usage?timeRange=7d`);
+      const res = await apiRequest('GET', `/api/api-usage?timeRange=${apiTimeRange}`);
       return res.json();
     },
     enabled: currentUser.userType === 'admin',
@@ -696,6 +699,19 @@ export default function Dashboard() {
                     API Usage Dashboard
                   </h2>
                   <p className="text-muted-foreground mt-2">Monitor AI API calls and costs across the platform</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Time Range:</span>
+                  <Select value={apiTimeRange} onValueChange={setApiTimeRange}>
+                    <SelectTrigger className="w-[130px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="24h">Last 24 Hours</SelectItem>
+                      <SelectItem value="7d">Last 7 Days</SelectItem>
+                      <SelectItem value="30d">Last 30 Days</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
