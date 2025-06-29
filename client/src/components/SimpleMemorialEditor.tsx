@@ -184,15 +184,15 @@ export default function SimpleMemorialEditorFixed({ memorial, onSave }: SimpleMe
   const currentDevice = deviceSizes[deviceView];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header with Undo/Redo */}
-      <div className="bg-white border-b px-6 py-4">
+      <div className="bg-card border-b border-border px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-semibold">Memorial Editor</h1>
+            <h1 className="text-xl font-semibold text-foreground">Memorial Editor</h1>
             
             {/* Undo/Redo Controls */}
-            <div className="flex items-center gap-2 border-l pl-4">
+            <div className="flex items-center gap-2 border-l border-border pl-4">
               <Button
                 variant="outline"
                 size="sm"
@@ -218,7 +218,7 @@ export default function SimpleMemorialEditorFixed({ memorial, onSave }: SimpleMe
           
           <div className="flex items-center gap-2">
             {/* Device Preview Toggle */}
-            <div className="flex items-center border rounded-lg p-1">
+            <div className="flex items-center border border-border rounded-lg p-1 bg-muted">
               <Button
                 variant={deviceView === 'mobile' ? 'default' : 'ghost'}
                 size="sm"
@@ -264,7 +264,7 @@ export default function SimpleMemorialEditorFixed({ memorial, onSave }: SimpleMe
         <div className="flex-1 p-6">
           <div className="flex justify-center">
             <div 
-              className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300"
+              className="bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300 border border-border"
               style={{
                 width: currentDevice.width,
                 minHeight: currentDevice.height,
@@ -282,8 +282,8 @@ export default function SimpleMemorialEditorFixed({ memorial, onSave }: SimpleMe
                       key={element.id}
                       className={`relative group cursor-pointer border-2 transition-colors ${
                         selectedElement === element.id 
-                          ? 'border-blue-500 bg-blue-50 bg-opacity-20' 
-                          : 'border-transparent hover:border-gray-300'
+                          ? 'border-primary bg-primary/10' 
+                          : 'border-transparent hover:border-muted-foreground/30'
                       }`}
                       onClick={() => setSelectedElement(element.id)}
                       style={{

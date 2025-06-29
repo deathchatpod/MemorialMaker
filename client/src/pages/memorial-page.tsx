@@ -123,7 +123,7 @@ export default function MemorialPage() {
     enabled: !!memorial?.obituaryId,
   });
 
-  // Fetch collaborators to check if we should show reminder
+  // Fetch collaborators with optimized lazy loading and caching
   const { data: collaborators = [] } = useQuery({
     queryKey: ["/api/final-spaces", memorial?.id, "collaborators"],
     queryFn: async () => {
@@ -132,7 +132,9 @@ export default function MemorialPage() {
       if (!response.ok) return [];
       return response.json();
     },
-    enabled: !!memorial?.id,
+    enabled: !!memorial?.id && hasCheckedCollaborators,
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
   });
 
   // Responsive design state
@@ -147,6 +149,22 @@ export default function MemorialPage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Lazy load collaborators data only when needed for edit permissions
+  useEffect(() => {
+    if (memorial && !hasCheckedCollaborators) {
+      const canEdit = currentUserType === 'admin' || 
+                     (currentUserType === 'funeral_home' && memorial.funeralHomeId === currentUserId) ||
+                     (currentUserType === 'employee' && memorial.createdById === currentUserId && memorial.createdByType === 'employee');
+      
+      if (canEdit) {
+        // Delay collaborator check to improve initial page load
+        setTimeout(() => {
+          setHasCheckedCollaborators(true);
+        }, 1000);
+      }
+    }
+  }, [memorial, currentUserType, currentUserId, hasCheckedCollaborators]);
 
   // Check if user should be prompted to add collaborators (only when saving)
   const shouldShowCollaboratorModal = () => {
@@ -163,7 +181,7 @@ export default function MemorialPage() {
     return canEdit && collaborators.length === 0 && !storedDontAsk;
   };
 
-  // Fetch comments
+  // Fetch comments with optimized caching and lazy loading
   const { data: comments = [], isLoading: commentsLoading } = useQuery<Comment[]>({
     queryKey: ["/api/memorial", slug, "comments"],
     queryFn: async () => {
@@ -172,6 +190,9 @@ export default function MemorialPage() {
       return response.json();
     },
     enabled: !!slug && memorial?.allowComments,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
   });
 
   // Submit comment mutation
