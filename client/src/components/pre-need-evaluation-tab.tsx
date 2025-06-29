@@ -186,28 +186,27 @@ export function PreNeedEvaluationTab() {
         </Button>
       </div>
 
-      {/* Unified Pre Need Services Table */}
-      <Card>
+      {/* Pre Need Basics Table */}
+      <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Pre Need Services
+            Pre Need Basics
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {allSurveyResponses.length === 0 ? (
+          {basics.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No Pre Need Services Completed</h3>
+              <h3 className="text-lg font-medium mb-2">No Pre Need Basics Completed</h3>
               <p className="text-muted-foreground mb-4">
-                Start by taking Pre Need Basics or a Pre Need Evaluation to assess and plan for important matters
+                Essential information guide to help your family navigate important matters
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Survey Type</TableHead>
                   <TableHead>Date Completed</TableHead>
                   <TableHead>Completed By</TableHead>
                   <TableHead>Status</TableHead>
@@ -215,13 +214,8 @@ export function PreNeedEvaluationTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {allSurveyResponses.map((response) => (
+                {basics.map((response) => (
                   <TableRow key={response.id}>
-                    <TableCell>
-                      <Badge variant={response.responseType === 'pre_need_basics' ? 'default' : 'secondary'}>
-                        {response.responseType === 'pre_need_basics' ? 'Pre Need Basics' : 'Pre Need Evaluation'}
-                      </Badge>
-                    </TableCell>
                     <TableCell>
                       {format(new Date(response.createdAt), 'MMM d, yyyy')}
                     </TableCell>
@@ -255,9 +249,98 @@ export function PreNeedEvaluationTab() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Survey Response</AlertDialogTitle>
+                              <AlertDialogTitle>Delete Pre Need Basics</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete this survey response? This action cannot be undone.
+                                Are you sure you want to delete this Pre Need Basics response? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteSurveyResponse.mutate(response.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Pre Need Evaluations Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Pre Need Evaluations
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {evaluations.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">No Pre Need Evaluations Completed</h3>
+              <p className="text-muted-foreground mb-4">
+                Comprehensive assessments to understand individual readiness and preferences
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date Completed</TableHead>
+                  <TableHead>Completed By</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {evaluations.map((response) => (
+                  <TableRow key={response.id}>
+                    <TableCell>
+                      {format(new Date(response.createdAt), 'MMM d, yyyy')}
+                    </TableCell>
+                    <TableCell>
+                      {getUserDisplayName(response)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">Completed</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center gap-2 justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewResults(response)}
+                          className="flex items-center gap-1"
+                        >
+                          <Eye className="h-3 w-3" />
+                          View
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Pre Need Evaluation</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this Pre Need Evaluation? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
