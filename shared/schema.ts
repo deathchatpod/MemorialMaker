@@ -357,6 +357,18 @@ export const surveyResponses = pgTable("survey_responses", {
   submittedAt: timestamp("submitted_at").defaultNow(),
 });
 
+// Pre Need Basics Collaborators
+export const preNeedBasicsCollaborators = pgTable("pre_need_basics_collaborators", {
+  id: serial("id").primaryKey(),
+  surveyResponseId: integer("survey_response_id").references(() => surveyResponses.id, { onDelete: "cascade" }),
+  collaboratorEmail: varchar("collaborator_email", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  status: varchar("status", { length: 20 }).default("pending").notNull(),
+  invitedBy: integer("invited_by").notNull(),
+  invitedByType: varchar("invited_by_type", { length: 50 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const funeralHomesRelations = relations(funeralHomes, ({ many }) => ({
   employees: many(employees),

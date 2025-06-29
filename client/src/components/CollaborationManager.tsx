@@ -22,8 +22,9 @@ type InviteCollaboratorForm = z.infer<typeof inviteCollaboratorSchema>;
 
 interface CollaborationManagerProps {
   entityId: number;
-  entityType: "obituary" | "finalspace";
-  currentUser: {
+  entityType: "obituary" | "finalspace" | "pre-need-basics";
+  endpointBase?: string;
+  currentUser?: {
     id: number;
     type: string;
     email: string;

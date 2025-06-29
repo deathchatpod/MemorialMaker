@@ -5,10 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, AlertCircle, Info } from 'lucide-react';
+import { FileText, AlertCircle, Info, Users } from 'lucide-react';
 import ConditionalSurveyForm from '@/components/ConditionalSurveyForm';
 import { apiRequest } from '@/lib/queryClient';
 import { ContextualTooltip } from '@/components/ui/contextual-tooltip';
+import CollaborationManager from '@/components/CollaborationManager';
+import CollaboratorConfirmationModal from '@/components/CollaboratorConfirmationModal';
 
 interface Survey {
   id: number;
@@ -36,6 +38,16 @@ export default function TakePreNeedBasics() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Collaboration state management
+  const [collaborators, setCollaborators] = useState<Array<{
+    id: number;
+    email: string;
+    name: string;
+    status: string;
+  }>>([]);
+  const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
 
   // Get current user context from URL params
   const urlParams = new URLSearchParams(window.location.search);
@@ -149,7 +161,43 @@ export default function TakePreNeedBasics() {
   });
 
   const handleSubmit = (formData: Record<string, any>) => {
-    submitMutation.mutate(formData);
+    // Check if we should show collaborator confirmation modal
+    const shouldShowModal = !dontAskAgain && collaborators.length === 0;
+    
+    if (shouldShowModal) {
+      setShowCollaboratorModal(true);
+      // Store form data for later submission
+      (window as any).pendingFormData = formData;
+    } else {
+      submitMutation.mutate(formData);
+    }
+  };
+
+  const handleAddCollaborator = () => {
+    setShowCollaboratorModal(false);
+    // Submit the form data that was stored
+    if ((window as any).pendingFormData) {
+      submitMutation.mutate((window as any).pendingFormData);
+      delete (window as any).pendingFormData;
+    }
+  };
+
+  const handleDoItLater = () => {
+    setShowCollaboratorModal(false);
+    // Submit the form data that was stored
+    if ((window as any).pendingFormData) {
+      submitMutation.mutate((window as any).pendingFormData);
+      delete (window as any).pendingFormData;
+    }
+  };
+
+  const handleDontAskAgain = (checked: boolean) => {
+    setDontAskAgain(checked);
+    if (checked) {
+      localStorage.setItem('pre-need-basics-dont-ask-collaborator', 'true');
+    } else {
+      localStorage.removeItem('pre-need-basics-dont-ask-collaborator');
+    }
   };
 
   // Show loading state
@@ -256,6 +304,26 @@ export default function TakePreNeedBasics() {
               </ContextualTooltip>
             </div>
 
+            {/* Collaborators Section */}
+            <Card className="mb-6 bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center text-white">
+                  <Users className="w-5 h-5 mr-2" />
+                  Collaborators
+                </CardTitle>
+                <p className="text-gray-400 text-sm">
+                  Invite others to help with this Pre Need Basics assessment
+                </p>
+              </CardHeader>
+              <CardContent>
+                <CollaborationManager
+                  entityType="pre-need-basics"
+                  entityId={0} // Will be updated after survey submission
+                  endpointBase="/api/pre-need-basics-collaborators"
+                />
+              </CardContent>
+            </Card>
+
             <ConditionalSurveyForm
               questions={questions}
               onSubmit={handleSubmit}
@@ -265,6 +333,16 @@ export default function TakePreNeedBasics() {
             />
           </CardContent>
         </Card>
+
+        {/* Collaborator Confirmation Modal */}
+        <CollaboratorConfirmationModal
+          isOpen={showCollaboratorModal}
+          onClose={() => setShowCollaboratorModal(false)}
+          onAddCollaborator={handleAddCollaborator}
+          onDoItLater={handleDoItLater}
+          onDontAskAgain={handleDontAskAgain}
+          dontAskAgain={dontAskAgain}
+        />
       </div>
     </div>
   );
