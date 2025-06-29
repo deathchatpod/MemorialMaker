@@ -164,20 +164,18 @@ export default function DataTable({
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="card-elevated">
         {title && (
           <CardHeader>
-            <CardTitle>{title}</CardTitle>
+            <CardTitle className="heading-lg">{title}</CardTitle>
           </CardHeader>
         )}
-        <CardContent>
-          <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-            <div className="space-y-2">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-12 bg-gray-200 rounded"></div>
-              ))}
-            </div>
+        <CardContent className="space-lg">
+          <div className="skeleton-professional h-6 w-1/4 mb-6"></div>
+          <div className="space-md">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="skeleton-professional h-14 rounded-lg"></div>
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -185,18 +183,18 @@ export default function DataTable({
   }
 
   return (
-    <Card className="bg-card border-border">
+    <Card className="card-elevated">
       {title && (
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle className="text-foreground">
+            <CardTitle className="heading-lg text-foreground">
               {title} ({processedData.length}
               {searchTerm || Object.values(filters).some(f => f && f !== "all") 
                 ? ` of ${data.length} total` 
                 : ""})
             </CardTitle>
             {(createButton || createButtons) && (
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 {createButton && (
                   <Button 
                     onClick={createButton.onClick} 
@@ -251,30 +249,33 @@ export default function DataTable({
       )}
       <CardContent>
         {/* Search and Filter Controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder={searchPlaceholder}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="input-elevated pl-12 h-11 focus-professional"
               />
             </div>
           </div>
           {filterableColumns.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {filterableColumns.map(column => (
                 <Select
                   key={column.key}
                   value={filters[column.key] || "all"}
                   onValueChange={(value) => handleFilterChange(column.key, value)}
                 >
-                  <SelectTrigger className="w-40">
-                    <SelectValue placeholder={`All ${column.title}`} />
+                  <SelectTrigger className="input-elevated w-44 h-11 focus-professional">
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4" />
+                      <SelectValue placeholder={`All ${column.title}`} />
+                    </div>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="modal-glass">
                     <SelectItem value="all">All {column.title}</SelectItem>
                     {column.filterOptions?.map(option => (
                       <SelectItem key={option.value} value={option.value}>
