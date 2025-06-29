@@ -139,6 +139,7 @@ export interface IStorage {
   getSurveyResponses(surveyId: number): Promise<SurveyResponse[]>;
   getSurveyResponsesByType(responseType: string, userId?: number, userType?: string, funeralHomeId?: number): Promise<SurveyResponse[]>;
   createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
+  deleteSurveyResponse(id: number): Promise<void>;
 
   // Obituary Reviews
   getObituaryReviews(funeralHomeId?: number): Promise<ObituaryReview[]>;
@@ -1445,6 +1446,10 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  async deleteSurveyResponse(id: number): Promise<void> {
+    await db.delete(surveyResponses).where(eq(surveyResponses.id, id));
   }
 }
 

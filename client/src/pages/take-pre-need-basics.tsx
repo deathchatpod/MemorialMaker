@@ -21,13 +21,13 @@ interface Question {
   surveyId: number;
   questionText: string;
   questionType: string;
-  placeholder?: string | null;
+  placeholder: string | null;
   isRequired: boolean;
   options: unknown;
   orderIndex: number;
-  conditionalQuestionId?: number | null;
-  conditionalValue?: string | null;
-  conditionalOperator?: string | null;
+  conditionalQuestionId: number | null;
+  conditionalValue: string | null;
+  conditionalOperator: string | null;
   createdAt: Date;
 }
 

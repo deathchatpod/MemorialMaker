@@ -1844,6 +1844,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get survey responses by type (pre_need_evaluation or pre_need_basics)
+  app.get("/api/survey-responses/type/:responseType", async (req, res) => {
+    try {
+      const { responseType } = req.params;
+      const { userId, userType, funeralHomeId } = req.query;
+      
+      const responses = await storage.getSurveyResponsesByType(
+        responseType,
+        userId ? parseInt(userId as string) : undefined,
+        userType as string,
+        funeralHomeId ? parseInt(funeralHomeId as string) : undefined
+      );
+      
+      res.json(responses);
+    } catch (error) {
+      console.error("Error fetching survey responses by type:", error);
+      res.status(500).json({ message: "Failed to fetch survey responses" });
+    }
+  });
+
+  // Delete survey response
+  app.delete("/api/survey-responses/:id", async (req, res) => {
+    try {
+      const responseId = parseInt(req.params.id);
+      await storage.deleteSurveyResponse(responseId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting survey response:", error);
+      res.status(500).json({ message: "Failed to delete survey response" });
+    }
+  });
+
   // Final Space Collaboration endpoints
   app.get("/api/final-spaces/:id/collaborators", async (req, res) => {
     try {
