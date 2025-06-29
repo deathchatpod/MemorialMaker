@@ -193,9 +193,40 @@ export const promptTemplates = pgTable("prompt_templates", {
   name: text("name").notNull(),
   platform: varchar("platform", { length: 20 }).notNull(), // 'claude' or 'chatgpt'
   promptType: varchar("prompt_type", { length: 20 }).notNull(), // 'base', 'revision'
+  version: integer("version").notNull().default(1),
+  isPrimary: boolean("is_primary").notNull().default(false), // Only one version can be primary per platform/type
+  
+  // Structured prompt sections for easier editing
+  systemMessage: text("system_message"),
+  userInstructions: text("user_instructions"),
+  examples: text("examples"),
+  constraints: text("constraints"),
+  outputFormat: text("output_format"),
+  
+  // Legacy content field for backward compatibility
   content: text("content").notNull(),
+  
+  // Change tracking
+  createdBy: integer("created_by").notNull(),
+  createdByName: text("created_by_name").notNull(),
+  changelog: text("changelog"), // What changed in this version
+  
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Context documents attached to prompt templates
+export const promptTemplateDocuments = pgTable("prompt_template_documents", {
+  id: serial("id").primaryKey(),
+  promptTemplateId: integer("prompt_template_id").notNull().references(() => promptTemplates.id, { onDelete: "cascade" }),
+  filename: text("filename").notNull(),
+  originalName: text("original_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  mimeType: text("mime_type").notNull(),
+  content: text("content"), // Extracted text content
+  uploadedBy: integer("uploaded_by").notNull(),
+  uploadedByName: text("uploaded_by_name").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // Final Spaces (linked to funeral home)
@@ -541,6 +572,13 @@ export const insertPromptTemplateSchema = createInsertSchema(promptTemplates).om
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  content: z.string().min(1, "Content is required"),
+  name: z.string().min(1, "Name is required"),
+  platform: z.enum(["claude", "chatgpt"]),
+  promptType: z.enum(["base", "revision"]),
+  createdBy: z.number().min(1, "Created by is required"),
+  createdByName: z.string().min(1, "Creator name is required"),
 });
 
 export const insertFinalSpaceSchema = createInsertSchema(finalSpaces).omit({
@@ -645,6 +683,9 @@ export type InsertQuestion = z.infer<typeof insertQuestionSchema>;
 
 export type PromptTemplate = typeof promptTemplates.$inferSelect;
 export type InsertPromptTemplate = z.infer<typeof insertPromptTemplateSchema>;
+
+export type PromptTemplateDocument = typeof promptTemplateDocuments.$inferSelect;
+export type InsertPromptTemplateDocument = typeof promptTemplateDocuments.$inferInsert;
 
 export type FinalSpace = typeof finalSpaces.$inferSelect;
 export type InsertFinalSpace = z.infer<typeof insertFinalSpaceSchema>;

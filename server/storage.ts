@@ -487,21 +487,8 @@ export class DatabaseStorage implements IStorage {
 
   // Prompt Templates
   async getPromptTemplates(): Promise<PromptTemplate[]> {
-    // Use raw query to handle column name mismatch temporarily
-    const templates = await db.execute(sql`
-      SELECT id, name, platform, prompt_type, template as content, created_at, updated_at 
-      FROM prompt_templates 
-      ORDER BY platform, prompt_type
-    `);
-    return templates.rows.map(row => ({
-      id: row.id as number,
-      name: row.name as string,
-      platform: row.platform as string,
-      promptType: row.prompt_type as string,
-      content: row.content as string,
-      createdAt: row.created_at as Date,
-      updatedAt: row.updated_at as Date,
-    }));
+    return await db.select().from(promptTemplates)
+      .orderBy(desc(promptTemplates.isPrimary), promptTemplates.platform, promptTemplates.promptType, desc(promptTemplates.version));
   }
 
   async getPromptTemplate(platform: string, promptType: string): Promise<PromptTemplate | undefined> {
