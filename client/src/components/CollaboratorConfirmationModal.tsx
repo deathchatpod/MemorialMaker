@@ -37,18 +37,16 @@ export default function CollaboratorConfirmationModal({
             <Users className="h-5 w-5 text-blue-500" />
             Add a Collaborator
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-muted-foreground">
-            <div className="flex items-start gap-3 mb-4">
-              <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-medium text-foreground mb-2">
-                  We strongly recommend having a collaborator for every project.
-                </p>
-                <p>
-                  The goal of FinalSpaces by DeathMatters is to always be prepared and make things easier if anything happens.
-                </p>
-              </div>
+          <AlertDialogDescription className="text-muted-foreground text-center">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <AlertTriangle className="h-5 w-5 text-orange-500" />
+              <span className="font-medium text-foreground">
+                We strongly recommend having a collaborator for every project.
+              </span>
             </div>
+            <p className="text-sm">
+              The goal of FinalSpaces by DeathMatters is to always be prepared and make things easier if anything happens.
+            </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         
