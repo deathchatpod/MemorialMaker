@@ -903,6 +903,7 @@ export default function Dashboard() {
                     data={customerFeedback}
                     isLoading={isCustomerFeedbackLoading}
                     emptyMessage="There are no customer feedback submissions yet."
+                    onRowClick={(row) => setLocation(`/customer-feedback/${row.id}`)}
                     columns={[
                       {
                         key: "userName",

@@ -23,6 +23,7 @@ interface DataTableProps {
   isLoading?: boolean;
   searchPlaceholder?: string;
   emptyMessage?: string;
+  onRowClick?: (row: any) => void;
   createButton?: {
     label: string;
     onClick: () => void;
@@ -56,6 +57,7 @@ export default function DataTable({
   isLoading = false,
   searchPlaceholder = "Search...",
   emptyMessage,
+  onRowClick,
   createButton,
   createButtons,
   actions,
@@ -308,11 +310,18 @@ export default function DataTable({
                     </div>
                   </TableHead>
                 ))}
+                {actions && (
+                  <TableHead>Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {processedData.map((row, index) => (
-                <TableRow key={row.id || index}>
+                <TableRow 
+                  key={row.id || index}
+                  className={onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" : ""}
+                  onClick={() => onRowClick && onRowClick(row)}
+                >
                   {columns.map(column => (
                     <TableCell key={column.key}>
                       {column.render 
@@ -321,6 +330,30 @@ export default function DataTable({
                       }
                     </TableCell>
                   ))}
+                  {actions && (
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {actions(row).map((action, actionIndex) => {
+                          const IconComponent = action.icon;
+                          return (
+                            <Button
+                              key={actionIndex}
+                              size="sm"
+                              variant={action.variant || "outline"}
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent row click when clicking action button
+                                action.onClick();
+                              }}
+                              className="flex items-center gap-1"
+                            >
+                              <IconComponent className="w-4 h-4" />
+                              {action.label}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
