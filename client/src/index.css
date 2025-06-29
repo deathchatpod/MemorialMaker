@@ -382,26 +382,26 @@
 }
 
 :root {
-  /* Memorial theme - elegant greys with warm brown accents */
-  --background: hsl(220, 13%, 18%);
-  --foreground: hsl(0, 0%, 95%);
-  --muted: hsl(220, 8%, 28%);
-  --muted-foreground: hsl(220, 5%, 85%);
-  --popover: hsl(220, 10%, 20%);
-  --popover-foreground: hsl(0, 0%, 95%);
-  --card: hsl(220, 10%, 22%);
-  --card-foreground: hsl(0, 0%, 92%);
-  --border: hsl(220, 8%, 32%);
-  --input: hsl(220, 10%, 24%);
+  /* Memorial theme - clean light interface with warm brown accents */
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
   --primary: hsl(25, 30%, 45%);
   --primary-foreground: hsl(0, 0%, 98%);
-  --secondary: hsl(220, 8%, 25%);
-  --secondary-foreground: hsl(0, 0%, 90%);
-  --accent: hsl(25, 25%, 28%);
-  --accent-foreground: hsl(0, 0%, 95%);
-  --destructive: hsl(0, 75%, 55%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(25, 30%, 45%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(222.2, 84%, 4.9%);
 
   /* Focus styles */
   --focus-ring: hsl(207, 90%, 54%);

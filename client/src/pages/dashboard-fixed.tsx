@@ -241,15 +241,15 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-background memorial-dashboard">
       {/* Sidebar */}
-      <nav className="w-64 card-elevated border-r border-border/30 flex-shrink-0 flex flex-col backdrop-blur-sm" role="navigation" aria-label="Dashboard navigation">
+      <nav className="w-64 bg-card shadow-lg border-r border-border flex-shrink-0 flex flex-col" role="navigation" aria-label="Dashboard navigation">
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center mb-8">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center mr-4 ring-2 ring-primary/20">
+              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
                 <Skull className="w-6 h-6 text-primary" aria-hidden="true" />
               </div>
               <div>
-                <h2 className="heading-md text-foreground">{currentUser.username}</h2>
+                <h2 className="text-lg font-semibold text-foreground">{currentUser.username}</h2>
                 <p className="text-sm text-muted-foreground capitalize">{currentUser.userType.replace('_', ' ')}</p>
               </div>
             </div>
@@ -262,10 +262,10 @@ export default function Dashboard() {
                     <button
                       onClick={() => handleSectionChange(item.id)}
                       className={cn(
-                        "w-full flex items-center px-4 py-3 text-left rounded-xl transition-all duration-200 focus-professional",
+                        "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors",
                         activeSection === item.id
-                          ? "bg-primary/10 text-primary font-medium border-r-4 border-primary shadow-lg shadow-primary/10"
-                          : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground hover:shadow-md"
+                          ? "bg-accent text-accent-foreground border-r-2 border-primary"
+                          : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
                       )}
                       aria-current={activeSection === item.id ? "page" : undefined}
                     >
@@ -281,10 +281,10 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-gradient-to-br from-background to-background/95" role="main">
-        <div className="p-8">
+      <main className="flex-1 overflow-y-auto bg-background" role="main">
+        <div className="p-6">
           <div className="max-w-7xl mx-auto">
-            <h1 className="heading-xl text-foreground mb-8 flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
               {activeSection === 'obituaries' && (
               <>
                 <FileText className="w-7 h-7 text-primary" />
