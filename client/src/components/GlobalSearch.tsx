@@ -150,7 +150,7 @@ export default function GlobalSearch({ onClose }: GlobalSearchProps) {
             </SelectTrigger>
             <SelectContent className="bg-card border-border">
               <SelectItem value="all">All Funeral Homes</SelectItem>
-              {funeralHomes.map((fh: any) => (
+              {(funeralHomes as any[]).map((fh: any) => (
                 <SelectItem key={fh.id} value={fh.id.toString()}>
                   {fh.businessName}
                 </SelectItem>

@@ -69,7 +69,7 @@ export function VersionHistory({ obituaryId, onRestore }: VersionHistoryProps) {
       </CardHeader>
       <CardContent className="space-y-3">
         {/* Latest versions (always visible) */}
-        {latestVersions.map((version) => (
+        {latestVersions.map((version: Version) => (
           <VersionItem
             key={version.id}
             version={version}
@@ -92,7 +92,7 @@ export function VersionHistory({ obituaryId, onRestore }: VersionHistoryProps) {
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-3 mt-3">
-              {olderVersions.map((version) => (
+              {olderVersions.map((version: Version) => (
                 <VersionItem
                   key={version.id}
                   version={version}

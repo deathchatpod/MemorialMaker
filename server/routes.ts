@@ -2913,9 +2913,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })));
       }
       
-      // Search reviews
-      if (type === 'all' || type === 'review') {
-        let reviewQuery = db.select().from(obituaries)
+      // Search obituaries
+      if (type === 'all' || type === 'obituary') {
+        let obituaryQuery = db.select().from(obituaries)
           .where(
             and(
               or(
@@ -2928,16 +2928,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           )
           .limit(10);
           
-        const reviewResults = await reviewQuery;
+        const obituaryResults = await obituaryQuery;
         
-        results.push(...reviewResults.map(review => ({
-          id: review.id,
+        results.push(...obituaryResults.map(obituary => ({
+          id: obituary.id,
           type: 'obituary',
-          title: review.fullName || 'Untitled Obituary',
-          description: review.biography?.substring(0, 100) + '...' || 'Obituary document',
-          date: review.createdAt,
-          funeralHome: `Funeral Home ${review.funeralHomeId}`,
-          url: `/obituary/${review.id}/generated`
+          title: obituary.fullName || 'Untitled Obituary',
+          description: obituary.biography?.substring(0, 100) + '...' || 'Obituary document',
+          date: obituary.createdAt,
+          funeralHome: `Funeral Home ${obituary.funeralHomeId}`,
+          url: `/obituary/${obituary.id}/generated`
         })));
       }
       
