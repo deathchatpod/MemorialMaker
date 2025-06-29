@@ -13,6 +13,8 @@ import ObituaryIntegration from "@/components/ObituaryIntegration";
 import SocialMediaDisplay from "@/components/SocialMediaDisplay";
 import { CommunityContribution } from "@/components/CommunityContribution";
 import { CommunityContributionsDisplay } from "@/components/CommunityContributionsDisplay";
+import CollaboratorConfirmationModal from "@/components/CollaboratorConfirmationModal";
+import CollaborationManager from "@/components/CollaborationManager";
 import { 
   Heart, 
   Calendar, 
@@ -92,6 +94,11 @@ export default function MemorialPage() {
     authorEmail: "",
     content: ""
   });
+  
+  // Collaborator reminder modal state
+  const [showCollaboratorModal, setShowCollaboratorModal] = useState(false);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
+  const [hasCheckedCollaborators, setHasCheckedCollaborators] = useState(false);
 
   // Fetch memorial space data
   const { data: memorial, isLoading: memorialLoading } = useQuery<FinalSpace>({
@@ -116,6 +123,18 @@ export default function MemorialPage() {
     enabled: !!memorial?.obituaryId,
   });
 
+  // Fetch collaborators to check if we should show reminder
+  const { data: collaborators = [] } = useQuery({
+    queryKey: ["/api/final-spaces", memorial?.id, "collaborators"],
+    queryFn: async () => {
+      if (!memorial?.id) return [];
+      const response = await fetch(`/api/final-spaces/${memorial.id}/collaborators`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!memorial?.id,
+  });
+
   // Responsive design state
   const [isMobile, setIsMobile] = useState(false);
 
@@ -128,6 +147,28 @@ export default function MemorialPage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Check if user should be prompted to add collaborators
+  useEffect(() => {
+    if (memorial && collaborators && !hasCheckedCollaborators) {
+      const canEdit = currentUserType === 'admin' || 
+                     (currentUserType === 'funeral_home' && memorial.funeralHomeId === currentUserId) ||
+                     (currentUserType === 'employee' && memorial.createdById === currentUserId && memorial.createdByType === 'employee');
+      
+      // Check localStorage for "don't ask again" preference for this memorial
+      const dontAskKey = `dontAskCollaborator_${memorial.id}`;
+      const storedDontAsk = localStorage.getItem(dontAskKey) === 'true';
+      
+      if (canEdit && collaborators.length === 0 && !storedDontAsk) {
+        // Show modal after a short delay to ensure page is loaded
+        setTimeout(() => {
+          setShowCollaboratorModal(true);
+        }, 2000);
+      }
+      
+      setHasCheckedCollaborators(true);
+    }
+  }, [memorial, collaborators, hasCheckedCollaborators, currentUserType, currentUserId]);
 
   // Fetch comments
   const { data: comments = [], isLoading: commentsLoading } = useQuery<Comment[]>({
@@ -188,6 +229,24 @@ export default function MemorialPage() {
       title: "Link copied",
       description: "Memorial link copied to clipboard"
     });
+  };
+
+  // Collaborator modal handlers
+  const handleAddCollaborator = () => {
+    setShowCollaboratorModal(false);
+    // Navigate to edit page with collaborator section focused
+    window.location.href = `/final-spaces/${memorial?.id}/edit?section=collaborators`;
+  };
+
+  const handleDoItLater = () => {
+    setShowCollaboratorModal(false);
+  };
+
+  const handleDontAskAgain = (checked: boolean) => {
+    setDontAskAgain(checked);
+    if (checked && memorial) {
+      localStorage.setItem(`dontAskCollaborator_${memorial.id}`, 'true');
+    }
   };
 
   if (memorialLoading) {
