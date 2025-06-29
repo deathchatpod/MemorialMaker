@@ -107,6 +107,7 @@ This is a full-stack obituary generation and collaboration platform built with m
 
 # Changelog
 - June 24, 2025: Initial setup
+- June 29, 2025: **CUSTOMER FEEDBACK SYSTEM COMPLETE** - Implemented comprehensive customer feedback system with persistent footer button visible to all authenticated users, modal interface with category selection (Bug/App Crashing, New Feature Request, General Feedback, General Question), screenshot upload capability, admin "Customer Feedback" dashboard tab with sortable/filterable table, individual feedback detail pages with status management (Needs Work, In Process, Resolved), complete API endpoints and database integration, fixed modal scrolling issues for optimal user experience
 - June 24, 2025: Implemented hierarchical user management system (Admin → Funeral Home → Employee)
 - June 24, 2025: Updated project branding to "DeathMatters"
 - June 24, 2025: Added authentication system with password-based login

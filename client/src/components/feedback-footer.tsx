@@ -152,36 +152,37 @@ export default function FeedbackFooter({ currentUser }: FeedbackFooterProps) {
       </footer>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl bg-gray-900 border-gray-700">
+        <DialogContent className="max-w-2xl max-h-[90vh] bg-gray-900 border-gray-700 overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-gray-100 text-xl">Send Feedback</DialogTitle>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* User Information Display */}
-            <Card className="bg-gray-800 border-gray-700">
-              <CardContent className="p-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-gray-300 text-sm">Your Name</Label>
-                    <p className="text-gray-100 font-medium">{getUserDisplayName()}</p>
+          <div className="flex flex-col h-full">
+            <form id="feedback-form" onSubmit={handleSubmit} className="flex-1 space-y-4 overflow-y-auto pr-2">
+              {/* User Information Display */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-300 text-sm">Your Name</Label>
+                      <p className="text-gray-100 font-medium">{getUserDisplayName()}</p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-300 text-sm">User Type</Label>
+                      <p className="text-gray-100 font-medium">{getUserTypeDisplay()}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-gray-300 text-sm">Date & Time</Label>
+                      <p className="text-gray-100 font-medium">
+                        {new Date().toLocaleString()}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-gray-300 text-sm">User Type</Label>
-                    <p className="text-gray-100 font-medium">{getUserTypeDisplay()}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-gray-300 text-sm">Date & Time</Label>
-                    <p className="text-gray-100 font-medium">
-                      {new Date().toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            {/* Feedback Form */}
-            <div className="space-y-4">
+              {/* Feedback Form */}
+              <div className="space-y-4">
               <div>
                 <Label htmlFor="category" className="text-gray-300">
                   Category <span className="text-red-400">*</span>
@@ -261,10 +262,11 @@ export default function FeedbackFooter({ currentUser }: FeedbackFooterProps) {
                   </p>
                 )}
               </div>
-            </div>
+              </div>
+            </form>
 
-            {/* Submit Buttons */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
+            {/* Submit Buttons - Fixed at bottom */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-700 mt-4 bg-gray-900">
               <Button
                 type="button"
                 variant="ghost"
@@ -275,6 +277,7 @@ export default function FeedbackFooter({ currentUser }: FeedbackFooterProps) {
               </Button>
               <Button
                 type="submit"
+                form="feedback-form"
                 disabled={submitFeedbackMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
@@ -291,7 +294,7 @@ export default function FeedbackFooter({ currentUser }: FeedbackFooterProps) {
                 )}
               </Button>
             </div>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
     </>
