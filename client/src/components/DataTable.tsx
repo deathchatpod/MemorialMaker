@@ -196,9 +196,13 @@ export default function DataTable({
                 : ""})
             </CardTitle>
             {(createButton || createButtons) && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 {createButton && (
-                  <Button onClick={createButton.onClick} className="flex items-center gap-2">
+                  <Button 
+                    onClick={createButton.onClick} 
+                    className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:w-auto"
+                    size="sm"
+                  >
                     {createButton.icon ? (
                       <createButton.icon className="w-4 h-4" />
                     ) : (
@@ -214,7 +218,8 @@ export default function DataTable({
                       key={index}
                       onClick={button.onClick} 
                       variant={button.variant || "default"}
-                      className="flex items-center gap-2"
+                      className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:w-auto"
+                      size="sm"
                     >
                       {IconComponent ? (
                         <IconComponent className="w-4 h-4" />

@@ -585,21 +585,21 @@ export default function EnhancedPromptTemplates() {
                             </p>
                           </div>
                           
-                          <div className="flex gap-2 pt-2">
+                          <div className="flex flex-col sm:flex-row gap-2 pt-2">
                             <Button
                               size="sm"
                               onClick={() => handleSaveInCardEdit(group.primary!)}
                               disabled={updateTemplateMutation.isPending}
-                              className="bg-blue-600 hover:bg-blue-700"
+                              className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
                             >
-                              <Save className="w-3 h-3 mr-1" />
+                              <Save className="w-4 h-4" />
                               {updateTemplateMutation.isPending ? "Saving..." : "Save Changes"}
                             </Button>
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => setEditingInCard(null)}
-                              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                              className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:w-auto border-gray-600 text-gray-300 hover:bg-gray-700"
                             >
                               Cancel
                             </Button>
@@ -610,11 +610,11 @@ export default function EnhancedPromptTemplates() {
                   )}
                   
                   <div className="flex gap-2">
-                    <div className="flex gap-1 flex-1">
+                    <div className="flex flex-col sm:flex-row gap-2 flex-1">
                       <Button
                         size="sm"
                         variant="outline"
-                        className={`flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 ${isViewing ? 'bg-gray-700' : ''}`}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 ${isViewing ? 'bg-gray-700' : ''}`}
                         onClick={() => {
                           if (isViewing) {
                             setViewingTemplate(null);
@@ -626,13 +626,13 @@ export default function EnhancedPromptTemplates() {
                         disabled={!group.primary}
                         aria-label={isViewing ? `Collapse ${group.primary?.name || 'template'} details` : `View ${group.primary?.name || 'template'} details`}
                       >
-                        <Eye className="w-3 h-3 mr-1" />
+                        <Eye className="w-4 h-4" />
                         {isViewing ? 'Collapse' : 'View'}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className={`flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 ${isEditing ? 'bg-gray-700' : ''}`}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 ${isEditing ? 'bg-gray-700' : ''}`}
                         onClick={() => {
                           if (isEditing) {
                             setEditingInCard(null);
@@ -644,7 +644,7 @@ export default function EnhancedPromptTemplates() {
                         disabled={!group.primary || updateTemplateMutation.isPending}
                         aria-label={isEditing ? `Cancel editing ${group.primary?.name || 'template'}` : `Edit ${group.primary?.name || 'template'}`}
                       >
-                        <Edit className="w-3 h-3 mr-1" />
+                        <Edit className="w-4 h-4" />
                         {isEditing ? 'Cancel' : 'Edit'}
                       </Button>
                     </div>
