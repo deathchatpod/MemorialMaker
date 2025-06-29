@@ -10,7 +10,7 @@ import { AlertCircle, Save, Lock, MapPin, Plus, Trash2, ChevronDown, Mail, User,
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
-import { AccessibilityToolbar } from '@/components/AccessibilityToolbar';
+import { AccessibilitySettings } from '@/components/AccessibilitySettings';
 import NotificationSettings from '@/components/NotificationSettings';
 
 export default function AccountInformation() {
@@ -548,9 +548,7 @@ export default function AccountInformation() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div id="accessibility-tools">
-              <AccessibilityToolbar />
-            </div>
+            <AccessibilitySettings />
           </CardContent>
         </Card>
 

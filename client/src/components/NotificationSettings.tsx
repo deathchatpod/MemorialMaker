@@ -114,10 +114,10 @@ export default function NotificationSettings() {
     const updatedPreferences = { ...preferences };
     const currentValue = updatedPreferences[key] as { inPlatform: boolean; email: boolean };
     
-    updatedPreferences[key] = {
+    (updatedPreferences[key] as { inPlatform: boolean; email: boolean }) = {
       ...currentValue,
       [type]: enabled,
-    } as any;
+    };
 
     setPreferences(updatedPreferences);
     updatePreferencesMutation.mutate(updatedPreferences);
