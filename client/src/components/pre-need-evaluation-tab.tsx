@@ -125,21 +125,12 @@ export function PreNeedEvaluationTab() {
       {/* Header with Create Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex-1">
-          <h3 className="text-lg font-medium">Pre Need Evaluation</h3>
+          <h3 className="text-lg font-medium">Pre Need Services</h3>
           <p className="text-sm text-muted-foreground">
-            Comprehensive funeral planning assessments to understand individual needs and preferences
+            Comprehensive pre-need planning assessments and tools to understand individual readiness and preferences.
           </p>
         </div>
-        <div className="flex-shrink-0">
-          <Button 
-            onClick={handleTakeEvaluation} 
-            className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:w-auto"
-            size="sm"
-          >
-            <Plus className="h-4 w-4" />
-            Take Pre Need Evaluation
-          </Button>
-        </div>
+
       </div>
 
       {/* Evaluations Table */}
@@ -147,7 +138,7 @@ export function PreNeedEvaluationTab() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Completed Evaluations
+            Pre Need Evaluations
           </CardTitle>
         </CardHeader>
         <CardContent>
