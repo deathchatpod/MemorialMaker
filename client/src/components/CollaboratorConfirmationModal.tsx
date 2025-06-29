@@ -35,25 +35,27 @@ export default function CollaboratorConfirmationModal({
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="bg-card border-border">
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-foreground">
+          <AlertDialogTitle className="flex items-center justify-center gap-2 text-foreground text-center">
             <Users className="h-5 w-5 text-blue-500" />
             Add a Collaborator
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-muted-foreground text-center">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
-              <span className="font-medium text-foreground">
-                We strongly recommend having a collaborator for every project.
-              </span>
+          <AlertDialogDescription className="text-muted-foreground">
+            <div className="text-center space-y-3">
+              <div className="flex items-center justify-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-orange-500" />
+                <span className="font-medium text-foreground">
+                  We strongly recommend having a collaborator for every project.
+                </span>
+              </div>
+              <div className="text-sm text-center">
+                The goal of FinalSpaces by DeathMatters is to always be prepared and make things easier if anything happens.
+              </div>
             </div>
-            <p className="text-sm">
-              The goal of FinalSpaces by DeathMatters is to always be prepared and make things easier if anything happens.
-            </p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         
         <AlertDialogFooter className="flex-col gap-4">
-          <div className="flex items-center space-x-2 w-full">
+          <div className="flex items-center justify-center space-x-2 w-full">
             <Checkbox
               id="dont-ask-again"
               checked={dontAskAgain}
