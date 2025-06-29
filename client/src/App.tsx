@@ -173,17 +173,15 @@ function GlobalHeader() {
           </div>
         </div>
         
-        {/* User type switching row - only show when authenticated */}
+        {/* User type switching row for testing - keep below header */}
         {authenticatedUser && (
-          <div className="flex justify-end pb-2 border-t border-border">
-            <div className="relative mt-2">
-              <label htmlFor="user-type-select" className="sr-only">Select user type for testing</label>
+          <div className="flex justify-end px-4 py-2 bg-muted/30 border-t border-border">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Testing as:</span>
               <select 
-                id="user-type-select"
                 value={userTypeParam || authenticatedUser.userType || 'admin'}
                 onChange={(e) => handleUserChange(e.target.value)}
                 className="bg-input border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
-                aria-label="Switch user type for testing purposes"
               >
                 <option value="admin">Admin - John Admin</option>
                 <option value="funeral_home">Funeral Home - Jane Smith</option>
