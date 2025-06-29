@@ -67,7 +67,7 @@ export default function TeamManagement() {
 
   const inviteEmployeeMutation = useMutation({
     mutationFn: async (email: string) => {
-      return apiRequest('/api/employee-invitations', 'POST', { email, funeralHomeId });
+      return apiRequest('POST', '/api/employee-invitations', { email, funeralHomeId });
     },
     onSuccess: () => {
       toast({
@@ -89,7 +89,7 @@ export default function TeamManagement() {
 
   const deleteEmployeeMutation = useMutation({
     mutationFn: async (employeeId: number) => {
-      return apiRequest(`/api/employees/${employeeId}`, 'DELETE');
+      return apiRequest('DELETE', `/api/employees/${employeeId}`);
     },
     onSuccess: () => {
       toast({
@@ -109,7 +109,7 @@ export default function TeamManagement() {
 
   const toggleEmployeeStatusMutation = useMutation({
     mutationFn: async ({ employeeId, action }: { employeeId: number; action: 'suspend' | 'activate' }) => {
-      return apiRequest(`/api/employees/${employeeId}/${action}`, 'PATCH');
+      return apiRequest('PATCH', `/api/employees/${employeeId}/${action}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/employees', funeralHomeId] });
