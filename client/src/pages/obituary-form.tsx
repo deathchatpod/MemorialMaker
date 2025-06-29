@@ -710,7 +710,10 @@ export default function ObituaryForm() {
                 name="tone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tone *</FormLabel>
+                    <FormLabel className="flex items-center">
+                      Tone *
+                      <ContextualTooltip content="Choose the writing style that best reflects how you'd like the obituary to sound - formal and respectful, uplifting and celebratory, or thoughtful and poetic" />
+                    </FormLabel>
                     <FormControl>
                       <RadioGroup 
                         onValueChange={field.onChange} 
@@ -775,7 +778,10 @@ export default function ObituaryForm() {
                 name="ageCategory"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Age Category *</FormLabel>
+                    <FormLabel className="flex items-center">
+                      Age Category *
+                      <ContextualTooltip content="Select the appropriate age range to help generate content that reflects the person's life stage and experiences" />
+                    </FormLabel>
                     <FormControl>
                       <RadioGroup 
                         onValueChange={field.onChange} 

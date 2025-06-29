@@ -2891,7 +2891,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(
             and(
               or(
-                ilike(finalSpaces.fullName, `%${searchTerm}%`),
+                ilike(finalSpaces.personName, `%${searchTerm}%`),
                 ilike(finalSpaces.description, `%${searchTerm}%`)
               ),
               dateFilter ? gte(finalSpaces.createdAt, dateFilter) : undefined,
@@ -2905,7 +2905,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         results.push(...memorialResults.map(memorial => ({
           id: memorial.id,
           type: 'memorial',
-          title: memorial.fullName || 'Untitled Memorial',
+          title: memorial.personName || 'Untitled Memorial',
           description: memorial.description || 'Memorial space for remembrance',
           date: memorial.createdAt,
           funeralHome: `Funeral Home ${memorial.funeralHomeId}`,
@@ -2915,15 +2915,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Search reviews
       if (type === 'all' || type === 'review') {
-        let reviewQuery = db.select().from(obituaryReviews)
+        let reviewQuery = db.select().from(obituaries)
           .where(
             and(
               or(
-                ilike(obituaryReviews.originalFilename, `%${searchTerm}%`),
-                sql`${obituaryReviews.extractedText} ILIKE ${'%' + searchTerm + '%'}`
+                ilike(obituaries.fullName, `%${searchTerm}%`),
+                ilike(obituaries.location, `%${searchTerm}%`)
               ),
-              dateFilter ? gte(obituaryReviews.createdAt, dateFilter) : undefined,
-              funeralHome !== 'all' ? eq(obituaryReviews.funeralHomeId, parseInt(funeralHome as string)) : undefined
+              dateFilter ? gte(obituaries.createdAt, dateFilter) : undefined,
+              funeralHome !== 'all' ? eq(obituaries.funeralHomeId, parseInt(funeralHome as string)) : undefined
             )
           )
           .limit(10);
@@ -2932,12 +2932,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         results.push(...reviewResults.map(review => ({
           id: review.id,
-          type: 'review',
-          title: review.originalFilename || 'Untitled Review',
-          description: review.extractedText?.substring(0, 100) + '...' || 'Obituary review document',
+          type: 'obituary',
+          title: review.fullName || 'Untitled Obituary',
+          description: review.biography?.substring(0, 100) + '...' || 'Obituary document',
           date: review.createdAt,
           funeralHome: `Funeral Home ${review.funeralHomeId}`,
-          url: `/obituary-review/${review.id}/results`
+          url: `/obituary/${review.id}/generated`
         })));
       }
       
