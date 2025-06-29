@@ -10,7 +10,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, AlertTriangle, X } from "lucide-react";
 
 interface CollaboratorConfirmationModalProps {
   isOpen: boolean;
@@ -34,6 +35,16 @@ export default function CollaboratorConfirmationModal({
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="bg-card border-border">
+        <div className="absolute right-4 top-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-6 w-6 p-0 hover:bg-gray-700"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
         <AlertDialogHeader className="text-center space-y-4">
           <AlertDialogTitle className="flex items-center justify-center gap-2 text-foreground">
             <Users className="h-5 w-5 text-blue-500" />
