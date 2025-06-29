@@ -10,6 +10,7 @@ import { Link } from "wouter";
 import { Skull } from "lucide-react";
 import { AccessibilityProvider } from "@/components/AccessibilityProvider";
 import { AccessibilityToolbar } from "@/components/AccessibilityToolbar";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard-fixed";
 import Login from "./pages/login";
@@ -267,31 +268,35 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AccessibilityProvider>
-          <div className="min-h-screen bg-gray-900">
-            <a 
-              href="#main-content"
-              className="skip-link"
-            >
-              Skip to main content
-            </a>
-            <a 
-              href="#accessibility-tools"
-              className="skip-link"
-            >
-              Skip to accessibility tools
-            </a>
+          <ErrorBoundary>
+            <div className="min-h-screen bg-gray-900">
+              <a 
+                href="#main-content"
+                className="skip-link"
+              >
+                Skip to main content
+              </a>
+              <a 
+                href="#accessibility-tools"
+                className="skip-link"
+              >
+                Skip to accessibility tools
+              </a>
 
-            <GlobalHeader />
+              <GlobalHeader />
 
-          <main id="main-content" role="main">
-            <Router />
-          </main>
+            <main id="main-content" role="main">
+              <ErrorBoundary>
+                <Router />
+              </ErrorBoundary>
+            </main>
 
-          {/* Add feedback footer for authenticated users */}
-          <FeedbackFooter currentUser={currentUser} />
+            {/* Add feedback footer for authenticated users */}
+            <FeedbackFooter currentUser={currentUser} />
 
-          <Toaster />
-        </div>
+            <Toaster />
+            </div>
+          </ErrorBoundary>
         </AccessibilityProvider>
       </TooltipProvider>
     </QueryClientProvider>
