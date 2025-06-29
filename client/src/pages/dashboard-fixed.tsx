@@ -112,6 +112,15 @@ export default function Dashboard() {
     staleTime: 0 // Always consider data stale to ensure fresh fetches
   });
 
+  const { data: customerFeedback = [], isLoading: isCustomerFeedbackLoading } = useQuery({
+    queryKey: ['/api/customer-feedback', userTypeParam, userIdParam],
+    queryFn: async () => {
+      const res = await apiRequest('GET', '/api/customer-feedback');
+      return res.json();
+    },
+    enabled: currentUser.userType === 'admin'
+  });
+
   // Menu items for all user types with Lucide icons
   const menuItems = [
     { id: 'obituaries', label: 'Obituaries', icon: FileText },
@@ -869,6 +878,115 @@ export default function Dashboard() {
           {activeSection === 'team-management' && (
             <div className="space-y-6">
               <TeamManagement />
+            </div>
+          )}
+
+          {/* Customer Feedback Section */}
+          {activeSection === 'customer-feedback' && currentUser.userType === 'admin' && (
+            <div className="space-y-6">
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-gray-100 flex items-center gap-2">
+                        <MessageSquare className="w-6 h-6" />
+                        Customer Feedback
+                      </CardTitle>
+                      <CardDescription className="text-gray-400">
+                        View and manage customer feedback submissions
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <DataTable
+                    data={customerFeedback}
+                    isLoading={isCustomerFeedbackLoading}
+                    emptyMessage="There are no customer feedback submissions yet."
+                    columns={[
+                      {
+                        key: "userName",
+                        title: "User",
+                        sortable: true,
+                        filterable: true,
+                        render: (value, row) => (
+                          <div className="flex items-center gap-2">
+                            <div>
+                              <p className="text-gray-100 font-medium">{value}</p>
+                              <p className="text-gray-400 text-xs capitalize">{row.userType?.replace('_', ' ')}</p>
+                            </div>
+                          </div>
+                        )
+                      },
+                      {
+                        key: "category",
+                        title: "Category",
+                        sortable: true,
+                        filterable: true,
+                        filterOptions: [
+                          { value: "Bug/App Crashing", label: "Bug/App Crashing" },
+                          { value: "New Feature Request", label: "New Feature Request" },
+                          { value: "General Feedback", label: "General Feedback" },
+                          { value: "General Question", label: "General Question" }
+                        ],
+                        render: (value) => (
+                          <Badge variant="outline" className="text-xs bg-gray-700 text-gray-200 border-gray-600">
+                            {value}
+                          </Badge>
+                        )
+                      },
+                      {
+                        key: "subject",
+                        title: "Subject",
+                        sortable: true,
+                        filterable: true,
+                        render: (value) => (
+                          <div className="max-w-xs">
+                            <p className="text-gray-100 font-medium truncate">{value}</p>
+                          </div>
+                        )
+                      },
+                      {
+                        key: "status",
+                        title: "Status",
+                        sortable: true,
+                        filterable: true,
+                        filterOptions: [
+                          { value: "Needs Work", label: "Needs Work" },
+                          { value: "In Process", label: "In Process" },
+                          { value: "Resolved", label: "Resolved" }
+                        ],
+                        render: (value) => {
+                          const statusColors = {
+                            "Needs Work": "bg-red-600 text-white",
+                            "In Process": "bg-yellow-600 text-white",
+                            "Resolved": "bg-green-600 text-white"
+                          };
+                          return (
+                            <Badge className={statusColors[value] || "bg-gray-600 text-white"}>
+                              {value}
+                            </Badge>
+                          );
+                        }
+                      },
+                      {
+                        key: "createdAt",
+                        title: "Date",
+                        sortable: true,
+                        render: (value) => formatDate(value)
+                      }
+                    ]}
+                    actions={(row) => [
+                      {
+                        label: "View Details",
+                        icon: Eye,
+                        onClick: () => setLocation(`/customer-feedback/${row.id}`),
+                        variant: "outline" as const
+                      }
+                    ]}
+                  />
+                </CardContent>
+              </Card>
             </div>
           )}
 

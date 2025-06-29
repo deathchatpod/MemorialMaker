@@ -30,6 +30,9 @@ import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";
 import ViewEvaluation from "./pages/view-evaluation";
 import MemorialPage from "./pages/memorial-page";
 import EditFinalSpace from "./pages/edit-final-space";
+import CustomerFeedback from "./pages/customer-feedback";
+import CustomerFeedbackDetail from "./pages/customer-feedback-detail";
+import FeedbackFooter from "./components/feedback-footer";
 
 const queryClient = new QueryClient();
 
@@ -229,6 +232,8 @@ function Router() {
       <Route path="/collaborate/:uuid" component={Collaborate} />
       <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />
       <Route path="/view-evaluation/:id" component={ViewEvaluation} />
+      <Route path="/customer-feedback" component={CustomerFeedback} />
+      <Route path="/customer-feedback/:id" component={CustomerFeedbackDetail} />
       <Route component={NotFound} />
     </Switch>
   );
