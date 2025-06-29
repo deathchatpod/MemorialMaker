@@ -37,7 +37,7 @@ import MemorialPage from "./pages/memorial-page";
 import EditFinalSpace from "./pages/edit-final-space";
 import CustomerFeedback from "./pages/customer-feedback";
 import CustomerFeedbackDetail from "./pages/customer-feedback-detail";
-import FeedbackFooter from "./components/feedback-footer";
+
 
 const queryClient = new QueryClient();
 
@@ -275,14 +275,15 @@ function App() {
 
               <GlobalHeader />
 
-            <main id="main-content" role="main">
-              <ErrorBoundary>
-                <Router />
-              </ErrorBoundary>
-            </main>
+            <div className="flex flex-col min-h-screen">
+              <main id="main-content" role="main" className="flex-1">
+                <ErrorBoundary>
+                  <Router />
+                </ErrorBoundary>
+              </main>
 
-            {/* Add feedback footer for authenticated users */}
-            <FeedbackFooter currentUser={currentUser} />
+              <Footer />
+            </div>
 
             <Toaster />
             </div>
