@@ -125,7 +125,7 @@ export default function TeamManagement() {
 
   const deleteInvitationMutation = useMutation({
     mutationFn: async (invitationId: number) => {
-      return apiRequest(`/api/employee-invitations/${invitationId}`, 'DELETE');
+      return apiRequest('DELETE', `/api/employee-invitations/${invitationId}`);
     },
     onSuccess: () => {
       toast({
