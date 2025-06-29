@@ -1498,6 +1498,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new version of existing template
+  app.post("/api/prompt-templates/versions", async (req, res) => {
+    try {
+      const template = await storage.createPromptTemplateVersion(req.body);
+      res.json(template);
+    } catch (error) {
+      console.error('Error creating template version:', error);
+      res.status(400).json({ message: "Failed to create template version" });
+    }
+  });
+
+  // Get version history for a template type
+  app.get("/api/prompt-templates/:platform/:promptType/versions", async (req, res) => {
+    try {
+      const { platform, promptType } = req.params;
+      const versions = await storage.getPromptTemplateVersions(platform, promptType);
+      res.json(versions);
+    } catch (error) {
+      console.error('Error fetching template versions:', error);
+      res.status(500).json({ message: "Failed to fetch template versions" });
+    }
+  });
+
+  // Make a template version primary
+  app.put("/api/prompt-templates/:id/make-primary", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const template = await storage.makePrimaryPromptTemplate(id);
+      res.json(template);
+    } catch (error) {
+      console.error('Error making template primary:', error);
+      res.status(400).json({ message: "Failed to make template primary" });
+    }
+  });
+
+  // Get documents for a template
+  app.get("/api/prompt-templates/:id/documents", async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const documents = await storage.getPromptTemplateDocuments(templateId);
+      res.json(documents);
+    } catch (error) {
+      console.error('Error fetching template documents:', error);
+      res.status(500).json({ message: "Failed to fetch template documents" });
+    }
+  });
+
+  // Upload document for a template
+  app.post("/api/prompt-templates/:id/documents", upload.single('document'), async (req, res) => {
+    try {
+      const templateId = parseInt(req.params.id);
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Extract text content based on file type
+      let content = '';
+      if (file.mimetype === 'text/plain') {
+        content = file.buffer.toString('utf-8');
+      } else if (file.mimetype === 'application/pdf') {
+        const pdfParse = await import('pdf-parse');
+        const data = await pdfParse.default(file.buffer);
+        content = data.text;
+      } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        const mammoth = await import('mammoth');
+        const result = await mammoth.extractRawText({ buffer: file.buffer });
+        content = result.value;
+      }
+
+      const document = await storage.createPromptTemplateDocument({
+        promptTemplateId: templateId,
+        filename: `${Date.now()}-${file.originalname}`,
+        originalName: file.originalname,
+        fileSize: file.size,
+        mimeType: file.mimetype,
+        content: content,
+        uploadedBy: parseInt(req.body.uploadedBy || '1'),
+        uploadedByName: req.body.uploadedByName || 'Admin'
+      });
+
+      res.json(document);
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      res.status(500).json({ message: "Failed to upload document" });
+    }
+  });
+
+  // Delete document
+  app.delete("/api/prompt-templates/documents/:id", async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.id);
+      await storage.deletePromptTemplateDocument(documentId);
+      res.json({ message: "Document deleted successfully" });
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      res.status(500).json({ message: "Failed to delete document" });
+    }
+  });
+
   // Final Spaces endpoints
   app.get("/api/final-spaces", async (req, res) => {
     try {
@@ -2699,34 +2800,47 @@ async function initializeDefaultPromptTemplates() {
       const defaultTemplates = [
         {
           name: "Claude Base Prompt",
-          platform: "claude",
-          promptType: "base",
-          content: "You are an expert obituary writer. Create a respectful, heartfelt obituary based on the provided information. Focus on celebrating the person's life, achievements, and relationships. Use a {{tone}} tone throughout."
+          platform: "claude" as const,
+          promptType: "base" as const,
+          content: "You are an expert obituary writer. Create a respectful, heartfelt obituary based on the provided information. Focus on celebrating the person's life, achievements, and relationships. Use a {{tone}} tone throughout.",
+          createdBy: 1,
+          createdByName: "System",
+          isPrimary: true,
+          version: 1,
+          changelog: "Initial system prompt"
         },
         {
           name: "Claude Revision Prompt", 
-          platform: "claude",
-          promptType: "revision",
-          content: "Revise the obituary based on the feedback provided. Incorporate the liked elements and improve or replace the disliked elements while maintaining the overall structure and respectful tone."
+          platform: "claude" as const,
+          promptType: "revision" as const,
+          content: "Revise the obituary based on the feedback provided. Incorporate the liked elements and improve or replace the disliked elements while maintaining the overall structure and respectful tone.",
+          createdBy: 1,
+          createdByName: "System",
+          isPrimary: true,
+          version: 1,
+          changelog: "Initial system prompt"
         },
         {
           name: "ChatGPT Base Prompt",
-          platform: "chatgpt", 
-          promptType: "base",
-          content: "Create a meaningful obituary that honors the memory of {{fullName}}. Use a {{tone}} tone and include their life story, accomplishments, and the love they shared with family and friends."
+          platform: "chatgpt" as const, 
+          promptType: "base" as const,
+          content: "Create a meaningful obituary that honors the memory of {{fullName}}. Use a {{tone}} tone and include their life story, accomplishments, and the love they shared with family and friends.",
+          createdBy: 1,
+          createdByName: "System",
+          isPrimary: true,
+          version: 1,
+          changelog: "Initial system prompt"
         },
         {
           name: "ChatGPT Revision Prompt",
-          platform: "chatgpt",
-          promptType: "revision", 
-          content: "Please revise this obituary based on the feedback. Keep the elements that were liked and improve or rewrite the parts that were marked for change. Maintain dignity and respect throughout."
-        },
-        {
-          name: "Obituary Review",
-          description: "AI prompt for reviewing and providing feedback on existing obituaries",
-          platform: "claude",
-          promptType: "review",
-          content: "You are an expert obituary editor with years of experience in creating meaningful, dignified tributes. Your task is to review the provided obituary and provide constructive feedback along with an improved version.\n\nPlease analyze the obituary for:\n- Clarity and readability\n- Emotional tone and dignity\n- Completeness of life story\n- Flow and structure\n- Grammar and style\n- Accuracy and consistency\n\nProvide specific, actionable feedback that helps honor the deceased person's memory while improving the overall quality of the writing."
+          platform: "chatgpt" as const,
+          promptType: "revision" as const, 
+          content: "Please revise this obituary based on the feedback. Keep the elements that were liked and improve or rewrite the parts that were marked for change. Maintain dignity and respect throughout.",
+          createdBy: 1,
+          createdByName: "System",
+          isPrimary: true,
+          version: 1,
+          changelog: "Initial system prompt"
         }
       ];
 

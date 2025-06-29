@@ -487,19 +487,124 @@ export class DatabaseStorage implements IStorage {
 
   // Prompt Templates
   async getPromptTemplates(): Promise<PromptTemplate[]> {
-    return await db.select().from(promptTemplates)
-      .orderBy(desc(promptTemplates.isPrimary), promptTemplates.platform, promptTemplates.promptType, desc(promptTemplates.version));
+    // Temporary fallback for backward compatibility during migration
+    try {
+      return await db.select().from(promptTemplates)
+        .orderBy(desc(promptTemplates.isPrimary), promptTemplates.platform, promptTemplates.promptType, desc(promptTemplates.version));
+    } catch (error) {
+      // Fallback to basic query for existing schema
+      const templates = await db.execute(sql`
+        SELECT id, name, platform, prompt_type as "promptType", content, created_at as "createdAt", updated_at as "updatedAt"
+        FROM prompt_templates 
+        ORDER BY platform, prompt_type
+      `);
+      return templates.rows.map(row => ({
+        id: row.id as number,
+        name: row.name as string,
+        platform: row.platform as string,
+        promptType: row.promptType as string,
+        content: row.content as string,
+        version: 1,
+        isPrimary: true,
+        systemMessage: null,
+        userInstructions: null,
+        examples: null,
+        constraints: null,
+        outputFormat: null,
+        createdBy: 1,
+        createdByName: 'System',
+        changelog: null,
+        createdAt: row.createdAt as Date,
+        updatedAt: row.updatedAt as Date,
+      }));
+    }
   }
 
   async getPromptTemplate(platform: string, promptType: string): Promise<PromptTemplate | undefined> {
     const [template] = await db.select().from(promptTemplates)
-      .where(and(eq(promptTemplates.platform, platform), eq(promptTemplates.promptType, promptType)));
+      .where(and(
+        eq(promptTemplates.platform, platform), 
+        eq(promptTemplates.promptType, promptType),
+        eq(promptTemplates.isPrimary, true)
+      ));
     return template || undefined;
+  }
+
+  async getPromptTemplateVersions(platform: string, promptType: string): Promise<PromptTemplate[]> {
+    return await db.select().from(promptTemplates)
+      .where(and(
+        eq(promptTemplates.platform, platform),
+        eq(promptTemplates.promptType, promptType)
+      ))
+      .orderBy(desc(promptTemplates.version));
   }
 
   async createPromptTemplate(insertTemplate: InsertPromptTemplate): Promise<PromptTemplate> {
     const [template] = await db.insert(promptTemplates).values(insertTemplate).returning();
     return template;
+  }
+
+  async createPromptTemplateVersion(data: {
+    name: string;
+    platform: string;
+    promptType: string;
+    systemMessage?: string;
+    userInstructions?: string;
+    examples?: string;
+    constraints?: string;
+    outputFormat?: string;
+    content: string;
+    createdBy: number;
+    createdByName: string;
+    changelog?: string;
+  }): Promise<PromptTemplate> {
+    // Get the next version number
+    const existingVersions = await this.getPromptTemplateVersions(data.platform, data.promptType);
+    const nextVersion = existingVersions.length > 0 ? Math.max(...existingVersions.map(v => v.version)) + 1 : 1;
+    
+    // Build the full content from sections
+    const fullContent = [
+      data.systemMessage && `System: ${data.systemMessage}`,
+      data.userInstructions && `Instructions: ${data.userInstructions}`,
+      data.examples && `Examples: ${data.examples}`,
+      data.constraints && `Constraints: ${data.constraints}`,
+      data.outputFormat && `Output Format: ${data.outputFormat}`
+    ].filter(Boolean).join('\n\n') || data.content;
+
+    const [template] = await db.insert(promptTemplates).values({
+      ...data,
+      content: fullContent,
+      version: nextVersion,
+      isPrimary: false // New versions are not primary by default
+    }).returning();
+    
+    return template;
+  }
+
+  async makePrimaryPromptTemplate(templateId: number): Promise<PromptTemplate> {
+    const template = await db.select().from(promptTemplates)
+      .where(eq(promptTemplates.id, templateId))
+      .then(results => results[0]);
+    
+    if (!template) {
+      throw new Error('Template not found');
+    }
+
+    // Set all other versions of this template type to non-primary
+    await db.update(promptTemplates)
+      .set({ isPrimary: false })
+      .where(and(
+        eq(promptTemplates.platform, template.platform),
+        eq(promptTemplates.promptType, template.promptType)
+      ));
+
+    // Set this version as primary
+    const [updatedTemplate] = await db.update(promptTemplates)
+      .set({ isPrimary: true, updatedAt: new Date() })
+      .where(eq(promptTemplates.id, templateId))
+      .returning();
+    
+    return updatedTemplate;
   }
 
   async updatePromptTemplate(id: number, updates: Partial<PromptTemplate>): Promise<PromptTemplate> {
@@ -509,6 +614,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(promptTemplates.id, id))
       .returning();
     return template;
+  }
+
+  // Prompt Template Documents
+  async getPromptTemplateDocuments(templateId: number): Promise<PromptTemplateDocument[]> {
+    return await db.select().from(promptTemplateDocuments)
+      .where(eq(promptTemplateDocuments.promptTemplateId, templateId))
+      .orderBy(desc(promptTemplateDocuments.createdAt));
+  }
+
+  async createPromptTemplateDocument(document: InsertPromptTemplateDocument): Promise<PromptTemplateDocument> {
+    const [newDocument] = await db.insert(promptTemplateDocuments).values(document).returning();
+    return newDocument;
+  }
+
+  async deletePromptTemplateDocument(documentId: number): Promise<void> {
+    await db.delete(promptTemplateDocuments).where(eq(promptTemplateDocuments.id, documentId));
   }
 
   async deletePromptTemplate(id: number): Promise<void> {
