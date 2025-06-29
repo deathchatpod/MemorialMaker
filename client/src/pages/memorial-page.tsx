@@ -379,10 +379,10 @@ export default function MemorialPage() {
         )}
 
         {/* Social Media Links */}
-        {memorial.socialMediaLinks && Object.keys(memorial.socialMediaLinks).length > 0 && (
+        {memorial.socialMediaLinks && typeof memorial.socialMediaLinks === 'object' && Object.keys(memorial.socialMediaLinks).length > 0 && (
           <div className="mb-8">
             <SocialMediaDisplay
-              socialMediaLinks={memorial.socialMediaLinks}
+              socialMediaLinks={memorial.socialMediaLinks as any}
               memorialTitle={memorial.personName}
               memorialUrl={window.location.href}
               className="flex justify-center"
@@ -391,7 +391,7 @@ export default function MemorialPage() {
         )}
 
         {/* Media Gallery */}
-        {(memorial.images?.length > 0 || memorial.audioFiles?.length > 0 || memorial.youtubeLinks?.length > 0) && (
+        {((memorial.images && memorial.images.length > 0) || (memorial.audioFiles && memorial.audioFiles.length > 0) || (memorial.youtubeLinks && memorial.youtubeLinks.length > 0)) && (
           <div className="mb-8">
             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2 text-white">
               <ImageIcon className="w-6 h-6" />
@@ -514,11 +514,11 @@ export default function MemorialPage() {
         {false && (
           <div className="space-y-6">
             <CommunityContribution
-              finalSpaceId={memorial.id}
+              finalSpaceId={memorial?.id || 0}
               currentUser={currentUser}
             />
             <CommunityContributionsDisplay
-              finalSpaceId={memorial.id}
+              finalSpaceId={memorial?.id || 0}
               currentUser={currentUser}
             />
           </div>

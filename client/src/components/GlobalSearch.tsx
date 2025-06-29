@@ -6,7 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
-import { useDebounce } from '@/hooks/useDebounce';
+// Temporarily disable debounce functionality
+// import { useDebounce } from '../hooks/useDebounce';
 
 interface SearchResult {
   id: number;
