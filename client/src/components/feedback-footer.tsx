@@ -138,16 +138,16 @@ export default function FeedbackFooter({ currentUser }: FeedbackFooterProps) {
 
   return (
     <>
-      <footer className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 px-4 py-3 z-40">
-        <div className="max-w-6xl mx-auto flex justify-center">
-          <Button
+      <footer className="fixed bottom-0 left-0 right-0 bg-input/90 backdrop-blur-sm border-t border-border px-4 py-2 z-10">
+        <div className="max-w-6xl mx-auto flex justify-end">
+          <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
-            size="sm"
+            className="bg-input border border-border rounded-md px-3 py-1.5 text-sm text-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-colors"
+            style={{ fontSize: '0.805rem' }} // 15% bigger than text-xs (0.7rem)
           >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Send us feedback!
-          </Button>
+            <MessageSquare className="w-3.5 h-3.5 mr-1.5 inline" />
+            Feedback
+          </button>
         </div>
       </footer>
 
