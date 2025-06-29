@@ -46,8 +46,12 @@ export default function Dashboard() {
   const userTypeParam = urlParams.get('userType') || 'admin';
   const userIdParam = parseInt(urlParams.get('userId') || '1');
 
-  // Get active section from localStorage for persistence
+  // Get active section from URL parameter or localStorage for persistence
   const [activeSection, setActiveSection] = useState(() => {
+    const activeSectionParam = urlParams.get('activeSection');
+    if (activeSectionParam) {
+      return activeSectionParam;
+    }
     return localStorage.getItem('dashboard-active-tab') || 'obituaries';
   });
 
