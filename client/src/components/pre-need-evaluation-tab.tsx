@@ -85,6 +85,17 @@ export function PreNeedEvaluationTab() {
     setLocation(`/take-pre-need-evaluation?${params}`);
   };
 
+  const handleTakeBasics = () => {
+    const params = new URLSearchParams({
+      userId: currentUserId.toString(),
+      userType: currentUserType,
+    });
+    if (currentFuneralHomeId) {
+      params.append('funeralHomeId', currentFuneralHomeId.toString());
+    }
+    setLocation(`/take-pre-need-basics?${params}`);
+  };
+
   const handleViewResults = (evaluation: PreNeedEvaluation) => {
     const params = new URLSearchParams({
       userId: currentUserId.toString(),
@@ -128,6 +139,33 @@ export function PreNeedEvaluationTab() {
           Comprehensive pre-need planning assessments and tools to understand individual readiness and preferences.
         </p>
       </div>
+
+      {/* Pre Need Basics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Pre Need Basics
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">Essential Information Guide</h3>
+            <p className="text-muted-foreground mb-4">
+              Complete the basic information guide to help your family navigate important matters
+            </p>
+            <Button 
+              onClick={handleTakeBasics} 
+              className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap"
+              size="sm"
+            >
+              <Plus className="h-4 w-4" />
+              Take Pre Need Basics
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Evaluations Table */}
       <Card>

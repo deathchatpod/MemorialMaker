@@ -31,6 +31,7 @@ import ObituaryReviewResults from "./pages/obituary-review-results";
 import Collaborate from "./pages/collaborate";
 import NotFound from "./pages/not-found";
 import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";
+import TakePreNeedBasics from "./pages/take-pre-need-basics";
 import ViewEvaluation from "./pages/view-evaluation";
 import EnhancedPromptTemplates from "./pages/enhanced-prompt-templates-fixed";
 import MemorialPage from "./pages/memorial-page";
@@ -223,6 +224,7 @@ function Router() {
       <Route path="/memorial/:slug" component={MemorialPage} />
       <Route path="/collaborate/:uuid" component={Collaborate} />
       <Route path="/take-pre-need-evaluation" component={TakePreNeedEvaluation} />
+      <Route path="/take-pre-need-basics" component={TakePreNeedBasics} />
       <Route path="/view-evaluation/:id" component={ViewEvaluation} />
       <Route path="/customer-feedback" component={CustomerFeedback} />
       <Route path="/customer-feedback/:id" component={CustomerFeedbackDetail} />
