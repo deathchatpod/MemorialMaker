@@ -28,7 +28,7 @@ import Collaborate from "./pages/collaborate";
 import NotFound from "./pages/not-found";
 import TakePreNeedEvaluation from "./pages/take-pre-need-evaluation";
 import ViewEvaluation from "./pages/view-evaluation";
-import EnhancedPromptTemplates from "./pages/enhanced-prompt-templates";
+import EnhancedPromptTemplates from "./pages/enhanced-prompt-templates-fixed";
 import MemorialPage from "./pages/memorial-page";
 import EditFinalSpace from "./pages/edit-final-space";
 import CustomerFeedback from "./pages/customer-feedback";
