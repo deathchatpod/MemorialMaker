@@ -2769,6 +2769,188 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Error logging endpoint for client-side error reporting
+  app.post('/api/error-logs', async (req, res) => {
+    try {
+      const { message, stack, componentStack, timestamp, userAgent, url } = req.body;
+      
+      // Log error to console in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Client Error Report:', {
+          message,
+          stack,
+          componentStack,
+          timestamp,
+          userAgent,
+          url
+        });
+      }
+      
+      // In production, you could store these in a database or send to error reporting service
+      // For now, we'll just acknowledge receipt
+      res.json({ success: true, message: 'Error logged successfully' });
+    } catch (error) {
+      console.error('Failed to log client error:', error);
+      res.status(500).json({ error: 'Failed to log error' });
+    }
+  });
+
+  // Auto-save draft obituary endpoint
+  app.post('/api/obituaries/draft', requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { draftData, obituaryId } = req.body;
+      
+      // For now, use existing obituary storage with draft status
+      let draft;
+      if (obituaryId) {
+        // Update existing obituary
+        draft = await storage.updateObituary(obituaryId, {
+          ...draftData,
+          status: 'draft'
+        });
+      } else {
+        // Create new draft obituary
+        draft = await storage.createObituary({
+          ...draftData,
+          createdById: user.id,
+          createdByType: user.userType,
+          funeralHomeId: user.userType === 'funeral_home' ? user.id : user.funeralHomeId,
+          status: 'draft'
+        });
+      }
+      
+      res.json({ success: true, draft });
+    } catch (error) {
+      console.error('Auto-save error:', error);
+      res.status(500).json({ error: 'Failed to save draft' });
+    }
+  });
+
+  // Global search endpoint
+  app.get('/api/search', searchRateLimit, requireAuth, async (req, res) => {
+    try {
+      const { q, type = 'all', dateRange = 'all', funeralHome = 'all' } = req.query;
+      const user = req.user as any;
+      
+      if (!q || (q as string).trim().length < 3) {
+        return res.json([]);
+      }
+      
+      const searchTerm = (q as string).trim();
+      const results: any[] = [];
+      
+      // Build date filter
+      let dateFilter = undefined;
+      const now = new Date();
+      if (dateRange === 'today') {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        dateFilter = gte(obituaries.createdAt, today);
+      } else if (dateRange === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        dateFilter = gte(obituaries.createdAt, weekAgo);
+      } else if (dateRange === 'month') {
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        dateFilter = gte(obituaries.createdAt, monthAgo);
+      } else if (dateRange === 'year') {
+        const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        dateFilter = gte(obituaries.createdAt, yearAgo);
+      }
+      
+      // Search obituaries
+      if (type === 'all' || type === 'obituary') {
+        let obituaryQuery = db.select().from(obituaries)
+          .where(
+            and(
+              or(
+                ilike(obituaries.fullName, `%${searchTerm}%`),
+                sql`CAST(${obituaries.formData} AS TEXT) ILIKE ${'%' + searchTerm + '%'}`
+              ),
+              dateFilter,
+              funeralHome !== 'all' ? eq(obituaries.funeralHomeId, parseInt(funeralHome as string)) : undefined
+            )
+          )
+          .limit(10);
+          
+        const obituaryResults = await obituaryQuery;
+        
+        results.push(...obituaryResults.map(obit => ({
+          id: obit.id,
+          type: 'obituary',
+          title: obit.fullName || 'Untitled Obituary',
+          description: `Obituary created on ${new Date(obit.createdAt).toLocaleDateString()}`,
+          date: obit.createdAt,
+          funeralHome: `Funeral Home ${obit.funeralHomeId}`,
+          url: `/obituary/${obit.id}/generated`
+        })));
+      }
+      
+      // Search memorials
+      if (type === 'all' || type === 'memorial') {
+        let memorialQuery = db.select().from(finalSpaces)
+          .where(
+            and(
+              or(
+                ilike(finalSpaces.fullName, `%${searchTerm}%`),
+                ilike(finalSpaces.description, `%${searchTerm}%`)
+              ),
+              dateFilter ? gte(finalSpaces.createdAt, dateFilter) : undefined,
+              funeralHome !== 'all' ? eq(finalSpaces.funeralHomeId, parseInt(funeralHome as string)) : undefined
+            )
+          )
+          .limit(10);
+          
+        const memorialResults = await memorialQuery;
+        
+        results.push(...memorialResults.map(memorial => ({
+          id: memorial.id,
+          type: 'memorial',
+          title: memorial.fullName || 'Untitled Memorial',
+          description: memorial.description || 'Memorial space for remembrance',
+          date: memorial.createdAt,
+          funeralHome: `Funeral Home ${memorial.funeralHomeId}`,
+          url: `/memorial/${memorial.slug}`
+        })));
+      }
+      
+      // Search reviews
+      if (type === 'all' || type === 'review') {
+        let reviewQuery = db.select().from(obituaryReviews)
+          .where(
+            and(
+              or(
+                ilike(obituaryReviews.originalFilename, `%${searchTerm}%`),
+                sql`${obituaryReviews.extractedText} ILIKE ${'%' + searchTerm + '%'}`
+              ),
+              dateFilter ? gte(obituaryReviews.createdAt, dateFilter) : undefined,
+              funeralHome !== 'all' ? eq(obituaryReviews.funeralHomeId, parseInt(funeralHome as string)) : undefined
+            )
+          )
+          .limit(10);
+          
+        const reviewResults = await reviewQuery;
+        
+        results.push(...reviewResults.map(review => ({
+          id: review.id,
+          type: 'review',
+          title: review.originalFilename || 'Untitled Review',
+          description: review.extractedText?.substring(0, 100) + '...' || 'Obituary review document',
+          date: review.createdAt,
+          funeralHome: `Funeral Home ${review.funeralHomeId}`,
+          url: `/obituary-review/${review.id}/results`
+        })));
+      }
+      
+      // Sort by date (most recent first)
+      results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      
+      res.json(results.slice(0, 20)); // Limit to 20 total results
+    } catch (error) {
+      console.error('Search error:', error);
+      res.status(500).json({ error: 'Search failed' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
