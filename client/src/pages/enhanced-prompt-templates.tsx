@@ -241,6 +241,8 @@ export default function EnhancedPromptTemplates() {
 
   const handleEditTemplate = (template: PromptTemplate) => {
     setEditingTemplate(template);
+    setSelectedTemplate(null); // Clear selected when editing
+    setShowVersionHistory(false);
     setFormData({
       name: template.name,
       platform: template.platform,
@@ -401,7 +403,9 @@ export default function EnhancedPromptTemplates() {
                         className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700"
                         onClick={() => {
                           setSelectedTemplate(group.primary);
+                          setEditingTemplate(null);
                           setShowVersionHistory(false);
+                          setIsCreating(false);
                         }}
                       >
                         <Eye className="w-3 h-3 mr-1" />
@@ -421,8 +425,11 @@ export default function EnhancedPromptTemplates() {
                         variant="outline"
                         className="border-gray-600 text-gray-300 hover:bg-gray-700"
                         onClick={() => {
+                          console.log('Version history for template:', group.primary);
                           setSelectedTemplate(group.primary);
+                          setEditingTemplate(null);
                           setShowVersionHistory(true);
+                          setIsCreating(false);
                         }}
                       >
                         <History className="w-3 h-3" />
@@ -453,6 +460,7 @@ export default function EnhancedPromptTemplates() {
 
         {/* Template Details/Editor */}
         <div className="space-y-4">
+
           {(selectedTemplate || editingTemplate || isCreating) && (
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
