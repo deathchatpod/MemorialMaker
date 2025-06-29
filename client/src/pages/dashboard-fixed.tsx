@@ -40,6 +40,15 @@ export default function Dashboard() {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize component safely
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialized(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Get URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -48,11 +57,16 @@ export default function Dashboard() {
 
   // Get active section from URL parameter or localStorage for persistence
   const [activeSection, setActiveSection] = useState(() => {
-    const activeSectionParam = urlParams.get('activeSection');
-    if (activeSectionParam) {
-      return activeSectionParam;
+    try {
+      const activeSectionParam = urlParams.get('activeSection');
+      if (activeSectionParam) {
+        return activeSectionParam;
+      }
+      return localStorage.getItem('dashboard-active-tab') || 'obituaries';
+    } catch (error) {
+      console.warn('Error accessing localStorage:', error);
+      return 'obituaries';
     }
-    return localStorage.getItem('dashboard-active-tab') || 'obituaries';
   });
 
   // Get current user data
@@ -146,7 +160,11 @@ export default function Dashboard() {
 
   const handleSectionChange = (section: string) => {
     setActiveSection(section);
-    localStorage.setItem('dashboard-active-tab', section);
+    try {
+      localStorage.setItem('dashboard-active-tab', section);
+    } catch (error) {
+      console.warn('Error saving to localStorage:', error);
+    }
   };
 
   // Delete mutations for admin users
@@ -207,6 +225,15 @@ export default function Dashboard() {
         return 'bg-blue-100 text-blue-800';
     }
   };
+
+  // Prevent rendering until component is properly initialized
+  if (!isInitialized) {
+    return (
+      <div className="flex min-h-screen bg-background memorial-dashboard items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background memorial-dashboard">
