@@ -312,7 +312,7 @@ export default function Dashboard() {
             {activeSection === 'pre-need' && (
               <>
                 <BarChart3 className="w-7 h-7 text-primary" />
-                Pre Need Evaluation
+                Pre Need Services
               </>
             )}
             {activeSection === 'team-management' && (

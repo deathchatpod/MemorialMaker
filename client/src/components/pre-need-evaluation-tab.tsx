@@ -122,15 +122,11 @@ export function PreNeedEvaluationTab() {
 
   return (
     <div className="space-y-6">
-      {/* Header with Create Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-medium">Pre Need Services</h3>
-          <p className="text-sm text-muted-foreground">
-            Comprehensive pre-need planning assessments and tools to understand individual readiness and preferences.
-          </p>
-        </div>
-
+      {/* Description */}
+      <div className="mb-6">
+        <p className="text-sm text-muted-foreground">
+          Comprehensive pre-need planning assessments and tools to understand individual readiness and preferences.
+        </p>
       </div>
 
       {/* Evaluations Table */}
