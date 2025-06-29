@@ -22,6 +22,7 @@ interface DataTableProps {
   columns: TableColumn[];
   isLoading?: boolean;
   searchPlaceholder?: string;
+  emptyMessage?: string;
   createButton?: {
     label: string;
     onClick: () => void;
@@ -31,6 +32,12 @@ interface DataTableProps {
     label: string;
     onClick: () => void;
     icon?: React.ComponentType<{ className?: string }>;
+    variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
+  }[];
+  actions?: (row: any) => {
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    onClick: () => void;
     variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
   }[];
   emptyState?: {
@@ -48,8 +55,10 @@ export default function DataTable({
   columns,
   isLoading = false,
   searchPlaceholder = "Search...",
+  emptyMessage,
   createButton,
   createButtons,
+  actions,
   emptyState
 }: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState("");

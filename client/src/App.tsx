@@ -285,6 +285,9 @@ function App() {
             <Router />
           </main>
 
+          {/* Add feedback footer for authenticated users */}
+          <FeedbackFooter currentUser={currentUser} />
+
           <Toaster />
         </div>
         </AccessibilityProvider>

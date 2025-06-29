@@ -956,8 +956,8 @@ export default function Dashboard() {
                           { value: "In Process", label: "In Process" },
                           { value: "Resolved", label: "Resolved" }
                         ],
-                        render: (value) => {
-                          const statusColors = {
+                        render: (value: string) => {
+                          const statusColors: Record<string, string> = {
                             "Needs Work": "bg-red-600 text-white",
                             "In Process": "bg-yellow-600 text-white",
                             "Resolved": "bg-green-600 text-white"
