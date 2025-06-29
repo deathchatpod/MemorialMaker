@@ -147,7 +147,7 @@ export default function Dashboard() {
     { id: 'obituaries', label: 'Obituaries', icon: FileText },
     { id: 'finalspaces', label: 'FinalSpaces', icon: Heart },
     { id: 'collaborations', label: 'My Collaborations', icon: Users },
-    { id: 'surveys', label: 'Platform Surveys', icon: ClipboardList },
+    ...(currentUser.userType === 'admin' ? [{ id: 'surveys', label: 'Platform Surveys', icon: ClipboardList }] : []),
     { id: 'pre-need', label: 'Pre Need Evaluation', icon: BarChart3 },
     ...(currentUser.userType === 'admin' ? [{ id: 'templates', label: 'Prompt Templates', icon: Settings }] : []),
     ...(currentUser.userType === 'admin' ? [{ id: 'api-usage', label: 'API Usage', icon: Activity }] : []),
@@ -165,6 +165,9 @@ export default function Dashboard() {
     } catch (error) {
       console.warn('Error saving to localStorage:', error);
     }
+    
+    // Scroll to top of the page when switching tabs
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Delete mutations for admin users
