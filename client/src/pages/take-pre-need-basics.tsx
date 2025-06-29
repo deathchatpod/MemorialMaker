@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { FileText, AlertCircle } from 'lucide-react';
+import { FileText, AlertCircle, Info } from 'lucide-react';
 import ConditionalSurveyForm from '@/components/ConditionalSurveyForm';
 import { apiRequest } from '@/lib/queryClient';
+import { ContextualTooltip } from '@/components/ui/contextual-tooltip';
 
 interface Survey {
   id: number;
@@ -233,17 +234,27 @@ export default function TakePreNeedBasics() {
             )}
           </CardHeader>
           <CardContent>
-            <Alert className="mb-6 bg-blue-900/20 border-blue-800">
-              <AlertCircle className="h-4 w-4 text-blue-400" />
-              <AlertDescription className="text-blue-300">
-                This comprehensive guide helps your family navigate important matters by focusing on where to find information and key contacts.
-                {currentUserType === 'individual' && (
-                  <span className="block mt-1 font-medium">
-                    Note: Individual users can only complete this survey once per account.
-                  </span>
-                )}
-              </AlertDescription>
-            </Alert>
+            <div className="mb-6">
+              <ContextualTooltip
+                content="This comprehensive guide helps your family navigate important matters by focusing on where to find information and key contacts."
+                tooltipId="pre-need-basics-guide"
+                icon="info"
+                side="bottom"
+                maxWidth="max-w-2xl"
+              >
+                <Alert className="bg-blue-900/20 border-blue-800 cursor-help">
+                  <Info className="h-4 w-4 text-blue-400" />
+                  <AlertDescription className="text-blue-300">
+                    This comprehensive guide helps your family navigate important matters by focusing on where to find information and key contacts.
+                    {currentUserType === 'individual' && (
+                      <span className="block mt-1 font-medium">
+                        Note: Individual users can only complete this survey once per account.
+                      </span>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              </ContextualTooltip>
+            </div>
 
             <ConditionalSurveyForm
               questions={questions}

@@ -17,7 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescript
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import ImageUpload from "@/components/image-upload";
-import { ContextualTooltip } from "@/components/ContextualTooltip";
+import { ContextualTooltip } from "@/components/ui/contextual-tooltip";
 
 const obituaryFormSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -712,7 +712,10 @@ export default function ObituaryForm() {
                   <FormItem>
                     <FormLabel className="flex items-center">
                       Tone *
-                      <ContextualTooltip content="Choose the writing style that best reflects how you'd like the obituary to sound - formal and respectful, uplifting and celebratory, or thoughtful and poetic" />
+                      <ContextualTooltip 
+                        content="Choose the writing style that best reflects how you'd like the obituary to sound - formal and respectful, uplifting and celebratory, or thoughtful and poetic" 
+                        tooltipId="obituary-tone"
+                      />
                     </FormLabel>
                     <FormControl>
                       <RadioGroup 
@@ -780,7 +783,10 @@ export default function ObituaryForm() {
                   <FormItem>
                     <FormLabel className="flex items-center">
                       Age Category *
-                      <ContextualTooltip content="Select the appropriate age range to help generate content that reflects the person's life stage and experiences" />
+                      <ContextualTooltip 
+                        content="Select the appropriate age range to help generate content that reflects the person's life stage and experiences" 
+                        tooltipId="obituary-age-category"
+                      />
                     </FormLabel>
                     <FormControl>
                       <RadioGroup 

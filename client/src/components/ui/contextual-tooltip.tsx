@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
-import { HelpCircle, Info } from 'lucide-react';
+import { HelpCircle, Info, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ContextualTooltipProps {
@@ -10,6 +10,8 @@ interface ContextualTooltipProps {
   side?: 'top' | 'right' | 'bottom' | 'left';
   className?: string;
   maxWidth?: string;
+  tooltipId?: string; // Unique ID for dismissal tracking
+  dismissible?: boolean;
 }
 
 export function ContextualTooltip({ 
@@ -18,8 +20,46 @@ export function ContextualTooltip({
   icon = 'help',
   side = 'top',
   className,
-  maxWidth = 'max-w-xs'
+  maxWidth = 'max-w-xs',
+  tooltipId,
+  dismissible = true
 }: ContextualTooltipProps) {
+  const [isDismissed, setIsDismissed] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Check if tooltip was previously dismissed
+  useEffect(() => {
+    if (tooltipId && dismissible) {
+      try {
+        const dismissed = localStorage.getItem(`tooltip-dismissed-${tooltipId}`);
+        setIsDismissed(dismissed === 'true');
+      } catch (error) {
+        // Ignore localStorage errors
+      }
+    }
+  }, [tooltipId, dismissible]);
+
+  const handleDismiss = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (tooltipId) {
+      try {
+        localStorage.setItem(`tooltip-dismissed-${tooltipId}`, 'true');
+      } catch (error) {
+        // Ignore localStorage errors
+      }
+    }
+    
+    setIsDismissed(true);
+    setIsOpen(false);
+  };
+
+  // Don't render if dismissed
+  if (isDismissed && dismissible) {
+    return children || null;
+  }
+
   const IconComponent = icon === 'help' ? HelpCircle : Info;
 
   const trigger = children || (
@@ -33,18 +73,27 @@ export function ContextualTooltip({
 
   return (
     <TooltipProvider>
-      <Tooltip>
+      <Tooltip open={isOpen} onOpenChange={setIsOpen}>
         <TooltipTrigger asChild>
           {trigger}
         </TooltipTrigger>
         <TooltipContent 
           side={side}
           className={cn(
-            "text-sm p-3 bg-popover text-popover-foreground border shadow-lg rounded-md",
+            "text-sm p-3 bg-popover text-popover-foreground border shadow-lg rounded-md relative",
             maxWidth
           )}
         >
           <div className="space-y-1">
+            {dismissible && (
+              <button
+                onClick={handleDismiss}
+                className="absolute -top-1 -right-1 w-5 h-5 bg-muted hover:bg-muted-foreground/20 rounded-full flex items-center justify-center transition-colors"
+                aria-label="Dismiss tooltip"
+              >
+                <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
+              </button>
+            )}
             {content.split('\n').map((line, index) => (
               <p key={index} className="leading-relaxed">
                 {line}
