@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Shield, Eye, Database, UserCheck } from 'lucide-react';
+import { Shield } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function PrivacyPolicy() {
+function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="max-w-4xl mx-auto px-4">
@@ -9,128 +9,195 @@ export default function PrivacyPolicy() {
           <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-foreground mb-2">Privacy Policy</h1>
           <p className="text-muted-foreground">
-            Last updated: {new Date().toLocaleDateString()}
+            Last Updated: April 29, 2025
           </p>
         </div>
 
         <div className="space-y-6">
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Eye className="w-5 h-5 text-primary" />
-                Information We Collect
-              </CardTitle>
+              <CardTitle className="text-foreground">1. Introduction</CardTitle>
             </CardHeader>
             <CardContent className="prose prose-gray dark:prose-invert max-w-none">
               <p className="text-muted-foreground">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                Welcome to Final Spaces LLC ("Company," "we," "our," or "us"). We respect your privacy and are committed to protecting the personal information you share with us. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website finalspaces.com (the "Site") or use our memorial and obituary services.
               </p>
               <p className="text-muted-foreground">
-                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-              </p>
-              <h4 className="text-foreground font-semibold mt-4">Personal Information</h4>
-              <ul className="text-muted-foreground">
-                <li>Name and contact information</li>
-                <li>Account credentials and authentication data</li>
-                <li>Profile information and preferences</li>
-                <li>Communication records and feedback</li>
-              </ul>
-              <h4 className="text-foreground font-semibold mt-4">Memorial Content</h4>
-              <ul className="text-muted-foreground">
-                <li>Obituary content and memorial information</li>
-                <li>Photos and media uploads</li>
-                <li>Collaboration and feedback data</li>
-                <li>Usage analytics and system logs</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Database className="w-5 h-5 text-primary" />
-                How We Use Your Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
-              <p className="text-muted-foreground">
-                Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
-              </p>
-              <h4 className="text-foreground font-semibold mt-4">Service Provision</h4>
-              <ul className="text-muted-foreground">
-                <li>Creating and managing memorial content</li>
-                <li>Facilitating collaboration and feedback</li>
-                <li>Providing AI-powered content generation</li>
-                <li>Maintaining user accounts and preferences</li>
-              </ul>
-              <h4 className="text-foreground font-semibold mt-4">Communication</h4>
-              <ul className="text-muted-foreground">
-                <li>Sending service notifications and updates</li>
-                <li>Responding to support requests</li>
-                <li>Sharing collaboration invitations</li>
-                <li>Providing important service announcements</li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <UserCheck className="w-5 h-5 text-primary" />
-                Data Protection & Security
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
-              <p className="text-muted-foreground">
-                Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.
-              </p>
-              <h4 className="text-foreground font-semibold mt-4">Security Measures</h4>
-              <ul className="text-muted-foreground">
-                <li>Industry-standard encryption for data in transit and at rest</li>
-                <li>Regular security audits and vulnerability assessments</li>
-                <li>Access controls and authentication protocols</li>
-                <li>Secure backup and disaster recovery procedures</li>
-              </ul>
-              <h4 className="text-foreground font-semibold mt-4">Data Retention</h4>
-              <p className="text-muted-foreground">
-                At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.
+                <strong>PLEASE READ THIS PRIVACY POLICY CAREFULLY.</strong> By accessing or using our Site and services, you acknowledge that you have read, understood, and agree to be bound by all the terms of this Privacy Policy. If you do not agree with our policies and practices, please do not use our Site or services.
               </p>
             </CardContent>
           </Card>
 
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-foreground">Your Rights</CardTitle>
+              <CardTitle className="text-foreground">2. Information We Collect</CardTitle>
             </CardHeader>
             <CardContent className="prose prose-gray dark:prose-invert max-w-none">
               <p className="text-muted-foreground">
-                Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.
+                We collect information from and about users of our Site in several ways:
+              </p>
+              
+              <h4 className="text-foreground font-semibold mt-4">2.1 Personal Information You Provide to Us</h4>
+              <p className="text-muted-foreground">
+                When you register for an account, generate quotes, research individuals, write obituaries, or use other features of our Site, we may collect various types of personal information, including but not limited to:
               </p>
               <ul className="text-muted-foreground">
-                <li>Access to your personal information</li>
-                <li>Correction of inaccurate data</li>
-                <li>Deletion of your account and associated data</li>
-                <li>Data portability and export options</li>
-                <li>Opt-out of certain data processing activities</li>
+                <li>Name, email address, and contact information</li>
+                <li>Birth dates, death dates, and other biographical information</li>
+                <li>Account login credentials</li>
+                <li>Payment information (processed through secure third-party payment processors)</li>
+                <li>Information about deceased individuals for obituary and memorial purposes</li>
+                <li>Any other information you choose to provide</li>
+              </ul>
+
+              <h4 className="text-foreground font-semibold mt-4">2.2 Information Collected Automatically</h4>
+              <p className="text-muted-foreground">
+                When you visit our Site, we automatically collect certain information about your device and browsing actions, including:
+              </p>
+              <ul className="text-muted-foreground">
+                <li>IP address and device identifiers</li>
+                <li>Browser type and operating system</li>
+                <li>Pages you view on our Site</li>
+                <li>Time and duration of your visits</li>
+                <li>Referring websites or search engines</li>
+              </ul>
+              <p className="text-muted-foreground">
+                This information is collected using cookies, web beacons, and similar technologies. We use these technologies to improve our Site, remember your preferences, analyze trends, and provide personalized content.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">3. How We Use Your Information</CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
+              <p className="text-muted-foreground">
+                We may use the information we collect for various purposes, including to:
+              </p>
+              <ul className="text-muted-foreground">
+                <li>Provide, maintain, and improve our services</li>
+                <li>Process and manage your account registration</li>
+                <li>Fulfill your requests for obituary and memorial services</li>
+                <li>Respond to your comments, questions, and requests</li>
+                <li>Send you technical notices, updates, security alerts, and support messages</li>
+                <li>Monitor and analyze trends, usage, and activities in connection with our Site</li>
+                <li>Detect, investigate, and prevent fraudulent transactions and other illegal activities</li>
+                <li>Comply with legal obligations</li>
               </ul>
             </CardContent>
           </Card>
 
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-foreground">Contact Information</CardTitle>
+              <CardTitle className="text-foreground">4. Disclosure of Your Information</CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
+              <p className="text-muted-foreground">
+                We do not sell or rent your personal information to third parties. However, we may share your information in the following circumstances:
+              </p>
+
+              <h4 className="text-foreground font-semibold mt-4">4.1 Public Information</h4>
+              <p className="text-muted-foreground">
+                Any information you choose to publish on our Site as part of an obituary or memorial will be accessible to the public. Please exercise caution when deciding what information to make public.
+              </p>
+
+              <h4 className="text-foreground font-semibold mt-4">4.2 Service Providers</h4>
+              <p className="text-muted-foreground">
+                We may share your information with third-party vendors, service providers, contractors, or agents who perform functions on our behalf, such as payment processing, data analysis, email delivery, hosting services, and customer service.
+              </p>
+
+              <h4 className="text-foreground font-semibold mt-4">4.3 Legal Requirements</h4>
+              <p className="text-muted-foreground">
+                We may disclose your information if required to do so by law or in the good faith belief that such action is necessary to comply with legal obligations, protect and defend our rights or property, prevent fraud, or protect the personal safety of users of the Site or the public.
+              </p>
+
+              <h4 className="text-foreground font-semibold mt-4">4.4 Business Transfers</h4>
+              <p className="text-muted-foreground">
+                If we are involved in a merger, acquisition, financing, or sale of all or a portion of our assets, your information may be transferred as part of that transaction.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">5. Data Security</CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
+              <p className="text-muted-foreground">
+                We implement reasonable security measures to protect your personal information from unauthorized access, disclosure, alteration, and destruction. However, no Internet or electronic storage system is 100% secure, and we cannot guarantee absolute security of your information. We are not responsible for circumvention of any privacy settings or security measures on our Site.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">6. Your Choices</CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
+              <h4 className="text-foreground font-semibold mt-4">6.1 Account Information</h4>
+              <p className="text-muted-foreground">
+                You may update, correct, or delete your account information at any time by logging into your account or contacting us. We may retain certain information as required by law or for legitimate business purposes.
+              </p>
+
+              <h4 className="text-foreground font-semibold mt-4">6.2 Cookies and Tracking Technologies</h4>
+              <p className="text-muted-foreground">
+                Most web browsers are set to accept cookies by default. If you prefer, you can usually choose to set your browser to remove or reject cookies. Please note that if you choose to remove or reject cookies, this could affect the availability and functionality of our Site.
+              </p>
+
+              <h4 className="text-foreground font-semibold mt-4">6.3 Marketing Communications</h4>
+              <p className="text-muted-foreground">
+                You may opt out of receiving promotional emails from us by following the unsubscribe instructions included in those emails. Even if you opt out, we may still send you non-promotional emails, such as those about your account or our ongoing business relations.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">7. Children's Privacy</CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
+              <p className="text-muted-foreground">
+                Our Site is not directed to children under the age of 13, and we do not knowingly collect personal information from children. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us, and we will delete such information from our systems.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">8. International Data Transfers</CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
+              <p className="text-muted-foreground">
+                While we primarily operate in the United States, our Site is accessible worldwide. If you are accessing our Site from outside the United States, please be aware that your information may be transferred to, stored, and processed in the United States or other countries where our servers are located. By using our Site, you consent to the transfer of your information to countries outside your country of residence, which may have different data protection rules than those in your country.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">9. Changes to This Privacy Policy</CardTitle>
+            </CardHeader>
+            <CardContent className="prose prose-gray dark:prose-invert max-w-none">
+              <p className="text-muted-foreground">
+                We may update this Privacy Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will post the revised Privacy Policy on this page with an updated revision date. Your continued use of our Site following the posting of changes constitutes your acceptance of such changes.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">10. Contact Us</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                If you have questions about this Privacy Policy or our data practices, please contact us at:
+                If you have questions or concerns about this Privacy Policy or our privacy practices, please contact us at:
               </p>
               <div className="bg-muted/50 p-4 rounded-lg">
-                <p className="text-foreground font-medium">Privacy Officer</p>
-                <p className="text-muted-foreground">Email: privacy@deathmatters.com</p>
-                <p className="text-muted-foreground">Phone: (555) 123-4567</p>
-                <p className="text-muted-foreground">
-                  Address: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-                </p>
+                <p className="text-foreground font-medium">Final Spaces LLC</p>
+                <p className="text-muted-foreground">Email: [Insert Contact Email]</p>
+                <p className="text-muted-foreground">Phone: [Insert Phone Number]</p>
+                <p className="text-muted-foreground">Address: [Insert Address]</p>
               </div>
             </CardContent>
           </Card>
@@ -139,3 +206,5 @@ export default function PrivacyPolicy() {
     </div>
   );
 }
+
+export default PrivacyPolicy;
