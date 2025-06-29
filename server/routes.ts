@@ -832,8 +832,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         obituaryId,
         email: email,
         collaboratorEmail: email,
-        invitedBy: (req.user as any)?.id || 0,
-        invitedByType: (req.user as any)?.userType || 'unknown',
+        invitedBy: 1, // Default admin user for testing
+        invitedByType: 'admin',
         name: null
       });
 
