@@ -28,8 +28,16 @@ export default function GlobalSearch({ onClose }: GlobalSearchProps) {
   const [contentType, setContentType] = useState<string>('all');
   const [dateRange, setDateRange] = useState<string>('all');
   const [funeralHome, setFuneralHome] = useState<string>('all');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>('');
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  // Simple debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Search query with caching
   const { data: searchResults = [], isLoading, error } = useQuery({
