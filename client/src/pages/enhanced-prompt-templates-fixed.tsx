@@ -372,25 +372,26 @@ export default function EnhancedPromptTemplates() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
+      <div className="p-6" role="main" aria-label="Loading prompt templates">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-700 rounded w-1/4 mb-6"></div>
+          <div className="h-8 bg-gray-700 rounded w-1/4 mb-6" aria-label="Loading page title"></div>
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-48 bg-gray-700 rounded"></div>
+              <div key={i} className="h-48 bg-gray-700 rounded" aria-label={`Loading template ${i}`}></div>
             ))}
           </div>
         </div>
+        <div className="sr-only" aria-live="polite">Loading prompt templates, please wait...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-gray-900 min-h-screen">
+    <div className="p-6 max-w-7xl mx-auto bg-gray-900 min-h-screen" role="main">
       <div className="mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Enhanced Prompt Templates</h1>
-          <p className="text-gray-400 mt-1">Manage AI prompt templates with versioning and context documents</p>
+          <h1 className="text-2xl font-bold text-white" id="page-title">Enhanced Prompt Templates</h1>
+          <p className="text-gray-400 mt-1" aria-describedby="page-title">Manage AI prompt templates with versioning and context documents</p>
         </div>
       </div>
 
@@ -505,63 +506,83 @@ export default function EnhancedPromptTemplates() {
                       {isEditing && (
                         <div className="space-y-3">
                           <div>
-                            <Label htmlFor="changelog" className="text-white text-sm">Change Description</Label>
+                            <Label htmlFor={`changelog-${group.primary.id}`} className="text-white text-sm">Change Description</Label>
                             <Input
-                              id="changelog"
+                              id={`changelog-${group.primary.id}`}
                               value={formData.changelog}
                               onChange={(e) => setFormData(prev => ({ ...prev, changelog: e.target.value }))}
                               placeholder="Describe your changes"
                               required
                               className="bg-gray-700 border-gray-600 text-white text-sm"
+                              aria-describedby={`changelog-help-${group.primary.id}`}
                             />
+                            <p id={`changelog-help-${group.primary.id}`} className="sr-only">
+                              Describe what changes you are making to this prompt template
+                            </p>
                           </div>
                           
                           <div>
-                            <Label htmlFor="userInstructions" className="text-white text-sm">User Instructions</Label>
+                            <Label htmlFor={`userInstructions-${group.primary.id}`} className="text-white text-sm">User Instructions</Label>
                             <Textarea
-                              id="userInstructions"
+                              id={`userInstructions-${group.primary.id}`}
                               value={formData.userInstructions}
                               onChange={(e) => setFormData(prev => ({ ...prev, userInstructions: e.target.value }))}
                               placeholder="Specific instructions for the task..."
                               rows={3}
                               className="bg-gray-700 border-gray-600 text-white text-sm"
+                              aria-describedby={`userInstructions-help-${group.primary.id}`}
                             />
+                            <p id={`userInstructions-help-${group.primary.id}`} className="sr-only">
+                              Provide specific instructions that will guide the AI in completing tasks
+                            </p>
                           </div>
 
                           <div>
-                            <Label htmlFor="examples" className="text-white text-sm">Examples</Label>
+                            <Label htmlFor={`examples-${group.primary.id}`} className="text-white text-sm">Examples</Label>
                             <Textarea
-                              id="examples"
+                              id={`examples-${group.primary.id}`}
                               value={formData.examples}
                               onChange={(e) => setFormData(prev => ({ ...prev, examples: e.target.value }))}
                               placeholder="Provide examples of desired output..."
                               rows={3}
                               className="bg-gray-700 border-gray-600 text-white text-sm"
+                              aria-describedby={`examples-help-${group.primary.id}`}
                             />
+                            <p id={`examples-help-${group.primary.id}`} className="sr-only">
+                              Show examples of the type of output you want the AI to generate
+                            </p>
                           </div>
 
                           <div>
-                            <Label htmlFor="constraints" className="text-white text-sm">Constraints</Label>
+                            <Label htmlFor={`constraints-${group.primary.id}`} className="text-white text-sm">Constraints</Label>
                             <Textarea
-                              id="constraints"
+                              id={`constraints-${group.primary.id}`}
                               value={formData.constraints}
                               onChange={(e) => setFormData(prev => ({ ...prev, constraints: e.target.value }))}
                               placeholder="Define limitations and requirements..."
                               rows={3}
                               className="bg-gray-700 border-gray-600 text-white text-sm"
+                              aria-describedby={`constraints-help-${group.primary.id}`}
                             />
+                            <p id={`constraints-help-${group.primary.id}`} className="sr-only">
+                              Define any limitations, restrictions, or specific requirements for the AI output
+                            </p>
                           </div>
 
                           <div>
-                            <Label htmlFor="outputFormat" className="text-white text-sm">Output Format</Label>
+                            <Label htmlFor={`outputFormat-${group.primary.id}`} className="text-white text-sm">Output Format</Label>
                             <Textarea
-                              id="outputFormat"
+                              id={`outputFormat-${group.primary.id}`}
                               value={formData.outputFormat}
                               onChange={(e) => setFormData(prev => ({ ...prev, outputFormat: e.target.value }))}
                               placeholder="Specify the desired output structure..."
                               rows={3}
                               className="bg-gray-700 border-gray-600 text-white text-sm"
+                              aria-describedby={`outputFormat-help-${group.primary.id}`}
                             />
+                            <p id={`outputFormat-help-${group.primary.id}`} className="sr-only">
+                              Specify how you want the AI to structure and format its response
+                            </p>
                           </div>
                           
                           <div className="flex gap-2 pt-2">
@@ -602,6 +623,8 @@ export default function EnhancedPromptTemplates() {
                             setEditingInCard(null);
                           }
                         }}
+                        disabled={!group.primary}
+                        aria-label={isViewing ? `Collapse ${group.primary?.name || 'template'} details` : `View ${group.primary?.name || 'template'} details`}
                       >
                         <Eye className="w-3 h-3 mr-1" />
                         {isViewing ? 'Collapse' : 'View'}
@@ -618,6 +641,8 @@ export default function EnhancedPromptTemplates() {
                             setViewingTemplate(null);
                           }
                         }}
+                        disabled={!group.primary || updateTemplateMutation.isPending}
+                        aria-label={isEditing ? `Cancel editing ${group.primary?.name || 'template'}` : `Edit ${group.primary?.name || 'template'}`}
                       >
                         <Edit className="w-3 h-3 mr-1" />
                         {isEditing ? 'Cancel' : 'Edit'}
