@@ -23,7 +23,10 @@ export default function Register() {
     companyName: '',
     address: '',
     website: '',
-    description: ''
+    description: '',
+    // Legal agreements
+    acceptTerms: false,
+    acceptPrivacy: false
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

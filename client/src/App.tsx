@@ -15,6 +15,8 @@ import Home from "./pages/home";
 import Dashboard from "./pages/dashboard-fixed";
 import Login from "./pages/login";
 import Register from "./pages/register";
+import PrivacyPolicy from "./pages/privacy-policy";
+import TermsOfService from "./pages/terms-of-service";
 import ObituaryForm from "./pages/obituary-form";
 import GeneratedObituaries from "./pages/generated-obituaries";
 import QuestionManagement from "./pages/question-management";
@@ -216,6 +218,8 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/obituary/new" component={ObituaryForm} />
       <Route path="/obituary/:id/generated" component={GeneratedObituaries} />
       <Route path="/obituary/:id/edit" component={ObituaryForm} />
