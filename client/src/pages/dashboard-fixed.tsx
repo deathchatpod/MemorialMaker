@@ -241,15 +241,15 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-background memorial-dashboard">
       {/* Sidebar */}
-      <nav className="w-64 bg-card shadow-lg border-r border-border flex-shrink-0 flex flex-col" role="navigation" aria-label="Dashboard navigation">
+      <nav className="w-64 card-elevated border-r border-border/30 flex-shrink-0 flex flex-col backdrop-blur-sm" role="navigation" aria-label="Dashboard navigation">
         <div className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center mb-8">
-              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl flex items-center justify-center mr-4 ring-2 ring-primary/20">
                 <Skull className="w-6 h-6 text-primary" aria-hidden="true" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">{currentUser.username}</h2>
+                <h2 className="heading-md text-foreground">{currentUser.username}</h2>
                 <p className="text-sm text-muted-foreground capitalize">{currentUser.userType.replace('_', ' ')}</p>
               </div>
             </div>
@@ -262,10 +262,10 @@ export default function Dashboard() {
                     <button
                       onClick={() => handleSectionChange(item.id)}
                       className={cn(
-                        "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors",
+                        "w-full flex items-center px-4 py-3 text-left rounded-xl transition-all duration-200 focus-professional",
                         activeSection === item.id
-                          ? "bg-accent text-accent-foreground border-r-2 border-primary"
-                          : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                          ? "bg-primary/10 text-primary font-medium border-r-4 border-primary shadow-lg shadow-primary/10"
+                          : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground hover:shadow-md"
                       )}
                       aria-current={activeSection === item.id ? "page" : undefined}
                     >
@@ -281,10 +281,10 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto bg-background" role="main">
-        <div className="p-6">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-br from-background to-background/95" role="main">
+        <div className="p-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-3">
+            <h1 className="heading-xl text-foreground mb-8 flex items-center gap-3">
               {activeSection === 'obituaries' && (
               <>
                 <FileText className="w-7 h-7 text-primary" />
@@ -403,6 +403,7 @@ export default function Dashboard() {
                           variant="outline"
                           onClick={() => setLocation(`/obituary/${row.id}/generated`)}
                           title="Edit obituary"
+                          className="btn-elevation focus-professional"
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
@@ -411,6 +412,7 @@ export default function Dashboard() {
                           variant="outline"
                           onClick={() => setLocation(`/obituary/${row.id}/generated`)}
                           title="View obituary"
+                          className="btn-elevation focus-professional"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -422,24 +424,25 @@ export default function Dashboard() {
                                 variant="destructive"
                                 title="Delete obituary"
                                 disabled={deleteObituaryMutation.isPending}
+                                className="btn-elevation focus-professional"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-gray-800 border-gray-700">
+                            <AlertDialogContent className="modal-glass">
                               <AlertDialogHeader>
-                                <AlertDialogTitle className="text-white">Delete Obituary?</AlertDialogTitle>
-                                <AlertDialogDescription className="text-gray-300">
+                                <AlertDialogTitle className="heading-lg">Delete Obituary?</AlertDialogTitle>
+                                <AlertDialogDescription className="text-body">
                                   Are you sure you want to delete this obituary? This action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                                <AlertDialogCancel className="btn-elevation focus-professional">
                                   Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => deleteObituaryMutation.mutate(row.id)}
-                                  className="bg-red-600 hover:bg-red-700 text-white"
+                                  className="btn-elevation focus-professional bg-red-600 hover:bg-red-700 text-white"
                                 >
                                   Delete
                                 </AlertDialogAction>

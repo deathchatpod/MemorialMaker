@@ -119,25 +119,25 @@ function GlobalHeader() {
   const isHomePage = location === '/' || location === '';
 
   return (
-    <header className="memorial-header bg-card shadow-lg border-b border-border" role="banner">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <header className="memorial-header card-elevated border-b border-border/50 backdrop-blur-sm" role="banner">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-10">
+        <div className="flex justify-between items-center h-18">
           <Link href="/">
-            <div className="flex items-center cursor-pointer">
-              <Skull className="h-8 w-8 text-primary mr-3" aria-hidden="true" />
-              <span className="text-2xl font-bold text-foreground">
+            <div className="flex items-center cursor-pointer group">
+              <Skull className="h-8 w-8 text-primary mr-3 group-hover:scale-105 transition-transform" aria-hidden="true" />
+              <span className="heading-xl text-foreground">
                 Death<wbr />Matters
               </span>
             </div>
           </Link>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-muted-foreground">
+          <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-primary/10 rounded-full flex items-center justify-center ring-2 ring-primary/20">
+                <span className="text-sm font-semibold text-primary">
                   {currentUser.username.charAt(0)}
                 </span>
               </div>
-              <span className="ml-2 text-sm font-medium text-foreground hidden sm:inline">
+              <span className="text-sm font-medium text-foreground hidden sm:inline">
                 {currentUser.userType === 'admin' ? 'Admin' : 
                  currentUser.userType === 'funeral_home' ? 'Funeral Home' :
                  currentUser.userType === 'employee' ? 'Employee' : 'Individual'} - {currentUser.username}
@@ -151,7 +151,7 @@ function GlobalHeader() {
                   {!isDashboard && (
                     <Button 
                       variant="outline" 
-                      className="bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                      className="btn-elevation focus-professional"
                       onClick={() => setLocation('/dashboard')}
                     >
                       Dashboard
@@ -159,7 +159,7 @@ function GlobalHeader() {
                   )}
                   <Button 
                     variant="outline" 
-                    className="bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                    className="btn-elevation focus-professional"
                     onClick={handleLogout}
                   >
                     Logout
@@ -169,13 +169,13 @@ function GlobalHeader() {
                 <>
                   <Button 
                     variant="outline" 
-                    className="bg-secondary text-secondary-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                    className="btn-elevation focus-professional"
                     onClick={() => setLocation('/login')}
                   >
                     Login
                   </Button>
                   <Button 
-                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    className="btn-elevation focus-professional bg-primary text-primary-foreground hover:bg-primary/90"
                     onClick={() => setLocation('/register')}
                   >
                     Sign Up
@@ -188,14 +188,14 @@ function GlobalHeader() {
         
         {/* User type switching row - only show when authenticated */}
         {authenticatedUser && (
-          <div className="flex justify-end pb-2 border-t border-border">
-            <div className="relative mt-2">
+          <div className="flex justify-end pb-3 border-t border-border/30 bg-gradient-to-r from-transparent to-background/50">
+            <div className="relative mt-3">
               <label htmlFor="user-type-select" className="sr-only">Select user type for testing</label>
               <select 
                 id="user-type-select"
                 value={userTypeParam || authenticatedUser.userType || 'admin'}
                 onChange={(e) => handleUserChange(e.target.value)}
-                className="bg-input border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
+                className="input-elevated px-3 py-2 text-xs text-foreground focus-professional min-w-[200px]"
                 aria-label="Switch user type for testing purposes"
               >
                 <option value="admin">Admin - John Admin</option>
