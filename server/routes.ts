@@ -830,7 +830,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create collaborator record
       const collaborator = await storage.createObituaryCollaborator({
         obituaryId,
-        email: email,
         collaboratorEmail: email,
         invitedBy: 1, // Default admin user for testing
         invitedByType: 'admin',
@@ -1006,7 +1005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const allCollaborators = await db.select()
           .from(obituaryCollaborators)
-          .where(eq(obituaryCollaborators.email, userEmail));
+          .where(eq(obituaryCollaborators.collaboratorEmail, userEmail));
         
         // Get collaboration sessions and obituary details
         for (const collab of allCollaborators) {

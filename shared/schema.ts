@@ -140,7 +140,6 @@ export const textFeedback = pgTable("text_feedback", {
 export const obituaryCollaborators = pgTable("obituary_collaborators", {
   id: serial("id").primaryKey(),
   obituaryId: integer("obituary_id").notNull().references(() => obituaries.id, { onDelete: "cascade" }),
-  email: text("email").notNull(),
   collaboratorEmail: text("collaborator_email").notNull(),
   name: text("name"),
   status: varchar("status", { length: 20 }).default("pending").notNull(),
