@@ -238,42 +238,42 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-background memorial-dashboard">
       {/* Sidebar */}
-      <nav className="w-64 bg-card shadow-lg border-r border-border flex-shrink-0" role="navigation" aria-label="Dashboard navigation">
-        <div className="p-6">
-          <div className="flex items-center mb-8">
-            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-              <Skull className="w-6 h-6 text-primary" aria-hidden="true" />
+      <nav className="w-64 bg-card shadow-lg border-r border-border flex-shrink-0 flex flex-col" role="navigation" aria-label="Dashboard navigation">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            <div className="flex items-center mb-8">
+              <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                <Skull className="w-6 h-6 text-primary" aria-hidden="true" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">{currentUser.username}</h2>
+                <p className="text-sm text-muted-foreground capitalize">{currentUser.userType.replace('_', ' ')}</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">{currentUser.username}</h2>
-              <p className="text-sm text-muted-foreground capitalize">{currentUser.userType.replace('_', ' ')}</p>
-            </div>
+
+            <ul className="space-y-2 pb-6" role="list">
+              {menuItems.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => handleSectionChange(item.id)}
+                      className={cn(
+                        "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors",
+                        activeSection === item.id
+                          ? "bg-accent text-accent-foreground border-r-2 border-primary"
+                          : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
+                      )}
+                      aria-current={activeSection === item.id ? "page" : undefined}
+                    >
+                      <IconComponent className="mr-3 w-5 h-5" aria-hidden="true" />
+                      {item.label}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-
-          <ul className="space-y-2" role="list">
-            {menuItems.map((item) => {
-              const IconComponent = item.icon;
-              return (
-                <li key={item.id}>
-                  <button
-                    onClick={() => handleSectionChange(item.id)}
-                    className={cn(
-                      "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors",
-                      activeSection === item.id
-                        ? "bg-accent text-accent-foreground border-r-2 border-primary"
-                        : "text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground"
-                    )}
-                    aria-current={activeSection === item.id ? "page" : undefined}
-                  >
-                    <IconComponent className="mr-3 w-5 h-5" aria-hidden="true" />
-                    {item.label}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-
-
         </div>
       </nav>
 
