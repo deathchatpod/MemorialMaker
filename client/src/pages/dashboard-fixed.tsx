@@ -121,6 +121,7 @@ export default function Dashboard() {
     { id: 'pre-need', label: 'Pre Need Evaluation', icon: BarChart3 },
     ...(currentUser.userType === 'admin' ? [{ id: 'templates', label: 'Prompt Templates', icon: Settings }] : []),
     ...(currentUser.userType === 'admin' ? [{ id: 'api-usage', label: 'API Usage', icon: Activity }] : []),
+    ...(currentUser.userType === 'admin' ? [{ id: 'customer-feedback', label: 'Customer Feedback', icon: MessageSquare }] : []),
     ...(currentUser.userType === 'admin' || currentUser.userType === 'funeral_home' 
       ? [{ id: 'team-management', label: 'Team Management', icon: UserCog }] 
       : []),

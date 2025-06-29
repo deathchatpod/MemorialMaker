@@ -2547,6 +2547,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Customer Feedback API endpoints
+  app.get("/api/customer-feedback", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const feedback = await storage.getCustomerFeedback();
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching customer feedback:", error);
+      res.status(500).json({ error: "Failed to fetch customer feedback" });
+    }
+  });
+
+  app.get("/api/customer-feedback/:id", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const feedbackId = parseInt(req.params.id);
+      const feedback = await storage.getCustomerFeedbackById(feedbackId);
+      
+      if (!feedback) {
+        return res.status(404).json({ error: "Feedback not found" });
+      }
+      
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching customer feedback:", error);
+      res.status(500).json({ error: "Failed to fetch customer feedback" });
+    }
+  });
+
+  app.post("/api/customer-feedback", requireAuth, upload.single('screenshot'), async (req, res) => {
+    try {
+      const user = req.user as any;
+      const { category, subject, description } = req.body;
+
+      // Validate required fields
+      if (!category || !subject || !description) {
+        return res.status(400).json({ error: "Category, subject, and description are required" });
+      }
+
+      // Validate category
+      const validCategories = ["Bug/App Crashing", "New Feature Request", "General Feedback", "General Question"];
+      if (!validCategories.includes(category)) {
+        return res.status(400).json({ error: "Invalid category" });
+      }
+
+      // Handle screenshot upload
+      let screenshotUrl = null;
+      if (req.file) {
+        screenshotUrl = req.file.path;
+      }
+
+      const feedbackData = {
+        userId: user.id,
+        userType: user.userType,
+        userName: user.fullName || user.businessName || user.name,
+        category,
+        subject: subject.trim().substring(0, 255), // Ensure max length
+        description: description.trim(),
+        screenshotUrl,
+        status: "Needs Work"
+      };
+
+      const newFeedback = await storage.createCustomerFeedback(feedbackData);
+      res.json(newFeedback);
+    } catch (error) {
+      console.error("Error creating customer feedback:", error);
+      res.status(500).json({ error: "Failed to submit feedback" });
+    }
+  });
+
+  app.put("/api/customer-feedback/:id/status", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const feedbackId = parseInt(req.params.id);
+      const { status } = req.body;
+
+      // Validate status
+      const validStatuses = ["Needs Work", "In Process", "Resolved"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ error: "Invalid status" });
+      }
+
+      const updatedFeedback = await storage.updateCustomerFeedbackStatus(feedbackId, status);
+      
+      if (!updatedFeedback) {
+        return res.status(404).json({ error: "Feedback not found" });
+      }
+
+      res.json(updatedFeedback);
+    } catch (error) {
+      console.error("Error updating feedback status:", error);
+      res.status(500).json({ error: "Failed to update feedback status" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
