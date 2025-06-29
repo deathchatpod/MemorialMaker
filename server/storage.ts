@@ -1091,7 +1091,7 @@ export class DatabaseStorage implements IStorage {
     // User filtering can be implemented later once the basic functionality is working
     return await db.select().from(surveyResponses)
       .where(eq(surveyResponses.responseType, responseType))
-      .orderBy(desc(surveyResponses.createdAt));
+      .orderBy(desc(surveyResponses.submittedAt));
   }
 
   // Obituary Reviews

@@ -355,7 +355,6 @@ export const surveyResponses = pgTable("survey_responses", {
   completedByType: varchar("completed_by_type", { length: 50 }),
   funeralHomeId: integer("funeral_home_id"),
   submittedAt: timestamp("submitted_at").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Relations
