@@ -487,56 +487,133 @@ export class DatabaseStorage implements IStorage {
 
   // Prompt Templates
   async getPromptTemplates(): Promise<PromptTemplate[]> {
-    // Temporary fallback for backward compatibility during migration
-    try {
-      return await db.select().from(promptTemplates)
-        .orderBy(desc(promptTemplates.isPrimary), promptTemplates.platform, promptTemplates.promptType, desc(promptTemplates.version));
-    } catch (error) {
-      // Fallback to basic query for existing schema
-      const templates = await db.execute(sql`
-        SELECT id, name, platform, prompt_type as "promptType", content, created_at as "createdAt", updated_at as "updatedAt"
-        FROM prompt_templates 
-        ORDER BY platform, prompt_type
-      `);
-      return templates.rows.map(row => ({
-        id: row.id as number,
-        name: row.name as string,
-        platform: row.platform as string,
-        promptType: row.promptType as string,
-        content: row.content as string,
-        version: 1,
-        isPrimary: true,
-        systemMessage: null,
-        userInstructions: null,
-        examples: null,
-        constraints: null,
-        outputFormat: null,
-        createdBy: 1,
-        createdByName: 'System',
-        changelog: null,
-        createdAt: row.createdAt as Date,
-        updatedAt: row.updatedAt as Date,
-      }));
-    }
+    const templates = await db.execute(sql`
+      SELECT 
+        id, 
+        name, 
+        platform, 
+        prompt_type as "promptType", 
+        content,
+        COALESCE(version, 1) as version,
+        COALESCE(is_primary, true) as "isPrimary",
+        system_message as "systemMessage",
+        user_instructions as "userInstructions",
+        examples,
+        constraints,
+        output_format as "outputFormat",
+        COALESCE(created_by, 1) as "createdBy",
+        COALESCE(created_by_name, 'System') as "createdByName",
+        changelog,
+        created_at as "createdAt", 
+        updated_at as "updatedAt"
+      FROM prompt_templates 
+      ORDER BY COALESCE(is_primary, true) DESC, platform, prompt_type, COALESCE(version, 1) DESC
+    `);
+    
+    return templates.rows.map(row => ({
+      id: row.id as number,
+      name: row.name as string,
+      platform: row.platform as string,
+      promptType: row.promptType as string,
+      content: row.content as string,
+      version: row.version as number,
+      isPrimary: row.isPrimary as boolean,
+      systemMessage: row.systemMessage as string | null,
+      userInstructions: row.userInstructions as string | null,
+      examples: row.examples as string | null,
+      constraints: row.constraints as string | null,
+      outputFormat: row.outputFormat as string | null,
+      createdBy: row.createdBy as number,
+      createdByName: row.createdByName as string,
+      changelog: row.changelog as string | null,
+      createdAt: row.createdAt as Date,
+      updatedAt: row.updatedAt as Date,
+    }));
   }
 
   async getPromptTemplate(platform: string, promptType: string): Promise<PromptTemplate | undefined> {
-    const [template] = await db.select().from(promptTemplates)
-      .where(and(
-        eq(promptTemplates.platform, platform), 
-        eq(promptTemplates.promptType, promptType),
-        eq(promptTemplates.isPrimary, true)
-      ));
-    return template || undefined;
+    const templates = await db.execute(sql`
+      SELECT 
+        id, name, platform, prompt_type as "promptType", content,
+        COALESCE(version, 1) as version,
+        COALESCE(is_primary, true) as "isPrimary",
+        system_message as "systemMessage",
+        user_instructions as "userInstructions",
+        examples, constraints,
+        output_format as "outputFormat",
+        COALESCE(created_by, 1) as "createdBy",
+        COALESCE(created_by_name, 'System') as "createdByName",
+        changelog,
+        created_at as "createdAt", 
+        updated_at as "updatedAt"
+      FROM prompt_templates 
+      WHERE platform = ${platform} AND prompt_type = ${promptType} AND COALESCE(is_primary, true) = true
+      LIMIT 1
+    `);
+    
+    if (templates.rows.length === 0) return undefined;
+    
+    const row = templates.rows[0];
+    return {
+      id: row.id as number,
+      name: row.name as string,
+      platform: row.platform as string,
+      promptType: row.promptType as string,
+      content: row.content as string,
+      version: row.version as number,
+      isPrimary: row.isPrimary as boolean,
+      systemMessage: row.systemMessage as string | null,
+      userInstructions: row.userInstructions as string | null,
+      examples: row.examples as string | null,
+      constraints: row.constraints as string | null,
+      outputFormat: row.outputFormat as string | null,
+      createdBy: row.createdBy as number,
+      createdByName: row.createdByName as string,
+      changelog: row.changelog as string | null,
+      createdAt: row.createdAt as Date,
+      updatedAt: row.updatedAt as Date,
+    };
   }
 
   async getPromptTemplateVersions(platform: string, promptType: string): Promise<PromptTemplate[]> {
-    return await db.select().from(promptTemplates)
-      .where(and(
-        eq(promptTemplates.platform, platform),
-        eq(promptTemplates.promptType, promptType)
-      ))
-      .orderBy(desc(promptTemplates.version));
+    const templates = await db.execute(sql`
+      SELECT 
+        id, name, platform, prompt_type as "promptType", content,
+        COALESCE(version, 1) as version,
+        COALESCE(is_primary, true) as "isPrimary",
+        system_message as "systemMessage",
+        user_instructions as "userInstructions",
+        examples, constraints,
+        output_format as "outputFormat",
+        COALESCE(created_by, 1) as "createdBy",
+        COALESCE(created_by_name, 'System') as "createdByName",
+        changelog,
+        created_at as "createdAt", 
+        updated_at as "updatedAt"
+      FROM prompt_templates 
+      WHERE platform = ${platform} AND prompt_type = ${promptType}
+      ORDER BY COALESCE(version, 1) DESC
+    `);
+    
+    return templates.rows.map(row => ({
+      id: row.id as number,
+      name: row.name as string,
+      platform: row.platform as string,
+      promptType: row.promptType as string,
+      content: row.content as string,
+      version: row.version as number,
+      isPrimary: row.isPrimary as boolean,
+      systemMessage: row.systemMessage as string | null,
+      userInstructions: row.userInstructions as string | null,
+      examples: row.examples as string | null,
+      constraints: row.constraints as string | null,
+      outputFormat: row.outputFormat as string | null,
+      createdBy: row.createdBy as number,
+      createdByName: row.createdByName as string,
+      changelog: row.changelog as string | null,
+      createdAt: row.createdAt as Date,
+      updatedAt: row.updatedAt as Date,
+    }));
   }
 
   async createPromptTemplate(insertTemplate: InsertPromptTemplate): Promise<PromptTemplate> {
@@ -571,40 +648,87 @@ export class DatabaseStorage implements IStorage {
       data.outputFormat && `Output Format: ${data.outputFormat}`
     ].filter(Boolean).join('\n\n') || data.content;
 
-    const [template] = await db.insert(promptTemplates).values({
-      ...data,
-      content: fullContent,
-      version: nextVersion,
-      isPrimary: false // New versions are not primary by default
-    }).returning();
+    const result = await db.execute(sql`
+      INSERT INTO prompt_templates (
+        name, platform, prompt_type, content, version, is_primary,
+        system_message, user_instructions, examples, constraints, output_format,
+        created_by, created_by_name, changelog, created_at, updated_at
+      ) VALUES (
+        ${data.name}, ${data.platform}, ${data.promptType}, ${fullContent}, ${nextVersion}, false,
+        ${data.systemMessage}, ${data.userInstructions}, ${data.examples}, ${data.constraints}, ${data.outputFormat},
+        ${data.createdBy}, ${data.createdByName}, ${data.changelog}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+      ) RETURNING *
+    `);
     
-    return template;
+    const row = result.rows[0];
+    return {
+      id: row.id as number,
+      name: row.name as string,
+      platform: row.platform as string,
+      promptType: row.prompt_type as string,
+      content: row.content as string,
+      version: row.version as number,
+      isPrimary: row.is_primary as boolean,
+      systemMessage: row.system_message as string | null,
+      userInstructions: row.user_instructions as string | null,
+      examples: row.examples as string | null,
+      constraints: row.constraints as string | null,
+      outputFormat: row.output_format as string | null,
+      createdBy: row.created_by as number,
+      createdByName: row.created_by_name as string,
+      changelog: row.changelog as string | null,
+      createdAt: row.created_at as Date,
+      updatedAt: row.updated_at as Date,
+    };
   }
 
   async makePrimaryPromptTemplate(templateId: number): Promise<PromptTemplate> {
-    const template = await db.select().from(promptTemplates)
-      .where(eq(promptTemplates.id, templateId))
-      .then(results => results[0]);
+    // Get the template details first
+    const templateResult = await db.execute(sql`
+      SELECT platform, prompt_type FROM prompt_templates WHERE id = ${templateId}
+    `);
     
-    if (!template) {
+    if (templateResult.rows.length === 0) {
       throw new Error('Template not found');
     }
+    
+    const { platform, prompt_type } = templateResult.rows[0];
 
     // Set all other versions of this template type to non-primary
-    await db.update(promptTemplates)
-      .set({ isPrimary: false })
-      .where(and(
-        eq(promptTemplates.platform, template.platform),
-        eq(promptTemplates.promptType, template.promptType)
-      ));
+    await db.execute(sql`
+      UPDATE prompt_templates 
+      SET is_primary = false 
+      WHERE platform = ${platform} AND prompt_type = ${prompt_type}
+    `);
 
     // Set this version as primary
-    const [updatedTemplate] = await db.update(promptTemplates)
-      .set({ isPrimary: true, updatedAt: new Date() })
-      .where(eq(promptTemplates.id, templateId))
-      .returning();
+    const result = await db.execute(sql`
+      UPDATE prompt_templates 
+      SET is_primary = true, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = ${templateId}
+      RETURNING *
+    `);
     
-    return updatedTemplate;
+    const row = result.rows[0];
+    return {
+      id: row.id as number,
+      name: row.name as string,
+      platform: row.platform as string,
+      promptType: row.prompt_type as string,
+      content: row.content as string,
+      version: row.version as number,
+      isPrimary: row.is_primary as boolean,
+      systemMessage: row.system_message as string | null,
+      userInstructions: row.user_instructions as string | null,
+      examples: row.examples as string | null,
+      constraints: row.constraints as string | null,
+      outputFormat: row.output_format as string | null,
+      createdBy: row.created_by as number,
+      createdByName: row.created_by_name as string,
+      changelog: row.changelog as string | null,
+      createdAt: row.created_at as Date,
+      updatedAt: row.updated_at as Date,
+    };
   }
 
   async updatePromptTemplate(id: number, updates: Partial<PromptTemplate>): Promise<PromptTemplate> {
@@ -618,18 +742,62 @@ export class DatabaseStorage implements IStorage {
 
   // Prompt Template Documents
   async getPromptTemplateDocuments(templateId: number): Promise<PromptTemplateDocument[]> {
-    return await db.select().from(promptTemplateDocuments)
-      .where(eq(promptTemplateDocuments.promptTemplateId, templateId))
-      .orderBy(desc(promptTemplateDocuments.createdAt));
+    const documents = await db.execute(sql`
+      SELECT 
+        id, prompt_template_id as "promptTemplateId", filename, original_name as "originalName",
+        file_size as "fileSize", mime_type as "mimeType", content,
+        uploaded_by as "uploadedBy", uploaded_by_name as "uploadedByName",
+        created_at as "createdAt"
+      FROM prompt_template_documents 
+      WHERE prompt_template_id = ${templateId}
+      ORDER BY created_at DESC
+    `);
+    
+    return documents.rows.map(row => ({
+      id: row.id as number,
+      promptTemplateId: row.promptTemplateId as number,
+      filename: row.filename as string,
+      originalName: row.originalName as string,
+      fileSize: row.fileSize as number,
+      mimeType: row.mimeType as string,
+      content: row.content as string | null,
+      uploadedBy: row.uploadedBy as number,
+      uploadedByName: row.uploadedByName as string,
+      createdAt: row.createdAt as Date,
+    }));
   }
 
   async createPromptTemplateDocument(document: InsertPromptTemplateDocument): Promise<PromptTemplateDocument> {
-    const [newDocument] = await db.insert(promptTemplateDocuments).values(document).returning();
-    return newDocument;
+    const result = await db.execute(sql`
+      INSERT INTO prompt_template_documents (
+        prompt_template_id, filename, original_name, file_size, mime_type, content,
+        uploaded_by, uploaded_by_name, created_at
+      ) VALUES (
+        ${document.promptTemplateId}, ${document.filename}, ${document.originalName}, 
+        ${document.fileSize}, ${document.mimeType}, ${document.content},
+        ${document.uploadedBy}, ${document.uploadedByName}, CURRENT_TIMESTAMP
+      ) RETURNING *
+    `);
+    
+    const row = result.rows[0];
+    return {
+      id: row.id as number,
+      promptTemplateId: row.prompt_template_id as number,
+      filename: row.filename as string,
+      originalName: row.original_name as string,
+      fileSize: row.file_size as number,
+      mimeType: row.mime_type as string,
+      content: row.content as string | null,
+      uploadedBy: row.uploaded_by as number,
+      uploadedByName: row.uploaded_by_name as string,
+      createdAt: row.created_at as Date,
+    };
   }
 
   async deletePromptTemplateDocument(documentId: number): Promise<void> {
-    await db.delete(promptTemplateDocuments).where(eq(promptTemplateDocuments.id, documentId));
+    await db.execute(sql`
+      DELETE FROM prompt_template_documents WHERE id = ${documentId}
+    `);
   }
 
   async deletePromptTemplate(id: number): Promise<void> {
