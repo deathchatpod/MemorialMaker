@@ -49,6 +49,11 @@ interface FinalSpace {
   customStyles?: any;
   viewCount?: number;
   createdAt: string;
+  obituaryId?: number;
+  funeralHomeId?: number;
+  createdById?: number;
+  createdByType?: string;
+  socialMediaLinks?: any[];
 }
 
 interface Comment {
@@ -69,6 +74,18 @@ export default function MemorialPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const currentUserType = urlParams.get('userType') || 'admin';
   const currentUserId = parseInt(urlParams.get('userId') || '1');
+  
+  // Create currentUser object for components that need it
+  const currentUser = {
+    id: currentUserId,
+    name: currentUserType === 'admin' ? 'John Admin' : 
+          currentUserType === 'funeral_home' ? 'Jane Smith' : 
+          currentUserType === 'employee' ? 'Mike Johnson' : 'Sarah Wilson',
+    email: currentUserType === 'admin' ? 'admin@deathmatters.com' : 
+           currentUserType === 'funeral_home' ? 'funeral@deathmatters.com' : 
+           currentUserType === 'employee' ? 'employee@deathmatters.com' : 'individual@deathmatters.com',
+    userType: currentUserType
+  };
   
   const [newComment, setNewComment] = useState({
     authorName: "",
@@ -434,17 +451,19 @@ export default function MemorialPage() {
           </Card>
         )}
 
-        {/* Community Contributions Section */}
-        <div className="space-y-6">
-          <CommunityContribution
-            finalSpaceId={memorial.id}
-            currentUser={currentUser}
-          />
-          <CommunityContributionsDisplay
-            finalSpaceId={memorial.id}
-            currentUser={currentUser}
-          />
-        </div>
+        {/* Community Contributions Section - Temporarily disabled during schema sync */}
+        {false && (
+          <div className="space-y-6">
+            <CommunityContribution
+              finalSpaceId={memorial.id}
+              currentUser={currentUser}
+            />
+            <CommunityContributionsDisplay
+              finalSpaceId={memorial.id}
+              currentUser={currentUser}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
