@@ -1185,7 +1185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalCalls = apiCalls.length;
       const totalCost = apiCalls.reduce((sum, call) => sum + (parseFloat(call.estimatedCost?.toString() || '0')), 0);
       const totalTokens = apiCalls.reduce((sum, call) => sum + (call.tokensUsed || 0), 0);
-      const successfulCalls = apiCalls.filter(call => call.status === 'success').length;
+      const successfulCalls = apiCalls.filter(call => call.status === 'completed' || call.status === 'success').length;
 
       res.json({
         calls: apiCalls,
