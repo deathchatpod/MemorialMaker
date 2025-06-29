@@ -13,6 +13,7 @@ import {
   type ObituaryCollaborator, type InsertObituaryCollaborator,
   type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
+  type PreNeedBasicsCollaborator, type InsertPreNeedBasicsCollaborator,
   type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall, type ApiPricing, type InsertApiPricing, type CommunityContribution, type InsertCommunityContribution, type CommunityContributionComment, type InsertCommunityContributionComment, type CustomerFeedback, type InsertCustomerFeedback, type NotificationPreferences, type InsertNotificationPreferences
 } from "@shared/schema";
 import { db } from "./db";
@@ -1456,13 +1457,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Pre Need Basics Collaborators
-  async getPreNeedBasicsCollaborators(surveyResponseId: number): Promise<any[]> {
+  async getPreNeedBasicsCollaborators(surveyResponseId: number): Promise<PreNeedBasicsCollaborator[]> {
     return await db.select().from(preNeedBasicsCollaborators)
       .where(eq(preNeedBasicsCollaborators.surveyResponseId, surveyResponseId))
       .orderBy(desc(preNeedBasicsCollaborators.createdAt));
   }
 
-  async createPreNeedBasicsCollaborator(insertCollaborator: any): Promise<any> {
+  async createPreNeedBasicsCollaborator(insertCollaborator: InsertPreNeedBasicsCollaborator): Promise<PreNeedBasicsCollaborator> {
     const [collaborator] = await db.insert(preNeedBasicsCollaborators).values(insertCollaborator).returning();
     return collaborator;
   }

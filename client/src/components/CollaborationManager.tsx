@@ -46,15 +46,20 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
   // Invite collaborator mutation
   const inviteCollaborator = useMutation({
     mutationFn: async (data: InviteCollaboratorForm) => {
-      return apiRequest(`${endpointBase}/${entityId}/collaborators`, {
+      const response = await fetch(`${endpointBase}/${entityId}/collaborators`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           ...data,
-          invitedBy: currentUser.id,
-          invitedByType: currentUser.type,
+          invitedBy: currentUser?.id,
+          invitedByType: currentUser?.type,
           status: "pending"
         }),
       });
+      if (!response.ok) throw new Error("Failed to invite collaborator");
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -77,9 +82,15 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
   // Remove collaborator mutation
   const removeCollaborator = useMutation({
     mutationFn: async (collaboratorId: number) => {
-      return apiRequest(`${endpointBase.replace('/obituaries', '').replace('/final-spaces', '')}/collaborators/${collaboratorId}`, {
+      const deleteUrl = entityType === "pre-need-basics" 
+        ? `/api/pre-need-basics-collaborators/${collaboratorId}`
+        : `${endpointBase.replace('/obituaries', '').replace('/final-spaces', '')}/collaborators/${collaboratorId}`;
+      
+      const response = await fetch(deleteUrl, {
         method: "DELETE",
       });
+      if (!response.ok) throw new Error("Failed to remove collaborator");
+      return response.ok;
     },
     onSuccess: () => {
       toast({

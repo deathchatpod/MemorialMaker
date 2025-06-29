@@ -892,3 +892,11 @@ export type InsertCommunityContribution = z.infer<typeof insertCommunityContribu
 
 export type CommunityContributionComment = typeof communityContributionComments.$inferSelect;
 export type InsertCommunityContributionComment = z.infer<typeof insertCommunityContributionCommentSchema>;
+
+// Pre Need Basics Collaborators Schema
+export const insertPreNeedBasicsCollaboratorSchema = createInsertSchema(preNeedBasicsCollaborators).omit({
+  id: true,
+  createdAt: true,
+});
+export type PreNeedBasicsCollaborator = typeof preNeedBasicsCollaborators.$inferSelect;
+export type InsertPreNeedBasicsCollaborator = z.infer<typeof insertPreNeedBasicsCollaboratorSchema>;
