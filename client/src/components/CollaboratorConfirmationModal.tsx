@@ -75,7 +75,7 @@ export default function CollaboratorConfirmationModal({
                 if (onSave) onSave();
                 onDoItLater();
               }}
-              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white border-gray-600"
+              className="flex-1 h-10 bg-gray-600 hover:bg-gray-700 text-white border-gray-600 flex items-center justify-center"
             >
               Just save, I'll do it later
             </AlertDialogCancel>
@@ -84,7 +84,7 @@ export default function CollaboratorConfirmationModal({
                 if (onSave) onSave();
                 onAddCollaborator();
               }}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              className="flex-1 h-10 bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
             >
               Add Collaborator
             </AlertDialogAction>
