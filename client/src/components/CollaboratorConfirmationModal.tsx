@@ -34,13 +34,13 @@ export default function CollaboratorConfirmationModal({
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="bg-card border-border">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center justify-center gap-2 text-foreground text-center">
+        <AlertDialogHeader className="text-center space-y-4">
+          <AlertDialogTitle className="flex items-center justify-center gap-2 text-foreground">
             <Users className="h-5 w-5 text-blue-500" />
             Add a Collaborator
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-muted-foreground">
-            <div className="text-center space-y-3">
+          <AlertDialogDescription asChild>
+            <div className="text-muted-foreground space-y-3">
               <div className="flex items-center justify-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-orange-500" />
                 <span className="font-medium text-foreground">
