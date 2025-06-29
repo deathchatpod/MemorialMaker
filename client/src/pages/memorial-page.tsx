@@ -219,7 +219,7 @@ export default function MemorialPage() {
 
   return (
     <div className={`min-h-screen ${isMobile ? 'px-2 py-4' : 'px-4 py-8'}`} style={{
-      backgroundColor: memorial.customStyles?.backgroundColor || '#f9fafb',
+      backgroundColor: memorial.customStyles?.backgroundColor || '#1a1a1a',
       backgroundImage: memorial.backgroundImage ? `url(${memorial.backgroundImage})` : undefined,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
@@ -310,9 +310,9 @@ export default function MemorialPage() {
 
         {/* Description */}
         {memorial.description && (
-          <Card className="mb-8">
+          <Card className="mb-8 bg-gray-800/90 border-gray-600 backdrop-blur-sm">
             <CardContent className="py-6">
-              <p className="text-lg leading-relaxed text-white">
+              <p className="text-lg leading-relaxed text-gray-100">
                 {memorial.description}
               </p>
             </CardContent>
@@ -373,17 +373,17 @@ export default function MemorialPage() {
 
         {/* Comments/Guestbook */}
         {memorial.allowComments && (
-          <Card>
+          <Card className="bg-gray-800/90 border-gray-600 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-gray-100">
                 <MessageCircle className="w-5 h-5" />
                 Guestbook ({comments.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
               {/* Comment Form */}
-              <form onSubmit={handleCommentSubmit} className={`mb-8 p-4 bg-gray-800 rounded-lg`}>
-                <h4 className="font-medium mb-4">Share a memory or message</h4>
+              <form onSubmit={handleCommentSubmit} className={`mb-8 p-4 bg-gray-700/80 rounded-lg border border-gray-600`}>
+                <h4 className="font-medium mb-4 text-gray-100">Share a memory or message</h4>
                 <div className={`${isMobile ? 'grid grid-cols-1 gap-4 mb-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'}`}>
                   <Input
                     placeholder="Your name *"
