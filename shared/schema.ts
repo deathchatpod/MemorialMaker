@@ -767,6 +767,46 @@ export const customerFeedback = pgTable("customer_feedback", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Notification Preferences table
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  userType: varchar("user_type", { length: 50 }).notNull(),
+  
+  // Master toggles
+  inPlatformEnabled: boolean("in_platform_enabled").default(true).notNull(),
+  emailEnabled: boolean("email_enabled").default(true).notNull(),
+  
+  // Collaboration & Sharing
+  collaborationInviteReceived: jsonb("collaboration_invite_received").default({ inPlatform: true, email: true }),
+  collaborationInviteAccepted: jsonb("collaboration_invite_accepted").default({ inPlatform: true, email: true }),
+  newCollaboratorAdded: jsonb("new_collaborator_added").default({ inPlatform: true, email: true }),
+  collaboratorMadeChanges: jsonb("collaborator_made_changes").default({ inPlatform: true, email: true }),
+  
+  // Content Management
+  obituaryStatusChanged: jsonb("obituary_status_changed").default({ inPlatform: true, email: true }),
+  finalspaceUpdated: jsonb("finalspace_updated").default({ inPlatform: true, email: true }),
+  newObituaryPublished: jsonb("new_obituary_published").default({ inPlatform: true, email: true }),
+  contentReviewCompleted: jsonb("content_review_completed").default({ inPlatform: true, email: true }),
+  
+  // Team Management
+  employeeInvitationSent: jsonb("employee_invitation_sent").default({ inPlatform: true, email: true }),
+  employeeInvitationAccepted: jsonb("employee_invitation_accepted").default({ inPlatform: true, email: true }),
+  newTeamMemberJoined: jsonb("new_team_member_joined").default({ inPlatform: true, email: true }),
+  teamMemberRoleChanged: jsonb("team_member_role_changed").default({ inPlatform: true, email: true }),
+  
+  // System & Account
+  accountInformationUpdated: jsonb("account_information_updated").default({ inPlatform: true, email: true }),
+  passwordChanged: jsonb("password_changed").default({ inPlatform: true, email: true }),
+  loginFromNewDevice: jsonb("login_from_new_device").default({ inPlatform: true, email: true }),
+  
+  // Admin-specific
+  newFeedbackReceived: jsonb("new_feedback_received").default({ inPlatform: true, email: true }),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const insertObituaryReviewSchema = createInsertSchema(obituaryReviews);
 export type ObituaryReview = typeof obituaryReviews.$inferSelect;
 export type InsertObituaryReview = z.infer<typeof insertObituaryReviewSchema>;
@@ -786,6 +826,14 @@ export type InsertApiPricing = z.infer<typeof insertApiPricingSchema>;
 export const insertCustomerFeedbackSchema = createInsertSchema(customerFeedback);
 export type CustomerFeedback = typeof customerFeedback.$inferSelect;
 export type InsertCustomerFeedback = z.infer<typeof insertCustomerFeedbackSchema>;
+
+export const insertNotificationPreferencesSchema = createInsertSchema(notificationPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreferences = z.infer<typeof insertNotificationPreferencesSchema>;
 
 export type CommunityContribution = typeof communityContributions.$inferSelect;
 export type InsertCommunityContribution = z.infer<typeof insertCommunityContributionSchema>;

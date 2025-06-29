@@ -2639,6 +2639,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notification preferences routes
+  app.get("/api/notification-preferences", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const preferences = await storage.getNotificationPreferences(user.id, user.userType);
+      res.json(preferences);
+    } catch (error) {
+      console.error("Error fetching notification preferences:", error);
+      res.status(500).json({ error: "Failed to fetch notification preferences" });
+    }
+  });
+
+  app.put("/api/notification-preferences", requireAuth, async (req, res) => {
+    try {
+      const user = req.user as any;
+      const preferencesData = req.body;
+      
+      const updatedPreferences = await storage.updateNotificationPreferences(user.id, user.userType, preferencesData);
+      res.json(updatedPreferences);
+    } catch (error) {
+      console.error("Error updating notification preferences:", error);
+      res.status(500).json({ error: "Failed to update notification preferences" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
