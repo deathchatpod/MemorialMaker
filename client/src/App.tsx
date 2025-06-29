@@ -132,12 +132,7 @@ function GlobalHeader() {
           </Link>
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-muted-foreground">
-                  {currentUser.username.charAt(0)}
-                </span>
-              </div>
-              <span className="ml-2 text-sm font-medium text-foreground hidden sm:inline">
+              <span className="text-sm font-medium text-foreground">
                 {currentUser.userType === 'admin' ? 'Admin' : 
                  currentUser.userType === 'funeral_home' ? 'Funeral Home' :
                  currentUser.userType === 'employee' ? 'Employee' : 'Individual'} - {currentUser.username}

@@ -40,6 +40,7 @@ export default function SimpleMemorialEditorFixed({ memorial, onSave }: SimpleMe
   const [isCustomizationOpen, setIsCustomizationOpen] = useState(false);
   const [deviceView, setDeviceView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showSlideshow, setShowSlideshow] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(1200);
   
   // Initial state for undo/redo
   const initialState = {
@@ -175,13 +176,27 @@ export default function SimpleMemorialEditorFixed({ memorial, onSave }: SimpleMe
     }
   };
 
+  // Responsive device sizes that adapt to container
   const deviceSizes = {
     mobile: { width: 375, height: 667 },
     tablet: { width: 768, height: 1024 },
-    desktop: { width: 1200, height: 800 }
+    desktop: { width: Math.min(1200, containerWidth - 100), height: 800 }
   };
 
   const currentDevice = deviceSizes[deviceView];
+
+  // Update container width on resize
+  useEffect(() => {
+    const updateContainerWidth = () => {
+      const sidebar = isCustomizationOpen ? 400 : 0;
+      const padding = 100; // Account for padding and margins
+      setContainerWidth(window.innerWidth - sidebar - padding);
+    };
+
+    updateContainerWidth();
+    window.addEventListener('resize', updateContainerWidth);
+    return () => window.removeEventListener('resize', updateContainerWidth);
+  }, [isCustomizationOpen]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -259,15 +274,16 @@ export default function SimpleMemorialEditorFixed({ memorial, onSave }: SimpleMe
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex overflow-hidden">
         {/* Main Editor Area */}
-        <div className="flex-1 p-6">
-          <div className="flex justify-center">
+        <div className="flex-1 p-6 overflow-x-auto">
+          <div className="flex justify-center min-w-fit">
             <div 
               className="bg-card rounded-lg shadow-lg overflow-hidden transition-all duration-300 border border-border"
               style={{
                 width: currentDevice.width,
                 minHeight: currentDevice.height,
+                maxWidth: '100%',
                 backgroundColor: currentSettings.backgroundColor,
                 color: currentSettings.textColor,
                 fontFamily: currentSettings.fontFamily,
