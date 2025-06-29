@@ -148,27 +148,20 @@ export default function MemorialPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Check if user should be prompted to add collaborators
-  useEffect(() => {
-    if (memorial && collaborators && !hasCheckedCollaborators) {
-      const canEdit = currentUserType === 'admin' || 
-                     (currentUserType === 'funeral_home' && memorial.funeralHomeId === currentUserId) ||
-                     (currentUserType === 'employee' && memorial.createdById === currentUserId && memorial.createdByType === 'employee');
-      
-      // Check localStorage for "don't ask again" preference for this memorial
-      const dontAskKey = `dontAskCollaborator_${memorial.id}`;
-      const storedDontAsk = localStorage.getItem(dontAskKey) === 'true';
-      
-      if (canEdit && collaborators.length === 0 && !storedDontAsk) {
-        // Show modal after a short delay to ensure page is loaded
-        setTimeout(() => {
-          setShowCollaboratorModal(true);
-        }, 2000);
-      }
-      
-      setHasCheckedCollaborators(true);
-    }
-  }, [memorial, collaborators, hasCheckedCollaborators, currentUserType, currentUserId]);
+  // Check if user should be prompted to add collaborators (only when saving)
+  const shouldShowCollaboratorModal = () => {
+    if (!memorial || !collaborators) return false;
+    
+    const canEdit = currentUserType === 'admin' || 
+                   (currentUserType === 'funeral_home' && memorial.funeralHomeId === currentUserId) ||
+                   (currentUserType === 'employee' && memorial.createdById === currentUserId && memorial.createdByType === 'employee');
+    
+    // Check localStorage for "don't ask again" preference for this memorial
+    const dontAskKey = `dontAskCollaborator_${memorial.id}`;
+    const storedDontAsk = localStorage.getItem(dontAskKey) === 'true';
+    
+    return canEdit && collaborators.length === 0 && !storedDontAsk;
+  };
 
   // Fetch comments
   const { data: comments = [], isLoading: commentsLoading } = useQuery<Comment[]>({
@@ -247,6 +240,13 @@ export default function MemorialPage() {
     if (checked && memorial) {
       localStorage.setItem(`dontAskCollaborator_${memorial.id}`, 'true');
     }
+  };
+
+  // Save function for modal integration
+  const handleSave = () => {
+    // This would be the actual save operation
+    // For memorial page, this is just a placeholder since it's a view page
+    console.log('Memorial saved');
   };
 
   if (memorialLoading) {
@@ -533,6 +533,7 @@ export default function MemorialPage() {
         onDoItLater={handleDoItLater}
         onDontAskAgain={handleDontAskAgain}
         dontAskAgain={dontAskAgain}
+        onSave={handleSave}
       />
     </div>
   );

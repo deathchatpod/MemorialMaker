@@ -19,6 +19,7 @@ interface CollaboratorConfirmationModalProps {
   onDoItLater: () => void;
   onDontAskAgain: (checked: boolean) => void;
   dontAskAgain: boolean;
+  onSave?: () => void;
 }
 
 export default function CollaboratorConfirmationModal({
@@ -27,7 +28,8 @@ export default function CollaboratorConfirmationModal({
   onAddCollaborator,
   onDoItLater,
   onDontAskAgain,
-  dontAskAgain
+  dontAskAgain,
+  onSave
 }: CollaboratorConfirmationModalProps) {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -67,13 +69,19 @@ export default function CollaboratorConfirmationModal({
           
           <div className="flex gap-2 w-full">
             <AlertDialogCancel
-              onClick={onDoItLater}
+              onClick={() => {
+                if (onSave) onSave();
+                onDoItLater();
+              }}
               className="flex-1 bg-gray-600 hover:bg-gray-700 text-white border-gray-600"
             >
-              Do it Later
+              Just save, I'll do it later
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={onAddCollaborator}
+              onClick={() => {
+                if (onSave) onSave();
+                onAddCollaborator();
+              }}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             >
               Add Collaborator
