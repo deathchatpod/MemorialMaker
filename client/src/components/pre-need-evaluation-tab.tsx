@@ -32,8 +32,8 @@ export function PreNeedEvaluationTab() {
   const currentFuneralHomeId = currentUserType === 'funeral_home' ? currentUserId : 
                                currentUserType === 'employee' ? 1 : undefined;
 
-  // Fetch pre-need evaluations
-  const { data: evaluations = [], isLoading } = useQuery<PreNeedEvaluation[]>({
+  // Fetch both pre-need evaluations and basics
+  const { data: evaluations = [], isLoading: evaluationsLoading } = useQuery<PreNeedEvaluation[]>({
     queryKey: ['/api/survey-responses/type/pre_need_evaluation', currentUserId, currentUserType, currentFuneralHomeId],
     queryFn: async () => {
       const params = new URLSearchParams({
@@ -50,25 +50,51 @@ export function PreNeedEvaluationTab() {
     },
   });
 
-  // Delete evaluation mutation
-  const deleteEvaluation = useMutation({
+  const { data: basics = [], isLoading: basicsLoading } = useQuery<PreNeedEvaluation[]>({
+    queryKey: ['/api/survey-responses/type/pre_need_basics', currentUserId, currentUserType, currentFuneralHomeId],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        userId: currentUserId.toString(),
+        userType: currentUserType,
+      });
+      if (currentFuneralHomeId) {
+        params.append('funeralHomeId', currentFuneralHomeId.toString());
+      }
+      
+      const response = await fetch(`/api/survey-responses/type/pre_need_basics?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch basics');
+      return response.json();
+    },
+  });
+
+  // Combine both types of survey responses
+  const allSurveyResponses = [
+    ...evaluations.map(e => ({ ...e, responseType: 'pre_need_evaluation', surveyName: 'Pre Need Evaluation' })),
+    ...basics.map(b => ({ ...b, responseType: 'pre_need_basics', surveyName: 'Pre Need Basics' }))
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const isLoading = evaluationsLoading || basicsLoading;
+
+  // Delete survey response mutation
+  const deleteSurveyResponse = useMutation({
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/survey-responses/${id}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to delete evaluation');
+      if (!response.ok) throw new Error('Failed to delete survey response');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/survey-responses/type/pre_need_evaluation'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/survey-responses/type/pre_need_basics'] });
       toast({
-        title: "Evaluation Deleted",
-        description: "Pre-need evaluation has been deleted successfully"
+        title: "Survey Response Deleted",
+        description: "Survey response has been deleted successfully"
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to delete evaluation",
+        description: "Failed to delete survey response",
         variant: "destructive"
       });
     }
@@ -140,62 +166,48 @@ export function PreNeedEvaluationTab() {
         </p>
       </div>
 
-      {/* Pre Need Basics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Pre Need Basics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">Essential Information Guide</h3>
-            <p className="text-muted-foreground mb-4">
-              Complete the basic information guide to help your family navigate important matters
-            </p>
-            <Button 
-              onClick={handleTakeBasics} 
-              className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap"
-              size="sm"
-            >
-              <Plus className="h-4 w-4" />
-              Take Pre Need Basics
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <Button 
+          onClick={handleTakeBasics} 
+          className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:w-auto"
+          size="sm"
+        >
+          <Plus className="h-4 w-4" />
+          Take Pre Need Basics
+        </Button>
+        <Button 
+          onClick={handleTakeEvaluation} 
+          className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:w-auto"
+          size="sm"
+        >
+          <Plus className="h-4 w-4" />
+          Take Pre Need Evaluation
+        </Button>
+      </div>
 
-      {/* Evaluations Table */}
+      {/* Unified Pre Need Services Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Pre Need Evaluations
+            Pre Need Services
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {evaluations.length === 0 ? (
+          {allSurveyResponses.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No Evaluations Yet</h3>
+              <h3 className="text-lg font-medium mb-2">No Pre Need Services Completed</h3>
               <p className="text-muted-foreground mb-4">
-                Start by taking your first pre-need evaluation to assess funeral planning needs
+                Start by taking Pre Need Basics or a Pre Need Evaluation to assess and plan for important matters
               </p>
-              <Button 
-                onClick={handleTakeEvaluation} 
-                className="flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap"
-                size="sm"
-              >
-                <Plus className="h-4 w-4" />
-                Take Pre Need Evaluation
-              </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Survey Type</TableHead>
                   <TableHead>Date Completed</TableHead>
                   <TableHead>Completed By</TableHead>
                   <TableHead>Status</TableHead>
@@ -203,13 +215,18 @@ export function PreNeedEvaluationTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {evaluations.map((evaluation) => (
-                  <TableRow key={evaluation.id}>
+                {allSurveyResponses.map((response) => (
+                  <TableRow key={response.id}>
                     <TableCell>
-                      {format(new Date(evaluation.createdAt), 'MMM d, yyyy')}
+                      <Badge variant={response.responseType === 'pre_need_basics' ? 'default' : 'secondary'}>
+                        {response.responseType === 'pre_need_basics' ? 'Pre Need Basics' : 'Pre Need Evaluation'}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      {getUserDisplayName(evaluation)}
+                      {format(new Date(response.createdAt), 'MMM d, yyyy')}
+                    </TableCell>
+                    <TableCell>
+                      {getUserDisplayName(response)}
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">Completed</Badge>
@@ -219,7 +236,7 @@ export function PreNeedEvaluationTab() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleViewResults(evaluation)}
+                          onClick={() => handleViewResults(response)}
                           className="flex items-center gap-1"
                         >
                           <Eye className="h-3 w-3" />
@@ -246,7 +263,7 @@ export function PreNeedEvaluationTab() {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => deleteEvaluation.mutate(evaluation.id)}
+                                onClick={() => deleteSurveyResponse.mutate(response.id)}
                                 className="bg-red-600 hover:bg-red-700"
                               >
                                 Delete

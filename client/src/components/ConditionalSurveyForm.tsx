@@ -12,6 +12,7 @@ interface ConditionalSurveyFormProps {
   questions: Question[];
   onSubmit: (formData: Record<string, any>) => void;
   isLoading?: boolean;
+  isSubmitting?: boolean;
   userType?: string;
   currentUser?: {
     id: number;
@@ -24,15 +25,18 @@ interface ConditionalSurveyFormProps {
     zipCode?: string;
   };
   onUserUpdate?: (userData: any) => void;
+  autoFillForSelf?: boolean;
 }
 
 export default function ConditionalSurveyForm({ 
   questions, 
   onSubmit, 
-  isLoading = false, 
+  isLoading = false,
+  isSubmitting = false,
   userType, 
   currentUser,
-  onUserUpdate 
+  onUserUpdate,
+  autoFillForSelf = false
 }: ConditionalSurveyFormProps) {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [visibleQuestions, setVisibleQuestions] = useState<number[]>([]);
@@ -389,8 +393,8 @@ export default function ConditionalSurveyForm({
       {sortedQuestions.map(renderQuestion)}
       
       <div className="pt-4">
-        <Button type="submit" disabled={isLoading} className="w-full bg-blue-600 hover:bg-blue-700">
-          {isLoading ? "Submitting..." : "Submit Survey"}
+        <Button type="submit" disabled={isLoading || isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700">
+          {(isLoading || isSubmitting) ? "Submitting..." : "Submit Survey"}
         </Button>
       </div>
     </form>
