@@ -425,7 +425,6 @@ export default function EnhancedPromptTemplates() {
                         variant="outline"
                         className="border-gray-600 text-gray-300 hover:bg-gray-700"
                         onClick={() => {
-                          console.log('Version history for template:', group.primary);
                           setSelectedTemplate(group.primary);
                           setEditingTemplate(null);
                           setShowVersionHistory(true);
