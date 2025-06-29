@@ -200,6 +200,146 @@
   user-select: text;
 }
 
+/* Professional Design Enhancements */
+@layer components {
+  /* Enhanced Button Styles */
+  .btn-professional {
+    @apply relative overflow-hidden transition-all duration-200 ease-in-out;
+    @apply shadow-sm hover:shadow-md;
+    @apply border border-transparent;
+  }
+  
+  .btn-professional:hover {
+    @apply transform -translate-y-0.5;
+  }
+  
+  .btn-professional:active {
+    @apply transform translate-y-0;
+  }
+  
+  /* Enhanced Card Styles */
+  .card-professional {
+    @apply backdrop-blur-sm bg-card/95;
+    @apply border border-border/50;
+    @apply shadow-lg shadow-black/5;
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  .card-professional:hover {
+    @apply shadow-xl shadow-black/10;
+    @apply border-border/80;
+  }
+  
+  /* Modern Input Styles */
+  .input-professional {
+    @apply transition-all duration-200 ease-in-out;
+    @apply border-2 border-input;
+    @apply bg-background/50 backdrop-blur-sm;
+    @apply focus:border-primary/60 focus:ring-2 focus:ring-primary/20;
+    @apply placeholder:text-muted-foreground/60;
+  }
+  
+  /* Elegant Typography */
+  .text-elegant {
+    @apply font-medium tracking-tight;
+    @apply text-foreground/90;
+  }
+  
+  .heading-elegant {
+    @apply font-semibold tracking-tight;
+    @apply text-foreground/95;
+    @apply leading-tight;
+  }
+  
+  /* Professional Spacing */
+  .spacing-professional {
+    @apply space-y-6;
+  }
+  
+  /* Enhanced Navigation */
+  .nav-professional {
+    @apply backdrop-blur-md bg-card/95;
+    @apply border-b border-border/30;
+    @apply shadow-sm;
+  }
+  
+  /* Modern Modal Styles */
+  .modal-professional {
+    @apply backdrop-blur-sm bg-background/95;
+    @apply border border-border/60;
+    @apply shadow-2xl shadow-black/20;
+    @apply rounded-xl;
+  }
+  
+  /* Professional Table Styles */
+  .table-professional {
+    @apply bg-card/50 backdrop-blur-sm;
+    @apply border border-border/30;
+    @apply rounded-lg overflow-hidden;
+  }
+  
+  .table-professional th {
+    @apply bg-muted/50 backdrop-blur-sm;
+    @apply font-medium text-muted-foreground;
+    @apply border-b border-border/30;
+  }
+  
+  .table-professional td {
+    @apply border-b border-border/20;
+    @apply transition-colors duration-150;
+  }
+  
+  .table-professional tbody tr:hover {
+    @apply bg-muted/30;
+  }
+  
+  /* Enhanced Focus States */
+  .focus-professional:focus {
+    @apply outline-none;
+    @apply ring-2 ring-primary/30;
+    @apply ring-offset-2 ring-offset-background;
+  }
+  
+  /* Modern Badge Styles */
+  .badge-professional {
+    @apply inline-flex items-center;
+    @apply px-2.5 py-1;
+    @apply rounded-full;
+    @apply text-xs font-medium;
+    @apply transition-all duration-200;
+    @apply backdrop-blur-sm;
+  }
+  
+  /* Glassmorphism Effects */
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/10;
+    @apply border border-white/20;
+    @apply shadow-lg shadow-black/10;
+  }
+  
+  /* Professional Loading States */
+  .loading-professional {
+    @apply animate-pulse;
+    @apply bg-muted/50;
+    @apply rounded-md;
+  }
+  
+  /* Enhanced Shadows */
+  .shadow-professional {
+    box-shadow: 
+      0 1px 3px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px -1px rgb(0 0 0 / 0.1),
+      0 0 0 1px rgb(0 0 0 / 0.05);
+  }
+  
+  .shadow-professional-lg {
+    box-shadow: 
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1),
+      0 0 0 1px rgb(0 0 0 / 0.05);
+  }
+}
+
 :root {
   /* Memorial theme - elegant greys with warm brown accents */
   --background: hsl(220, 13%, 18%);
