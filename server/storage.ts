@@ -1,7 +1,7 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, promptTemplateDocuments, finalSpaces, finalSpaceComments, finalSpaceImages,
-  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing, communityContributions, communityContributionComments, customerFeedback, notificationPreferences,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, preNeedBasicsCollaborators, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing, communityContributions, communityContributionComments, customerFeedback, notificationPreferences,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
@@ -1453,6 +1453,22 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSurveyResponse(id: number): Promise<void> {
     await db.delete(surveyResponses).where(eq(surveyResponses.id, id));
+  }
+
+  // Pre Need Basics Collaborators
+  async getPreNeedBasicsCollaborators(surveyResponseId: number): Promise<any[]> {
+    return await db.select().from(preNeedBasicsCollaborators)
+      .where(eq(preNeedBasicsCollaborators.surveyResponseId, surveyResponseId))
+      .orderBy(desc(preNeedBasicsCollaborators.createdAt));
+  }
+
+  async createPreNeedBasicsCollaborator(insertCollaborator: any): Promise<any> {
+    const [collaborator] = await db.insert(preNeedBasicsCollaborators).values(insertCollaborator).returning();
+    return collaborator;
+  }
+
+  async deletePreNeedBasicsCollaborator(id: number): Promise<void> {
+    await db.delete(preNeedBasicsCollaborators).where(eq(preNeedBasicsCollaborators.id, id));
   }
 }
 

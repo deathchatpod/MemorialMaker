@@ -31,12 +31,12 @@ interface CollaborationManagerProps {
   };
 }
 
-export default function CollaborationManager({ entityId, entityType, currentUser }: CollaborationManagerProps) {
+export default function CollaborationManager({ entityId, entityType, endpointBase: customEndpointBase, currentUser }: CollaborationManagerProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
-  const endpointBase = entityType === "obituary" ? "/api/obituaries" : "/api/final-spaces";
+  const endpointBase = customEndpointBase || (entityType === "obituary" ? "/api/obituaries" : "/api/final-spaces");
   
   // Fetch collaborators
   const { data: collaborators = [], isLoading } = useQuery({

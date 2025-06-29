@@ -1876,6 +1876,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Pre Need Basics Collaborators endpoints
+  app.get("/api/pre-need-basics-collaborators/:id/collaborators", async (req, res) => {
+    try {
+      const surveyResponseId = parseInt(req.params.id);
+      const collaborators = await storage.getPreNeedBasicsCollaborators(surveyResponseId);
+      res.json(collaborators);
+    } catch (error) {
+      console.error("Error fetching Pre Need Basics collaborators:", error);
+      res.status(500).json({ message: "Failed to fetch collaborators" });
+    }
+  });
+
+  app.post("/api/pre-need-basics-collaborators/:id/collaborators", async (req, res) => {
+    try {
+      const surveyResponseId = parseInt(req.params.id);
+      const collaboratorData = {
+        surveyResponseId,
+        collaboratorEmail: req.body.collaboratorEmail,
+        name: req.body.collaboratorName || req.body.name,
+        status: "pending",
+        invitedBy: req.body.invitedBy,
+        invitedByType: req.body.invitedByType,
+      };
+      
+      const collaborator = await storage.createPreNeedBasicsCollaborator(collaboratorData);
+      res.status(201).json(collaborator);
+    } catch (error) {
+      console.error("Error creating Pre Need Basics collaborator:", error);
+      res.status(500).json({ message: "Failed to invite collaborator" });
+    }
+  });
+
+  app.delete("/api/pre-need-basics-collaborators/:id", async (req, res) => {
+    try {
+      const collaboratorId = parseInt(req.params.id);
+      await storage.deletePreNeedBasicsCollaborator(collaboratorId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting Pre Need Basics collaborator:", error);
+      res.status(500).json({ message: "Failed to remove collaborator" });
+    }
+  });
+
   // Final Space Collaboration endpoints
   app.get("/api/final-spaces/:id/collaborators", async (req, res) => {
     try {
