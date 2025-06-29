@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { AccessibilityToolbar } from '@/components/AccessibilityToolbar';
+import NotificationSettings from '@/components/NotificationSettings';
 
 export default function AccountInformation() {
   // Get user info from URL parameters
@@ -550,6 +551,22 @@ export default function AccountInformation() {
             <div id="accessibility-tools">
               <AccessibilityToolbar />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Notification Settings */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Mail className="h-5 w-5" />
+              <CardTitle>Notification Settings</CardTitle>
+            </div>
+            <CardDescription>
+              Configure your notification preferences for different types of platform activities
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <NotificationSettings />
           </CardContent>
         </Card>
       </div>

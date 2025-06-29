@@ -1,7 +1,7 @@
 import { 
   adminUsers, funeralHomes, employees, employeeInvitations, obituaries, generatedObituaries, 
   textFeedback, surveys, questions, promptTemplates, finalSpaces, finalSpaceComments, finalSpaceImages,
-  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing, communityContributions, communityContributionComments, customerFeedback,
+  finalSpaceCollaborators, finalSpaceCollaborationSessions, obituaryCollaborators, collaborationSessions, userTypes, surveyResponses, obituaryReviews, obituaryReviewEdits, apiCalls, apiPricing, communityContributions, communityContributionComments, customerFeedback, notificationPreferences,
   type AdminUser, type InsertAdminUser, type FuneralHome, type InsertFuneralHome,
   type Employee, type InsertEmployee, type EmployeeInvitation, type InsertEmployeeInvitation,
   type Obituary, type InsertObituary, type GeneratedObituary, type InsertGeneratedObituary,
@@ -13,7 +13,7 @@ import {
   type ObituaryCollaborator, type InsertObituaryCollaborator,
   type CollaborationSession, type InsertCollaborationSession,
   type UserType, type InsertUserType, type SurveyResponse, type InsertSurveyResponse,
-  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall, type ApiPricing, type InsertApiPricing, type CommunityContribution, type InsertCommunityContribution, type CommunityContributionComment, type InsertCommunityContributionComment, type CustomerFeedback, type InsertCustomerFeedback
+  type ObituaryReview, type InsertObituaryReview, type ObituaryReviewEdit, type InsertObituaryReviewEdit, type ApiCall, type InsertApiCall, type ApiPricing, type InsertApiPricing, type CommunityContribution, type InsertCommunityContribution, type CommunityContributionComment, type InsertCommunityContributionComment, type CustomerFeedback, type InsertCustomerFeedback, type NotificationPreferences, type InsertNotificationPreferences
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, count, sql, or, ilike, gte, lte } from "drizzle-orm";
@@ -179,6 +179,16 @@ export interface IStorage {
   getCommunityContributionComments(contributionId: number): Promise<CommunityContributionComment[]>;
   createCommunityContributionComment(comment: InsertCommunityContributionComment): Promise<CommunityContributionComment>;
   deleteCommunityContributionComment(id: number): Promise<void>;
+  
+  // Customer Feedback
+  getCustomerFeedback(): Promise<CustomerFeedback[]>;
+  getCustomerFeedbackById(id: number): Promise<CustomerFeedback | undefined>;
+  createCustomerFeedback(feedback: InsertCustomerFeedback): Promise<CustomerFeedback>;
+  updateCustomerFeedbackStatus(id: number, status: string): Promise<CustomerFeedback | undefined>;
+  
+  // Notification Preferences
+  getNotificationPreferences(userId: number, userType: string): Promise<NotificationPreferences | undefined>;
+  updateNotificationPreferences(userId: number, userType: string, preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences>;
   
   // Search functionality
   searchContent(query: string, filters?: {
@@ -1121,6 +1131,85 @@ export class DatabaseStorage implements IStorage {
       .where(eq(customerFeedback.id, id))
       .returning();
     return updatedFeedback || undefined;
+  }
+
+  // Notification Preferences methods
+  async getNotificationPreferences(userId: number, userType: string): Promise<NotificationPreferences | undefined> {
+    const [preferences] = await db
+      .select()
+      .from(notificationPreferences)
+      .where(and(
+        eq(notificationPreferences.userId, userId),
+        eq(notificationPreferences.userType, userType)
+      ));
+    
+    // If no preferences exist, create default ones
+    if (!preferences) {
+      const defaultPreferences: InsertNotificationPreferences = {
+        userId,
+        userType,
+        inPlatformEnabled: true,
+        emailEnabled: true,
+        collaborationInviteReceived: { inPlatform: true, email: true },
+        collaborationInviteAccepted: { inPlatform: true, email: true },
+        newCollaboratorAdded: { inPlatform: true, email: true },
+        collaboratorMadeChanges: { inPlatform: true, email: true },
+        obituaryStatusChanged: { inPlatform: true, email: true },
+        finalspaceUpdated: { inPlatform: true, email: true },
+        newObituaryPublished: { inPlatform: true, email: true },
+        contentReviewCompleted: { inPlatform: true, email: true },
+        employeeInvitationSent: { inPlatform: true, email: true },
+        employeeInvitationAccepted: { inPlatform: true, email: true },
+        newTeamMemberJoined: { inPlatform: true, email: true },
+        teamMemberRoleChanged: { inPlatform: true, email: true },
+        accountInformationUpdated: { inPlatform: true, email: true },
+        passwordChanged: { inPlatform: true, email: true },
+        loginFromNewDevice: { inPlatform: true, email: true },
+        newFeedbackReceived: { inPlatform: true, email: true }
+      };
+      
+      return await this.updateNotificationPreferences(userId, userType, defaultPreferences);
+    }
+    
+    return preferences;
+  }
+
+  async updateNotificationPreferences(userId: number, userType: string, preferences: Partial<NotificationPreferences>): Promise<NotificationPreferences> {
+    // Check if preferences exist
+    const existing = await db
+      .select()
+      .from(notificationPreferences)
+      .where(and(
+        eq(notificationPreferences.userId, userId),
+        eq(notificationPreferences.userType, userType)
+      ));
+
+    if (existing.length > 0) {
+      // Update existing preferences
+      const [updated] = await db
+        .update(notificationPreferences)
+        .set({
+          ...preferences,
+          updatedAt: new Date()
+        })
+        .where(and(
+          eq(notificationPreferences.userId, userId),
+          eq(notificationPreferences.userType, userType)
+        ))
+        .returning();
+      return updated;
+    } else {
+      // Create new preferences
+      const [created] = await db
+        .insert(notificationPreferences)
+        .values({
+          userId,
+          userType,
+          ...preferences
+        } as InsertNotificationPreferences)
+        .returning();
+      return created;
+    }
   }
 }
 
