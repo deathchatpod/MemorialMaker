@@ -524,6 +524,16 @@ export default function MemorialPage() {
           </div>
         )}
       </div>
+
+      {/* Collaborator Confirmation Modal */}
+      <CollaboratorConfirmationModal
+        isOpen={showCollaboratorModal}
+        onClose={() => setShowCollaboratorModal(false)}
+        onAddCollaborator={handleAddCollaborator}
+        onDoItLater={handleDoItLater}
+        onDontAskAgain={handleDontAskAgain}
+        dontAskAgain={dontAskAgain}
+      />
     </div>
   );
 }
