@@ -294,13 +294,13 @@ export default function EnhancedPromptTemplates() {
     uploadDocumentMutation.mutate({ file, templateId: selectedTemplate.id });
   };
 
-  const getTestingLink = (template: PromptTemplate) => {
+  const getTestingLink = (template: PromptTemplate): string | undefined => {
     if (template.promptType === 'base') {
       return '/obituary/new';
     } else if (template.promptType === 'revision') {
       return '/obituary/new'; // They can test revisions through the obituary flow
     }
-    return null;
+    return undefined;
   };
 
   if (isLoading) {
@@ -368,7 +368,10 @@ export default function EnhancedPromptTemplates() {
                         size="sm"
                         variant="outline"
                         className="text-xs border-gray-600 text-gray-300 hover:bg-gray-700"
-                        onClick={() => window.open(getTestingLink(group.primary!))}
+                        onClick={() => {
+                          const link = getTestingLink(group.primary!);
+                          if (link) window.open(link, '_blank');
+                        }}
                       >
                         <ExternalLink className="w-3 h-3 mr-1" />
                         Test
@@ -759,7 +762,10 @@ export default function EnhancedPromptTemplates() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => window.open(getTestingLink(selectedTemplate))}
+                              onClick={() => {
+                                const link = getTestingLink(selectedTemplate);
+                                if (link) window.open(link, '_blank');
+                              }}
                               className="border-gray-600 text-gray-300 hover:bg-gray-700"
                             >
                               <ExternalLink className="w-3 h-3 mr-1" />
