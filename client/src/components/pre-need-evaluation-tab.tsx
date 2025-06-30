@@ -17,7 +17,8 @@ interface PreNeedEvaluation {
   completedById: number;
   completedByType: string;
   funeralHomeId?: number;
-  createdAt: string;
+  createdAt?: string;
+  submittedAt?: string;
 }
 
 export function PreNeedEvaluationTab() {
@@ -78,7 +79,11 @@ export function PreNeedEvaluationTab() {
   const allSurveyResponses = [
     ...evaluations.map(e => ({ ...e, responseType: 'pre_need_evaluation', surveyName: 'Pre Need Evaluation' })),
     ...basics.map(b => ({ ...b, responseType: 'pre_need_basics', surveyName: 'Pre Need Basics' }))
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  ].sort((a, b) => {
+    const aDate = (a as any).submittedAt || (a as any).createdAt;
+    const bDate = (b as any).submittedAt || (b as any).createdAt;
+    return new Date(bDate).getTime() - new Date(aDate).getTime();
+  });
 
   const isLoading = evaluationsLoading || basicsLoading;
 
@@ -224,7 +229,7 @@ export function PreNeedEvaluationTab() {
                 {basics.map((response) => (
                   <TableRow key={response.id}>
                     <TableCell>
-                      {formatDate(response.createdAt)}
+                      {formatDate(response.submittedAt || response.createdAt)}
                     </TableCell>
                     <TableCell>
                       {getUserDisplayName(response)}
@@ -313,7 +318,7 @@ export function PreNeedEvaluationTab() {
                 {evaluations.map((response) => (
                   <TableRow key={response.id}>
                     <TableCell>
-                      {formatDate(response.createdAt)}
+                      {formatDate(response.submittedAt || response.createdAt)}
                     </TableCell>
                     <TableCell>
                       {getUserDisplayName(response)}
