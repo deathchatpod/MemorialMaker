@@ -75,6 +75,18 @@ export default function MyCollaborations() {
       userId: userIdParam,
       userType: userTypeParam 
     }],
+    queryFn: async () => {
+      const userEmail = getUserEmail();
+      console.log('Fetching collaborations for:', { userEmail, userId: userIdParam, userType: userTypeParam });
+      
+      const response = await fetch(`/api/my-collaborations?userEmail=${encodeURIComponent(userEmail)}&userId=${userIdParam}&userType=${userTypeParam}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch collaborations: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('Collaboration data received:', data);
+      return data;
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
@@ -109,10 +121,31 @@ export default function MyCollaborations() {
     }
   };
 
+  // Add debugging info
+  console.log('MyCollaborations render:', { 
+    collaborations, 
+    isLoading, 
+    error, 
+    userTypeParam, 
+    userIdParam 
+  });
+
+  if (error) {
+    console.error('Collaboration query error:', error);
+  }
+
   return (
-    <DataTable
-      data={Array.isArray(collaborations) ? collaborations : []}
-      columns={[
+    <div className="space-y-4">
+      {/* Debug info - remove in production */}
+      <div className="text-xs text-muted-foreground">
+        Debug: User {userTypeParam} (ID: {userIdParam}) - {getUserEmail()} - 
+        Loading: {isLoading ? 'Yes' : 'No'} - 
+        Data count: {collaborations?.length || 0}
+      </div>
+      
+      <DataTable
+        data={Array.isArray(collaborations) ? collaborations : []}
+        columns={[
         {
           key: "name",
           title: "Name",
@@ -193,7 +226,8 @@ export default function MyCollaborations() {
         description: "You haven't been invited to collaborate on any obituaries or memorials yet.",
         icon: <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
       }}
-      isLoading={isLoading}
-    />
+        isLoading={isLoading}
+      />
+    </div>
   );
 }
