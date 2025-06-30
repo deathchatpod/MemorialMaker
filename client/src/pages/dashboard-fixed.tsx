@@ -22,7 +22,7 @@ import {
 import TeamManagement from "./team-management";
 import AccountInformation from "./account-information";
 import PromptTemplates from "./prompt-templates";
-import MyCollaborations from "./my-collaborations-fixed";
+import MyCollaborations from "./my-collaborations-clean";
 import { PreNeedEvaluationTab } from "@/components/pre-need-evaluation-tab";
 import DataTable, { createBadgeRenderer, formatDate, createActionButtons } from "@/components/DataTable";
 import { apiRequest } from "@/lib/queryClient";
