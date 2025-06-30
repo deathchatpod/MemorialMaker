@@ -86,7 +86,7 @@ export function Toaster() {
             key={id}
             id={id}
             title={title}
-            description={description}
+            description={description as string}
             action={action}
             {...props}
           />
