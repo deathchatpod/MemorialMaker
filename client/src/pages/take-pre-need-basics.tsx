@@ -287,8 +287,6 @@ export default function TakePreNeedBasics() {
                 content="This comprehensive guide helps your family navigate important matters by focusing on where to find information and key contacts."
                 tooltipId="pre-need-basics-guide"
                 icon="info"
-                side="bottom"
-                maxWidth="max-w-2xl"
               >
                 <Alert className="bg-blue-900/20 border-blue-800 cursor-help">
                   <Info className="h-4 w-4 text-blue-400" />
