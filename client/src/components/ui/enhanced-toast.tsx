@@ -86,9 +86,9 @@ export function Toaster() {
             key={id}
             id={id}
             title={title}
-            description={description as string}
+            description={description ? String(description) : undefined}
             action={action}
-            {...props}
+            variant={props.variant || "default"}
           />
         );
       })}

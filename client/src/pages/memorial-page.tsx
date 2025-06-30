@@ -267,7 +267,7 @@ export default function MemorialPage() {
   const handleSave = () => {
     // This would be the actual save operation
     // For memorial page, this is just a placeholder since it's a view page
-    console.log('Memorial saved');
+
   };
 
   if (memorialLoading) {
