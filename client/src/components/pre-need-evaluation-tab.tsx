@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, Trash2, Plus, FileText } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 
 interface PreNeedEvaluation {
   id: number;
@@ -24,6 +24,13 @@ export function PreNeedEvaluationTab() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Safe date formatting function
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) return 'Unknown Date';
+    const date = new Date(dateString);
+    return isValid(date) ? format(date, 'MMM d, yyyy') : 'Invalid Date';
+  };
 
   // Get current user context from URL params
   const urlParams = new URLSearchParams(window.location.search);
@@ -217,7 +224,7 @@ export function PreNeedEvaluationTab() {
                 {basics.map((response) => (
                   <TableRow key={response.id}>
                     <TableCell>
-                      {format(new Date(response.createdAt), 'MMM d, yyyy')}
+                      {formatDate(response.createdAt)}
                     </TableCell>
                     <TableCell>
                       {getUserDisplayName(response)}
@@ -306,7 +313,7 @@ export function PreNeedEvaluationTab() {
                 {evaluations.map((response) => (
                   <TableRow key={response.id}>
                     <TableCell>
-                      {format(new Date(response.createdAt), 'MMM d, yyyy')}
+                      {formatDate(response.createdAt)}
                     </TableCell>
                     <TableCell>
                       {getUserDisplayName(response)}
