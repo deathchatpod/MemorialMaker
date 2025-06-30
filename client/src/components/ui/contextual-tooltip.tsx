@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 import { HelpCircle, Info, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -7,9 +6,7 @@ interface ContextualTooltipProps {
   content: string;
   children?: React.ReactNode;
   icon?: 'help' | 'info';
-  side?: 'top' | 'right' | 'bottom' | 'left';
   className?: string;
-  maxWidth?: string;
   tooltipId?: string; // Unique ID for dismissal tracking
   dismissible?: boolean;
 }
@@ -18,14 +15,11 @@ export function ContextualTooltip({
   content, 
   children, 
   icon = 'help',
-  side = 'top',
   className,
-  maxWidth = 'max-w-xs',
   tooltipId,
   dismissible = true
 }: ContextualTooltipProps) {
   const [isDismissed, setIsDismissed] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
 
   // Check if tooltip was previously dismissed
   useEffect(() => {
@@ -52,57 +46,43 @@ export function ContextualTooltip({
     }
     
     setIsDismissed(true);
-    setIsOpen(false);
   };
 
-  // Don't render if dismissed
+  // Don't render tooltip if dismissed
   if (isDismissed && dismissible) {
-    return children || null;
+    return <>{children}</>;
   }
 
-  const IconComponent = icon === 'help' ? HelpCircle : Info;
-
-  const trigger = children || (
-    <IconComponent 
-      className={cn(
-        "w-4 h-4 text-muted-foreground hover:text-foreground cursor-help transition-colors",
-        className
-      )} 
-    />
-  );
-
   return (
-    <TooltipProvider>
-      <Tooltip open={isOpen} onOpenChange={setIsOpen}>
-        <TooltipTrigger asChild>
-          {trigger}
-        </TooltipTrigger>
-        <TooltipContent 
-          side={side}
-          className={cn(
-            "text-sm p-3 bg-popover text-popover-foreground border shadow-lg rounded-md relative",
-            maxWidth
-          )}
-        >
-          <div className="space-y-1">
-            {dismissible && (
-              <button
-                onClick={handleDismiss}
-                className="absolute -top-1 -right-1 w-5 h-5 bg-muted hover:bg-muted-foreground/20 rounded-full flex items-center justify-center transition-colors"
-                aria-label="Dismiss tooltip"
-              >
-                <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
-              </button>
-            )}
-            {content.split('\n').map((line, index) => (
-              <p key={index} className="leading-relaxed">
-                {line}
-              </p>
-            ))}
+    <div className="relative inline-block">
+      {children}
+      {!isDismissed && (
+        <div className="absolute -top-2 -right-2 z-50">
+          <div className="bg-blue-600 text-white rounded-lg p-3 shadow-lg border border-blue-500 max-w-xs min-w-[200px]">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <div className="text-xs leading-relaxed">
+                  {content.split('\n').map((line, index) => (
+                    <p key={index} className="mb-1 last:mb-0">
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </div>
+              {dismissible && (
+                <button
+                  onClick={handleDismiss}
+                  className="flex-shrink-0 text-blue-200 hover:text-white transition-colors ml-2 p-1 rounded-full hover:bg-blue-700"
+                  aria-label="Dismiss tooltip"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+        </div>
+      )}
+    </div>
   );
 }
 
