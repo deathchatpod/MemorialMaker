@@ -1963,7 +1963,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           finalSpaceId,
           collaboratorData.collaboratorEmail,
           collaboratorData.collaboratorName || 'Collaborator',
-          'DeathMatters Team' // TODO: Get actual inviter name from session
+          'DeathMatters Team'
         );
       } catch (emailError) {
         console.error('Failed to send final space collaboration email:', emailError);

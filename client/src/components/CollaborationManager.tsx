@@ -128,7 +128,7 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
   });
 
   const handleInvite = (data: InviteCollaboratorForm) => {
-    if (collaborators.length >= 5) {
+    if (Array.isArray(collaborators) && collaborators.length >= 5) {
       toast({
         title: "Limit Reached",
         description: "You can only invite up to 5 collaborators",
@@ -300,7 +300,7 @@ export default function CollaborationManager({ entityId, entityType, endpointBas
         </Card>
       )}
 
-      {collaborators.length === 0 && (
+      {(!Array.isArray(collaborators) || collaborators.length === 0) && (
         <div className="text-center py-8 text-gray-500">
           <UserPlus className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p className="text-sm">No collaborators yet</p>
