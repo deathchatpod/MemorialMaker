@@ -2,8 +2,8 @@
 
 export class PerformanceMonitor {
   private static instance: PerformanceMonitor;
-  private metrics: Map<string, number[]> = new Map();
-  private cache: Map<string, any> = new Map();
+  private metrics: Record<string, number[]> = {};
+  private cache: Record<string, any> = {};
   private maxCacheSize = 100;
 
   static getInstance(): PerformanceMonitor {
@@ -15,71 +15,57 @@ export class PerformanceMonitor {
 
   // Track API response times
   trackApiCall(endpoint: string, duration: number) {
-    if (!this.metrics.has(endpoint)) {
-      this.metrics.set(endpoint, []);
+    if (!this.metrics[endpoint]) {
+      this.metrics[endpoint] = [];
     }
-    const times = this.metrics.get(endpoint)!;
-    times.push(duration);
+    this.metrics[endpoint].push(duration);
     
     // Keep only last 50 measurements
-    if (times.length > 50) {
-      times.shift();
+    if (this.metrics[endpoint].length > 50) {
+      this.metrics[endpoint].shift();
     }
   }
 
   // Get average response time for endpoint
   getAverageResponseTime(endpoint: string): number {
-    const times = this.metrics.get(endpoint);
+    const times = this.metrics[endpoint];
     if (!times || times.length === 0) return 0;
     return times.reduce((sum, time) => sum + time, 0) / times.length;
   }
 
-  // Memory-efficient caching with LRU eviction
+  // Memory-efficient caching
   setCache(key: string, value: any, ttl = 5 * 60 * 1000): void {
-    // Remove oldest entries if cache is full
-    if (this.cache.size >= this.maxCacheSize) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+    // Simple cache management
+    if (Object.keys(this.cache).length >= this.maxCacheSize) {
+      const firstKey = Object.keys(this.cache)[0];
+      delete this.cache[firstKey];
     }
 
-    this.cache.set(key, {
+    this.cache[key] = {
       value,
       timestamp: Date.now(),
       ttl
-    });
+    };
   }
 
   getCache(key: string): any | null {
-    const cached = this.cache.get(key);
+    const cached = this.cache[key];
     if (!cached) return null;
 
     // Check if expired
     if (Date.now() - cached.timestamp > cached.ttl) {
-      this.cache.delete(key);
+      delete this.cache[key];
       return null;
     }
 
-    // Move to end (LRU)
-    this.cache.delete(key);
-    this.cache.set(key, cached);
     return cached.value;
-  }
-
-  // Clear expired cache entries
-  cleanupCache(): void {
-    const now = Date.now();
-    for (const [key, cached] of this.cache.entries()) {
-      if (now - cached.timestamp > cached.ttl) {
-        this.cache.delete(key);
-      }
-    }
   }
 
   // Get performance summary
   getPerformanceSummary() {
     const summary: Record<string, any> = {};
     
-    for (const [endpoint, times] of this.metrics.entries()) {
+    for (const [endpoint, times] of Object.entries(this.metrics)) {
       summary[endpoint] = {
         averageTime: this.getAverageResponseTime(endpoint),
         callCount: times.length,
@@ -89,20 +75,8 @@ export class PerformanceMonitor {
 
     return {
       apiMetrics: summary,
-      cacheSize: this.cache.size,
-      memoryUsage: this.getMemoryUsage()
+      cacheSize: Object.keys(this.cache).length
     };
-  }
-
-  private getMemoryUsage() {
-    if ('memory' in performance) {
-      return {
-        used: Math.round((performance as any).memory.usedJSHeapSize / 1048576),
-        total: Math.round((performance as any).memory.totalJSHeapSize / 1048576),
-        limit: Math.round((performance as any).memory.jsHeapSizeLimit / 1048576)
-      };
-    }
-    return null;
   }
 }
 
