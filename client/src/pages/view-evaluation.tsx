@@ -78,27 +78,86 @@ export default function ViewEvaluation() {
     setLocation(`/?${params}`);
   };
 
-  const getQuestionText = (questionId: number) => {
-    const question = questions.find(q => q.id === questionId);
-    return question ? question.questionText : `Question ${questionId}`;
+  const getQuestionText = (fieldName: string) => {
+    // Map field names to human-readable questions for Pre Need Basics
+    const fieldNameMap: Record<string, string> = {
+      'full_name': 'Full Name',
+      'birth_date': 'Date of Birth',
+      'relationship': 'Relationship to Person Being Planned For',
+      'phone_number': 'Phone Number',
+      'email': 'Email Address',
+      'address': 'Address',
+      'emergency_contact_name': 'Emergency Contact Name',
+      'emergency_contact_phone': 'Emergency Contact Phone',
+      'emergency_contact_relationship': 'Emergency Contact Relationship',
+      'has_will': 'Do you have a will?',
+      'will_location': 'Where is your will located?',
+      'has_power_of_attorney': 'Do you have a power of attorney?',
+      'power_of_attorney_location': 'Where is your power of attorney located?',
+      'has_living_will': 'Do you have a living will?',
+      'living_will_location': 'Where is your living will located?',
+      'has_healthcare_directive': 'Do you have a healthcare directive?',
+      'healthcare_directive_location': 'Where is your healthcare directive located?',
+      'financial_advisor_name': 'Financial Advisor Name',
+      'financial_advisor_contact': 'Financial Advisor Contact',
+      'attorney_name': 'Attorney Name',
+      'attorney_contact': 'Attorney Contact',
+      'insurance_agent_name': 'Insurance Agent Name',
+      'insurance_agent_contact': 'Insurance Agent Contact',
+      'accountant_name': 'Accountant Name',
+      'accountant_contact': 'Accountant Contact'
+    };
+    
+    return fieldNameMap[fieldName] || String(fieldName).replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const formatResponse = (questionId: number, response: any) => {
-    const question = questions.find(q => q.id === questionId);
-    
-    if (!response || (Array.isArray(response) && response.length === 0)) {
+  const formatResponse = (fieldName: string, response: any) => {
+    if (!response || response === '' || (Array.isArray(response) && response.length === 0)) {
       return <span className="text-muted-foreground italic">No response</span>;
     }
 
-    if (Array.isArray(response)) {
-      return response.join(', ');
-    }
-
+    // Handle boolean responses
     if (typeof response === 'boolean') {
-      return response ? 'Yes' : 'No';
+      return <Badge variant={response ? "default" : "secondary"}>{response ? "Yes" : "No"}</Badge>;
     }
 
-    return response.toString();
+    // Handle array responses
+    if (Array.isArray(response)) {
+      return (
+        <div className="space-y-1">
+          {response.map((item, index) => (
+            <span key={index} className="inline-block bg-primary/10 text-primary px-2 py-1 rounded text-sm mr-2 mb-1">
+              {item}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    // Handle object responses
+    if (typeof response === 'object') {
+      return (
+        <div className="space-y-2">
+          {Object.entries(response).map(([key, value]) => (
+            <div key={key} className="flex items-center gap-2">
+              <span className="font-medium text-sm">{key}:</span>
+              <span className="text-sm">{String(value)}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Handle date fields with better formatting
+    if (fieldName.includes('date') || fieldName.includes('birth')) {
+      const date = new Date(response);
+      if (!isNaN(date.getTime())) {
+        return <span className="text-foreground">{format(date, 'MMMM d, yyyy')}</span>;
+      }
+    }
+
+    // Handle regular string/number responses
+    return <span className="text-foreground">{String(response)}</span>;
   };
 
   if (evaluationLoading || questionsLoading) {
@@ -171,17 +230,17 @@ export default function ViewEvaluation() {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {evaluation.responses && Object.entries(evaluation.responses).map(([questionId, response], index) => (
-              <div key={questionId}>
+            {evaluation.responses && Object.entries(evaluation.responses).map(([fieldName, response], index) => (
+              <div key={fieldName}>
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm text-muted-foreground">
                     Question {index + 1}
                   </h4>
                   <p className="text-base font-medium">
-                    {getQuestionText(parseInt(questionId))}
+                    {getQuestionText(fieldName)}
                   </p>
                   <div className="bg-muted/50 p-3 rounded-md">
-                    {formatResponse(parseInt(questionId), response)}
+                    {formatResponse(fieldName, response)}
                   </div>
                 </div>
                 {index < Object.entries(evaluation.responses).length - 1 && (
