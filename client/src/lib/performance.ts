@@ -265,6 +265,6 @@ export function analyzeBundleSize() {
       return sum + (script.src ? 0 : script.innerHTML.length);
     }, 0);
     
-    console.log('Estimated bundle size:', Math.round(totalSize / 1024), 'KB');
+    // Bundle size tracking for development
   }
 }

@@ -40,7 +40,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
         html: options.html,
         text: options.text || options.html.replace(/<[^>]*>/g, ''),
       });
-      console.log(`Email sent successfully to ${options.to} via SendGrid`);
+      // Email sent successfully via SendGrid
       return true;
     }
     

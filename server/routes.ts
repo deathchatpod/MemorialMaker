@@ -1605,7 +1605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userIdParam = req.query.userId as string;
       const userId = userIdParam ? parseInt(userIdParam) : 1;
       
-      console.log(`FinalSpaces API: ${userType} user ${userId} requesting data`);
+      // Handle FinalSpaces data filtering by user type
       
       // Validate userId
       if (isNaN(userId)) {
@@ -1616,19 +1616,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (userType === 'admin') {
         // Admin sees all FinalSpaces
         finalSpaces = await storage.getAllFinalSpaces();
-        console.log(`Admin sees ${finalSpaces.length} total FinalSpaces`);
+        // Admin access to all FinalSpaces
       } else if (userType === 'funeral_home') {
         // Funeral home sees their own FinalSpaces (using userId as funeralHomeId)
         finalSpaces = await storage.getFinalSpacesByFuneralHome(userId);
-        console.log(`Funeral home ${userId} sees ${finalSpaces.length} FinalSpaces`);
+        // Funeral home filtered access
       } else if (userType === 'employee') {
         // Employee sees FinalSpaces they created
         finalSpaces = await storage.getFinalSpacesByCreator(userId, 'employee');
-        console.log(`Employee ${userId} sees ${finalSpaces.length} FinalSpaces`);
+        // Employee filtered access
       } else {
         // Individual users see FinalSpaces they created or collaborate on
         finalSpaces = await storage.getFinalSpacesByCreator(userId, 'individual');
-        console.log(`Individual ${userId} sees ${finalSpaces.length} FinalSpaces`);
+        // Individual collaboration access
       }
       
       res.json(finalSpaces);
