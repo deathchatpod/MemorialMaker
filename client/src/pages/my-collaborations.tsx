@@ -45,13 +45,28 @@ export default function MyCollaborations() {
     // Check if this tab is active based on URL or other indicators
     const checkIfActive = () => {
       const currentPath = window.location.pathname;
-      const currentTab = new URLSearchParams(window.location.search).get('tab');
-      setIsTabActive(currentTab === 'my-collaborations' || currentPath.includes('collaboration'));
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentTab = urlParams.get('tab');
+      const activeSection = urlParams.get('activeSection');
+      
+      // Check for various ways the collaborations tab could be active
+      setIsTabActive(
+        currentTab === 'my-collaborations' || 
+        activeSection === 'collaborations' ||
+        currentPath.includes('collaboration') ||
+        currentPath.includes('/dashboard')
+      );
     };
     
     checkIfActive();
     window.addEventListener('popstate', checkIfActive);
-    return () => window.removeEventListener('popstate', checkIfActive);
+    
+    // Also check on URL changes
+    const interval = setInterval(checkIfActive, 1000);
+    return () => {
+      window.removeEventListener('popstate', checkIfActive);
+      clearInterval(interval);
+    };
   }, []);
 
   const { data: collaborations = [], isLoading, error } = useQuery({
@@ -64,7 +79,7 @@ export default function MyCollaborations() {
     gcTime: 10 * 60 * 1000, // 10 minutes
     refetchOnWindowFocus: false,
     retry: 2,
-    enabled: isTabActive, // Only fetch when tab is active
+    enabled: true, // Always enabled - remove lazy loading restriction
   });
 
   const getStatusColor = (status: string) => {
