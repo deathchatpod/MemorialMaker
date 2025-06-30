@@ -96,7 +96,7 @@ export default function MyCollaborations() {
 
   return (
     <DataTable
-      data={collaborations}
+      data={Array.isArray(collaborations) ? collaborations : []}
       columns={[
         {
           key: "name",
