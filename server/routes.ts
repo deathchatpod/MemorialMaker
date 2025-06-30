@@ -387,6 +387,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User endpoint (main frontend endpoint)
+  app.get("/api/user", async (req, res) => {
+    if (req.isAuthenticated()) {
+      res.json(req.user);
+    } else {
+      // Return dummy admin user for testing when not authenticated
+      const dummyUser = { 
+        id: 1, 
+        name: 'Admin User', 
+        email: 'admin@example.com',
+        userType: 'admin' 
+      };
+      res.json(dummyUser);
+    }
+  });
+
   // Funeral Home routes
   app.get("/api/funeral-homes", async (req, res) => {
     try {
