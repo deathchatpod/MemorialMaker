@@ -8,7 +8,7 @@ if (process.env.SENDGRID_API_KEY) {
 
 // Fallback to nodemailer for development
 const createNodemailerTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,

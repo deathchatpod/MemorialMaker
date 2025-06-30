@@ -1726,7 +1726,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/final-spaces", async (req, res) => {
     try {
-      console.log('Received final space creation request:', req.body);
+      // Process final space creation request
       
       const data = req.body;
       
@@ -1764,10 +1764,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         viewCount: 0
       };
 
-      console.log('Creating final space with validated data:', validatedData);
+      // Create final space with validated data
       
       const finalSpace = await storage.createFinalSpace(validatedData);
-      console.log('Created final space:', finalSpace);
+      // Final space created successfully
       
       res.status(201).json(finalSpace);
     } catch (error) {
@@ -1797,7 +1797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const updates = req.body;
       
-      console.log('Updating final space:', id, updates);
+      // Update final space with provided data
       
       const updatedSpace = await storage.updateFinalSpace(id, updates);
       res.json(updatedSpace);
@@ -3051,7 +3051,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 async function initializeDefaultData() {
   try {
-    console.log("Initializing default data...");
+    // Initialize default data
     
     // Initialize default prompt templates
     await initializeDefaultPromptTemplates();
@@ -3062,7 +3062,7 @@ async function initializeDefaultData() {
     // Initialize default API pricing
     await initializeDefaultApiPricing();
     
-    console.log("Default data initialized successfully");
+    // Default data initialization complete
   } catch (error) {
     console.error("Error initializing default data:", error);
   }
@@ -3124,7 +3124,7 @@ async function initializeDefaultPromptTemplates() {
         await storage.createPromptTemplate(template);
       }
       
-      console.log("Default prompt templates created");
+      // Default prompt templates initialized
     }
   } catch (error) {
     console.error("Error initializing prompt templates:", error);
@@ -3134,7 +3134,7 @@ async function initializeDefaultPromptTemplates() {
 async function initializeDefaultQuestions() {
   try {
     // Skip survey creation since it's now handled by database initialization
-    console.log("Question initialization skipped - handled by database setup");
+    // Question initialization handled by database setup
   } catch (error) {
     console.error("Error initializing questions:", error);
   }
@@ -3173,7 +3173,7 @@ async function initializeDefaultApiPricing() {
         await storage.createApiPricing(pricing);
       }
       
-      console.log("Default API pricing created");
+      // Default API pricing initialized
     }
   } catch (error) {
     console.error("Error initializing API pricing:", error);
