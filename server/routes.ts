@@ -12,7 +12,7 @@ import { DocumentProcessor } from "./services/documentProcessor";
 import { ExportService } from "./services/exportService";
 import { NotificationService } from "./services/notifications";
 import notificationRoutes from "./routes/notifications";
-import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions, questions as questionsTable, insertObituaryReviewSchema } from "@shared/schema";
+import { insertObituarySchema, insertGeneratedObituarySchema, insertTextFeedbackSchema, insertQuestionSchema, insertPromptTemplateSchema, insertFinalSpaceSchema, insertFinalSpaceCommentSchema, insertObituaryCollaboratorSchema, insertCollaborationSessionSchema, obituaryCollaborators, collaborationSessions, finalSpaceCollaborators, questions as questionsTable, insertObituaryReviewSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -1003,6 +1003,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Placeholder - implement with actual ChatGPT API
     return content + "\n\n[Revised based on feedback]";
   };
+
+  // My Collaborations endpoint that matches frontend expectations
+  app.get("/api/my-collaborations", async (req, res) => {
+    try {
+      const { userEmail, userId, userType } = req.query;
+      
+      if (!userEmail || !userId || !userType) {
+        return res.status(400).json({ message: "Missing required parameters" });
+      }
+      
+      let collaborations = [];
+      
+      // Get obituary collaborations where user is invited
+      const obituaryCollabs = await db.select()
+        .from(obituaryCollaborators)
+        .where(eq(obituaryCollaborators.collaboratorEmail, userEmail as string));
+      
+      for (const collab of obituaryCollabs) {
+        const obituary = await storage.getObituary(collab.obituaryId);
+        const sessions = await db.select()
+          .from(collaborationSessions)
+          .where(eq(collaborationSessions.obituaryId, collab.obituaryId));
+        
+        if (obituary) {
+          collaborations.push({
+            id: collab.id,
+            name: obituary.fullName,
+            type: 'Obituary',
+            status: collab.status || 'pending',
+            invitedBy: collab.invitedByType === 'admin' ? 'Admin User' : 
+                     collab.invitedByType === 'funeral_home' ? 'Funeral Home' : 
+                     collab.invitedByType === 'employee' ? 'Employee' : 'Unknown',
+            createdAt: collab.createdAt,
+            entityId: obituary.id,
+            collaborationUuid: sessions[0]?.uuid
+          });
+        }
+      }
+      
+      // Get FinalSpace collaborations
+      try {
+        const finalSpaceCollabs = await db.select()
+          .from(finalSpaceCollaborators)
+          .where(eq(finalSpaceCollaborators.collaboratorEmail, userEmail as string));
+        
+        for (const collab of finalSpaceCollabs || []) {
+          const finalSpace = await storage.getFinalSpace(collab.finalSpaceId);
+          if (finalSpace) {
+            collaborations.push({
+              id: collab.id,
+              name: finalSpace.personName || 'Memorial Space',
+              type: 'FinalSpace',
+              status: collab.status || 'pending',
+              invitedBy: collab.invitedByType === 'admin' ? 'Admin User' : 
+                       collab.invitedByType === 'funeral_home' ? 'Funeral Home' : 
+                       collab.invitedByType === 'employee' ? 'Employee' : 'Unknown',
+              createdAt: collab.createdAt,
+              entityId: finalSpace.id
+            });
+          }
+        }
+      } catch (error) {
+        // Continue without FinalSpace collaborations if there's an error
+        console.log("Error fetching FinalSpace collaborations:", error);
+      }
+      
+      res.json(collaborations);
+    } catch (error) {
+      console.error("Error fetching my collaborations:", error);
+      res.status(500).json({ error: "Failed to fetch collaborations" });
+    }
+  });
 
   // Collaborations endpoint for dashboard
   app.get("/api/collaborations/:userId/:userType", async (req, res) => {
