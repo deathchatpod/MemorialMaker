@@ -424,7 +424,7 @@ export default function EnhancedPromptTemplates() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                      className="border-gray-500 text-white bg-gray-700 hover:bg-gray-600 hover:border-gray-400"
                       onClick={() => {
                         const testUrl = `/test-prompt/${group.platform}/${group.promptType}`;
                         window.open(testUrl, '_blank');
@@ -614,7 +614,7 @@ export default function EnhancedPromptTemplates() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className={`flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 ${isViewing ? 'bg-gray-700' : ''}`}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:flex-1 border-gray-500 text-white bg-gray-700 hover:bg-gray-600 hover:border-gray-400 ${isViewing ? 'bg-gray-600' : ''}`}
                         onClick={() => {
                           if (isViewing) {
                             setViewingTemplate(null);
@@ -632,7 +632,7 @@ export default function EnhancedPromptTemplates() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className={`flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 ${isEditing ? 'bg-gray-700' : ''}`}
+                        className={`flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap w-full sm:flex-1 border-gray-500 text-white bg-gray-700 hover:bg-gray-600 hover:border-gray-400 ${isEditing ? 'bg-gray-600' : ''}`}
                         onClick={() => {
                           if (isEditing) {
                             setEditingInCard(null);
@@ -654,7 +654,7 @@ export default function EnhancedPromptTemplates() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                      className="border-gray-500 text-white bg-gray-700 hover:bg-gray-600 hover:border-gray-400"
                       onClick={() => {
                         if (group.primary) {
                           setSelectedTemplate(group.primary);
