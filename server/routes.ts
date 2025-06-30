@@ -1834,6 +1834,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get individual survey response by response ID
+  app.get("/api/survey-response/:id", async (req, res) => {
+    try {
+      const responseId = parseInt(req.params.id);
+      if (isNaN(responseId)) {
+        return res.status(400).json({ message: "Invalid response ID" });
+      }
+
+      const response = await storage.getSurveyResponse(responseId);
+      if (!response) {
+        return res.status(404).json({ message: "Survey response not found" });
+      }
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching survey response:", error);
+      res.status(500).json({ message: "Failed to fetch survey response" });
+    }
+  });
+
   app.post("/api/survey-responses", async (req, res) => {
     try {
       const response = await storage.createSurveyResponse(req.body);

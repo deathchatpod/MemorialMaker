@@ -48,9 +48,9 @@ export default function ViewEvaluation() {
 
   // Fetch the evaluation
   const { data: evaluation, isLoading: evaluationLoading } = useQuery<SurveyResponse>({
-    queryKey: ['/api/survey-responses', evaluationId],
+    queryKey: ['/api/survey-response', evaluationId],
     queryFn: async () => {
-      const response = await fetch(`/api/survey-responses/${evaluationId}`);
+      const response = await fetch(`/api/survey-response/${evaluationId}`);
       if (!response.ok) throw new Error('Failed to fetch evaluation');
       return response.json();
     },
