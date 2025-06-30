@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, FileText, Calendar, User } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 
 interface SurveyResponse {
   id: number;
@@ -16,7 +16,8 @@ interface SurveyResponse {
   completedById: number;
   completedByType: string;
   funeralHomeId?: number;
-  createdAt: string;
+  createdAt?: string;
+  submittedAt?: string;
 }
 
 interface Question {
@@ -37,6 +38,13 @@ export default function ViewEvaluation() {
   const currentUserId = parseInt(urlParams.get('userId') || '1');
   const currentUserType = urlParams.get('userType') || 'admin';
   const currentFuneralHomeId = urlParams.get('funeralHomeId') ? parseInt(urlParams.get('funeralHomeId')!) : undefined;
+
+  // Safe date formatting function
+  const formatDate = (dateString: string | undefined | null) => {
+    if (!dateString) return 'Unknown Date';
+    const date = new Date(dateString);
+    return isValid(date) ? format(date, 'MMMM d, yyyy') : 'Invalid Date';
+  };
 
   // Fetch the evaluation
   const { data: evaluation, isLoading: evaluationLoading } = useQuery<SurveyResponse>({
@@ -150,7 +158,7 @@ export default function ViewEvaluation() {
               <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Calendar className="h-4 w-4" />
-                  {format(new Date(evaluation.createdAt), 'MMMM d, yyyy')}
+                  {formatDate(evaluation.submittedAt || evaluation.createdAt)}
                 </span>
                 <span className="flex items-center gap-1">
                   <User className="h-4 w-4" />
