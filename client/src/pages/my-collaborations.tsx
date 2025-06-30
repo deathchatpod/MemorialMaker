@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Eye, Edit, Users, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -38,12 +38,33 @@ export default function MyCollaborations() {
     }
   };
 
+  // Use lazy loading with enabled flag to improve dashboard performance
+  const [isTabActive, setIsTabActive] = useState(false);
+  
+  useEffect(() => {
+    // Check if this tab is active based on URL or other indicators
+    const checkIfActive = () => {
+      const currentPath = window.location.pathname;
+      const currentTab = new URLSearchParams(window.location.search).get('tab');
+      setIsTabActive(currentTab === 'my-collaborations' || currentPath.includes('collaboration'));
+    };
+    
+    checkIfActive();
+    window.addEventListener('popstate', checkIfActive);
+    return () => window.removeEventListener('popstate', checkIfActive);
+  }, []);
+
   const { data: collaborations = [], isLoading, error } = useQuery({
     queryKey: ['/api/my-collaborations', { 
       userEmail: getUserEmail(),
       userId: userIdParam,
       userType: userTypeParam 
-    }]
+    }],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    retry: 2,
+    enabled: isTabActive, // Only fetch when tab is active
   });
 
   const getStatusColor = (status: string) => {

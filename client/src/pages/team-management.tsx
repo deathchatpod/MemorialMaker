@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,12 +57,36 @@ export default function TeamManagement() {
   // Assuming current user is funeral home with ID 1 for testing
   const funeralHomeId = 1;
 
+  // Use lazy loading with enabled flag to improve dashboard performance
+  const [isTabActive, setIsTabActive] = useState(false);
+  
+  useEffect(() => {
+    // Check if this tab is active based on URL or other indicators
+    const checkIfActive = () => {
+      const currentPath = window.location.pathname;
+      const currentTab = new URLSearchParams(window.location.search).get('tab');
+      setIsTabActive(currentTab === 'team-management' || currentPath.includes('team'));
+    };
+    
+    checkIfActive();
+    window.addEventListener('popstate', checkIfActive);
+    return () => window.removeEventListener('popstate', checkIfActive);
+  }, []);
+
   const { data: employees = [], isLoading: employeesLoading } = useQuery({
     queryKey: ['/api/employees', funeralHomeId],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    enabled: isTabActive, // Only fetch when tab is active
   });
 
   const { data: invitations = [], isLoading: invitationsLoading } = useQuery({
     queryKey: ['/api/employee-invitations', funeralHomeId],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    enabled: isTabActive, // Only fetch when tab is active
   });
 
   const inviteEmployeeMutation = useMutation({
