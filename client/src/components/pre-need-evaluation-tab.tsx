@@ -80,8 +80,8 @@ export function PreNeedEvaluationTab() {
     ...evaluations.map(e => ({ ...e, responseType: 'pre_need_evaluation', surveyName: 'Pre Need Evaluation' })),
     ...basics.map(b => ({ ...b, responseType: 'pre_need_basics', surveyName: 'Pre Need Basics' }))
   ].sort((a, b) => {
-    const aDate = (a as any).submittedAt || (a as any).createdAt;
-    const bDate = (b as any).submittedAt || (b as any).createdAt;
+    const aDate = (a as any).submittedAt || (a as any).createdAt || new Date().toISOString();
+    const bDate = (b as any).submittedAt || (b as any).createdAt || new Date().toISOString();
     return new Date(bDate).getTime() - new Date(aDate).getTime();
   });
 
@@ -229,7 +229,7 @@ export function PreNeedEvaluationTab() {
                 {basics.map((response) => (
                   <TableRow key={response.id}>
                     <TableCell>
-                      {formatDate(response.submittedAt || response.createdAt)}
+                      {formatDate((response as any).submittedAt || (response as any).createdAt)}
                     </TableCell>
                     <TableCell>
                       {getUserDisplayName(response)}
@@ -318,7 +318,7 @@ export function PreNeedEvaluationTab() {
                 {evaluations.map((response) => (
                   <TableRow key={response.id}>
                     <TableCell>
-                      {formatDate(response.submittedAt || response.createdAt)}
+                      {formatDate((response as any).submittedAt || (response as any).createdAt)}
                     </TableCell>
                     <TableCell>
                       {getUserDisplayName(response)}
